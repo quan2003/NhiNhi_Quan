@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Quản lý đơn hàng</title>
+  <link rel="stylesheet" href="/admin/css/admin.css" />
+</head>
+<body>
+  <header class="container">
+    <h1>Đơn hàng</h1>
+    <nav>
+      <a href="/admin/index.html">Trang chủ</a>
+      <a href="/admin/products.html">Sản phẩm</a>
+      <a href="/admin/reports.html">Báo cáo</a>
+      <a href="#" id="logout">Đăng xuất</a>
+    </nav>
+  </header>
+  <main class="container">
+    <div class="row" style="gap:12px;margin-bottom:10px">
+      <label>Trạng thái
+        <select id="status">
+          <option value="">Tất cả</option>
+          <option value="NEW">Mới</option>
+          <option value="IN_PROGRESS">Đang làm</option>
+          <option value="COMPLETED">Hoàn tất</option>
+        </select>
+      </label>
+    </div>
+    <table class="table" id="tbl">
+      <thead><tr><th>Mã</th><th>Khách</th><th>Tổng</th><th>Thanh toán</th><th>Trạng thái</th><th>Thời gian</th><th></th></tr></thead>
+      <tbody></tbody>
+    </table>
+    <div class="pagination">
+      <button id="prev">Trước</button>
+      <span id="pageInfo"></span>
+      <button id="next">Sau</button>
+    </div>
+  </main>
+  <script src="/admin/js/admin-common.js"></script>
+  <script src="/admin/js/orders.js"></script>
+</body>
+</html>

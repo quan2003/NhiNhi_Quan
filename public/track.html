@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Tra cứu đơn hàng - Nhi Nhi Quán</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <!-- Lucide icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+  </head>
+  <body>
+    <!-- Header đồng bộ -->
+    <header>
+      <div class="container">
+        <div class="brand">
+          <div class="logo"></div>
+          <h1>Tra cứu đơn hàng</h1>
+        </div>
+        <nav class="primary">
+          <a href="/"><i data-lucide="home"></i> Trang chủ</a>
+          <a href="/menu.html"><i data-lucide="utensils-crossed"></i> Menu</a>
+          <a href="/checkout.html"
+            ><i data-lucide="shopping-cart"></i> Giỏ hàng</a
+          >
+          <a href="/track.html" class="active"
+            ><i data-lucide="search"></i> Theo dõi đơn</a
+          >
+        </nav>
+        <button id="menuBtn" class="btn outline" aria-label="menu">
+          <i data-lucide="menu"></i>
+        </button>
+        <label class="switch" title="Đổi giao diện">
+          <input type="checkbox" id="themeSwitch" /><span>Light</span>
+        </label>
+      </div>
+      <aside id="drawer" class="drawer">
+        <a href="/"><i data-lucide="home"></i> Trang chủ</a>
+        <a href="/menu.html"><i data-lucide="utensils-crossed"></i> Menu</a>
+        <a href="/checkout.html"
+          ><i data-lucide="shopping-cart"></i> Giỏ hàng</a
+        >
+        <a href="/track.html"><i data-lucide="search"></i> Theo dõi đơn</a>
+      </aside>
+    </header>
+
+    <main class="container">
+      <div class="card">
+        <form id="lookupForm" class="grid-2">
+          <label
+            >Mã đơn (Order ID)
+            <input id="orderId" required placeholder="VD: 12 ký tự" />
+          </label>
+          <label
+            >4 số cuối SĐT
+            <input
+              id="phoneTail"
+              required
+              maxlength="4"
+              placeholder="VD: 1234"
+            />
+          </label>
+          <div style="grid-column: 1/-1">
+            <button class="btn" type="submit">
+              <i data-lucide="search"></i> Xem trạng thái
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <section id="resultBox" class="card hidden" style="margin-top: 12px">
+        <h2>Kết quả</h2>
+        <p><b>Mã đơn:</b> <span id="r_id"></span></p>
+        <p>
+          <b>Khách:</b> <span id="r_name"></span> — <span id="r_phone"></span>
+        </p>
+        <p><b>Hình thức:</b> <span id="r_type"></span></p>
+        <p><b>Thời gian đến/lấy:</b> <span id="r_sched"></span></p>
+        <p>
+          <b>Số bàn:</b> <span id="r_table"></span> · <b>Số khách:</b>
+          <span id="r_guests"></span>
+        </p>
+        <p><b>Thời gian tạo:</b> <span id="r_time"></span></p>
+        <p><b>Thanh toán:</b> <span id="r_pay"></span></p>
+        <p>
+          <b>Tổng tiền:</b> <span id="r_total"></span> (tạm tính
+          <span id="r_sub"></span>, giảm <span id="r_disc"></span>)
+        </p>
+
+        <div class="card" style="margin-top: 12px">
+          <h3>Trạng thái đơn</h3>
+          <ol id="steps">
+            <li id="st-new">Mới</li>
+            <li id="st-prog">Đang làm</li>
+            <li id="st-done">Hoàn tất</li>
+          </ol>
+          <p class="muted">Trang sẽ tự làm mới mỗi 10 giây.</p>
+        </div>
+
+        <div
+          id="guestActions"
+          class="row"
+          style="gap: 8px; margin-top: 8px"
+        ></div>
+
+        <details style="margin-top: 8px">
+          <summary>Chi tiết món</summary>
+          <pre id="r_items"></pre>
+        </details>
+      </section>
+    </main>
+
+    <!-- Footer đồng bộ -->
+    <footer class="site-footer">
+      <div class="wrap">
+        <section>
+          <div class="brandline">
+            <span class="dot"></span>
+            <h4 style="margin: 0">Nhi Nhi Quán</h4>
+          </div>
+          <div class="contact-list" style="margin-top: 10px">
+            <div class="contact-item">
+              <i data-lucide="phone"></i>
+              <div>
+                <div>Liên hệ đặt món</div>
+                <a href="tel:0906919019"><b>0906.919.019</b></a>
+              </div>
+            </div>
+            <div class="contact-item">
+              <i data-lucide="map-pin"></i>
+              <div>
+                <div>Địa chỉ</div>
+                <a
+                  href="https://maps.google.com/?q=63+T%C3%B4n+%C4%90%E1%BB%A9c+Th%E1%BA%AFng,+Tam+K%E1%BB%B3,+Qu%E1%BA%A3ng+Nam"
+                  target="_blank"
+                  rel="noopener"
+                >
+                  63 Tôn Đức Thắng, Tam Kỳ, Quảng Nam
+                </a>
+              </div>
+            </div>
+            <div class="contact-item">
+              <i data-lucide="clock-3"></i>
+              <div>Mở cửa hàng ngày · Giao nhanh nội thành</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="map-card" aria-label="Bản đồ">
+          <iframe
+            loading="lazy"
+            referrerpolicy="no-referrer-when-downgrade"
+            src="https://www.google.com/maps?q=63+T%C3%B4n+%C4%90%E1%BB%A9c+Th%E1%BA%AFng,+Tam+K%E1%BB%B3,+Qu%E1%BA%A3ng+Nam&output=embed"
+          >
+          </iframe>
+        </section>
+      </div>
+
+      <div class="footer-bar">
+        © <span id="y"></span> Nhi Nhi Quán · Made with ❤️
+      </div>
+    </footer>
+    <script>
+      // set năm hiện tại + render icon Lucide cho footer nếu cần
+      (function () {
+        try {
+          const y = document.getElementById("y");
+          if (y) y.textContent = new Date().getFullYear();
+          if (window.lucide) window.lucide.createIcons();
+        } catch (e) {}
+      })();
+    </script>
+
+    <!-- Khởi tạo UI (drawer/theme/toast/spinner) -->
+    <script type="module">
+      import { initUI } from "/js/ui.js";
+      initUI();
+    </script>
+    <!-- Track logic (ESM) -->
+    <script type="module" src="/js/track.js"></script>
+  </body>
+</html>

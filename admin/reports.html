@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Báo cáo</title>
+    <link rel="stylesheet" href="/admin/css/admin.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  </head>
+  <body>
+    <header class="container">
+      <h1>Báo cáo doanh thu & lợi nhuận</h1>
+      <nav>
+        <a href="/admin/index.html">Trang chủ</a>
+        <a href="/admin/products.html">Sản phẩm</a>
+        <a href="/admin/orders.html">Đơn hàng</a>
+        <a href="#" id="logout">Đăng xuất</a>
+      </nav>
+    </header>
+    <main class="container">
+      <section class="card">
+        <h2>Theo ngày</h2>
+        <div class="row" style="gap: 12px">
+          <label>Từ ngày <input type="date" id="from" /></label>
+          <label>Đến ngày <input type="date" id="to" /></label>
+          <button class="btn" id="btnDaily" style="flex: 1">Xem</button>
+        </div>
+        <canvas id="dailyChart" height="120"></canvas>
+      </section>
+
+      <section class="card">
+        <h2>Theo tháng</h2>
+        <div class="row" style="gap: 12px">
+          <label>Năm <input type="number" id="year" /></label>
+          <button class="btn" id="btnMonthly" style="flex: 1">Xem</button>
+        </div>
+        <canvas id="monthlyChart" height="120"></canvas>
+      </section>
+
+      <section class="card">
+        <h2>Theo năm</h2>
+        <canvas id="yearlyChart" height="120"></canvas>
+      </section>
+    </main>
+    <script src="/admin/js/admin-common.js"></script>
+    <script src="/admin/js/reports.js"></script>
+  </body>
+</html>

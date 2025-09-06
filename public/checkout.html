@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Thanh toán - Nhi Nhi Quán</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <script src="https://unpkg.com/lucide@latest"></script>
+  </head>
+  <body>
+    <header>
+      <div class="container">
+        <div class="brand">
+          <div class="logo"></div>
+          <h1>Thanh toán</h1>
+        </div>
+        <nav class="primary">
+          <a href="/"><i data-lucide="home"></i> Trang chủ</a>
+          <a href="/menu.html"><i data-lucide="utensils-crossed"></i> Menu</a>
+          <a href="/checkout.html" class="active"
+            ><i data-lucide="shopping-cart"></i> Giỏ hàng</a
+          >
+          <a href="/track.html"><i data-lucide="search"></i> Theo dõi đơn</a>
+        </nav>
+        <button id="menuBtn" class="btn outline">
+          <i data-lucide="menu"></i>
+        </button>
+        <label class="switch"
+          ><input type="checkbox" id="themeSwitch" /><span>Light</span></label
+        >
+      </div>
+      <aside id="drawer" class="drawer">
+        <a href="/"><i data-lucide="home"></i> Trang chủ</a>
+        <a href="/menu.html"><i data-lucide="utensils-crossed"></i> Menu</a>
+        <a href="/checkout.html"
+          ><i data-lucide="shopping-cart"></i> Giỏ hàng</a
+        >
+        <a href="/track.html"><i data-lucide="search"></i> Theo dõi đơn</a>
+      </aside>
+    </header>
+
+    <main class="container">
+      <div class="grid-2">
+        <section class="checkout-section">
+          <h2 class="section-title">Thông tin khách hàng</h2>
+          <form id="checkoutForm" class="checkout-form">
+            <label
+              >Họ và tên
+              <input type="text" id="name" required class="input-field"
+            /></label>
+            <label
+              >Số điện thoại
+              <input type="tel" id="phone" required class="input-field"
+            /></label>
+            <label
+              >Địa chỉ giao hàng
+              <input
+                type="text"
+                id="address"
+                placeholder="Số nhà, đường, phường/xã, quận/huyện (để trống nếu ăn tại quán)"
+                class="input-field"
+              />
+            </label>
+            <fieldset class="form-group">
+              <legend>Hình thức đặt</legend>
+              <label class="row"
+                ><input
+                  type="radio"
+                  name="orderType"
+                  value="TAKEAWAY"
+                  checked
+                  class="radio-input"
+                />
+                Mang đi</label
+              >
+              <label class="row"
+                ><input
+                  type="radio"
+                  name="orderType"
+                  value="DINE_IN"
+                  class="radio-input"
+                />
+                Tại bàn</label
+              >
+              <label class="row"
+                ><input
+                  type="radio"
+                  name="orderType"
+                  value="RESERVE"
+                  class="radio-input"
+                />
+                Đặt trước đến ăn</label
+              >
+            </fieldset>
+            <div id="typeFields" class="card">
+              <div data-type="TAKEAWAY">
+                <label
+                  >Thời gian lấy (tuỳ chọn)
+                  <input
+                    type="datetime-local"
+                    id="pickupAt"
+                    class="input-field"
+                /></label>
+              </div>
+              <div data-type="DINE_IN" class="hidden">
+                <label
+                  >Số bàn (tuỳ chọn)
+                  <input
+                    type="text"
+                    id="tableNumber"
+                    placeholder="VD: B12"
+                    class="input-field"
+                /></label>
+                <label
+                  >Số khách
+                  <input
+                    type="number"
+                    id="guests_dinein"
+                    min="1"
+                    placeholder="VD: 4"
+                    class="input-field"
+                /></label>
+              </div>
+              <div data-type="RESERVE" class="hidden">
+                <label
+                  >Thời gian đến (bắt buộc)
+                  <input
+                    type="datetime-local"
+                    id="reserveAt"
+                    class="input-field"
+                /></label>
+                <label
+                  >Số khách
+                  <input
+                    type="number"
+                    id="guests_reserve"
+                    min="1"
+                    placeholder="VD: 6"
+                    class="input-field"
+                /></label>
+              </div>
+              <label
+                >Ghi chú
+                <textarea
+                  id="note"
+                  rows="2"
+                  placeholder="Ghi chú cho quán..."
+                  class="input-field textarea"
+                ></textarea>
+              </label>
+            </div>
+            <fieldset class="form-group">
+              <legend>Phương thức thanh toán</legend>
+              <label class="row"
+                ><input
+                  type="radio"
+                  name="payment"
+                  value="COD"
+                  checked
+                  class="radio-input"
+                />
+                Thanh toán khi nhận (COD)</label
+              >
+              <label class="row"
+                ><input
+                  type="radio"
+                  name="payment"
+                  value="TRANSFER"
+                  class="radio-input"
+                />
+                Chuyển khoản (hiển thị QR)</label
+              >
+            </fieldset>
+            <button class="btn primary submit-btn" type="submit">
+              <i data-lucide="check-circle-2"></i> Đặt hàng
+            </button>
+          </form>
+
+          <div id="transferBox" class="hidden card transfer-box">
+            <h3 class="section-title">Chuyển khoản</h3>
+            <p><b>Ngân hàng:</b> <span id="bankName"></span></p>
+            <p><b>Tên TK:</b> <span id="bankAccName"></span></p>
+            <p><b>Số TK:</b> <span id="bankAccNumber"></span></p>
+            <div id="qrWrap">
+              <img id="qrImg" alt="VietQR" class="qr-image" />
+              <div class="row" style="gap: 8px; justify-content: space-between">
+                <a
+                  id="qrDownload"
+                  class="btn outline"
+                  href="#"
+                  download="VietQR.png"
+                  ><i data-lucide="download"></i> Tải QR</a
+                >
+                <button id="qrCopy" class="btn outline" type="button">
+                  <i data-lucide="copy"></i> Sao chép số TK
+                </button>
+              </div>
+              <p class="muted" id="qrCaption"></p>
+            </div>
+          </div>
+
+          <div id="result" class="hidden card result-box"></div>
+        </section>
+
+        <aside class="cart-section">
+          <h2 class="section-title">Giỏ hàng</h2>
+          <div id="promoNote" class="muted"></div>
+          <div id="cartItems" class="cart-items"></div>
+          <div class="total card">
+            Tạm tính: <span id="cartSubtotal">0</span><br />
+            Giảm: <span id="cartDiscount">0</span><br />
+            <b>Tổng cộng: <span id="cartTotal">0</span></b>
+          </div>
+        </aside>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <div class="wrap">
+        <section>
+          <div class="brandline">
+            <span class="dot"></span>
+            <h4 style="margin: 0">Nhi Nhi Quán</h4>
+          </div>
+          <div class="contact-list">
+            <div class="contact-item">
+              <i data-lucide="phone"></i>
+              <div>
+                <div>Liên hệ đặt món</div>
+                <a href="tel:0906919019"><b>0906.919.019</b></a>
+              </div>
+            </div>
+            <div class="contact-item">
+              <i data-lucide="map-pin"></i>
+              <div>
+                <div>Địa chỉ</div>
+                <a
+                  href="https://maps.google.com/?q=63+T%C3%B4n+%C4%90%E1%BB%A9c+Th%E1%BA%AFng,+Tam+K%E1%BB%B3,+Qu%E1%BA%A3ng+Nam"
+                  target="_blank"
+                  rel="noopener"
+                >
+                  63 Tôn Đức Thắng, Tam Kỳ, Quảng Nam
+                </a>
+              </div>
+            </div>
+            <div class="contact-item">
+              <i data-lucide="clock-3"></i>
+              <div>Mở cửa hàng ngày · Giao nhanh nội thành</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="map-card">
+          <iframe
+            loading="lazy"
+            referrerpolicy="no-referrer-when-downgrade"
+            src="https://www.google.com/maps?q=63+T%C3%B4n+%C4%Đ%E1%BB%A9c+Th%E1%BA%AFng,+Tam+K%E1%BB%B3,+Qu%E1%BA%A3ng+Nam&output=embed"
+          ></iframe>
+        </section>
+      </div>
+
+      <div class="footer-bar">
+        © <span id="y"></span> Nhi Nhi Quán · Made with ❤️
+      </div>
+    </footer>
+    <script>
+      (function () {
+        try {
+          const y = document.getElementById("y");
+          if (y) y.textContent = new Date().getFullYear();
+          if (window.lucide) window.lucide.createIcons();
+        } catch (e) {}
+      })();
+    </script>
+
+    <script type="module">
+      import { initUI } from "/js/ui.js";
+      initUI();
+    </script>
+    <script type="module" src="/js/checkout.js"></script>
+  </body>
+</html>

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Admin Login - Nhi Nhi Quán</title>
+    <link rel="stylesheet" href="/admin/css/admin.css" />
+  </head>
+  <body>
+    <main class="container small">
+      <h1>Đăng nhập quản trị</h1>
+      <form id="loginForm">
+        <label
+          >Mật khẩu
+          <input type="password" id="password" required />
+        </label>
+        <button class="btn" type="submit">Đăng nhập</button>
+      </form>
+      <p class="muted">Mặc định: <code>admin123</code> (đổi trong file .env)</p>
+    </main>
+
+    <script>
+      // Không import admin-common ở đây để tránh redirect guard
+      document
+        .getElementById("loginForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const password = document.getElementById("password").value.trim();
+          const r = await fetch("/api/auth/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ password }),
+          });
+          if (!r.ok) {
+            alert("Sai mật khẩu");
+            return;
+          }
+          const data = await r.json();
+
+          // LƯU token VỚI KEY THỐNG NHẤT 'adminToken'
+          localStorage.setItem("adminToken", data.token);
+
+          location.href = "/admin/index.html";
+        });
+    </script>
+  </body>
+</html>

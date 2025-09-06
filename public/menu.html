@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Menu - Nhi Nhi Quán</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <script src="https://unpkg.com/lucide@latest"></script>
+  </head>
+  <body>
+    <header>
+      <div class="container">
+        <div class="brand">
+          <div class="logo"></div>
+          <h1>Menu</h1>
+        </div>
+        <nav class="primary">
+          <a href="/"><i data-lucide="home"></i> Trang chủ</a>
+          <a href="/menu.html" class="active"
+            ><i data-lucide="utensils-crossed"></i> Menu</a
+          >
+          <a href="/checkout.html"
+            ><i data-lucide="shopping-cart"></i> Giỏ hàng (<span id="cartCount"
+              >0</span
+            >)</a
+          >
+          <a href="/track.html"><i data-lucide="search"></i> Theo dõi đơn</a>
+        </nav>
+        <button id="menuBtn" class="btn outline">
+          <i data-lucide="menu"></i>
+        </button>
+        <label class="switch"
+          ><input type="checkbox" id="themeSwitch" /><span>Light</span></label
+        >
+      </div>
+      <aside id="drawer" class="drawer">
+        <a href="/"><i data-lucide="home"></i> Trang chủ</a>
+        <a href="/menu.html"><i data-lucide="utensils-crossed"></i> Menu</a>
+        <a href="/checkout.html"
+          ><i data-lucide="shopping-cart"></i> Giỏ hàng</a
+        >
+        <a href="/track.html"><i data-lucide="search"></i> Theo dõi đơn</a>
+      </aside>
+    </header>
+
+    <main class="container">
+      <div class="card row filter-row">
+        <label class="row align-items-center">
+          Lọc theo danh mục:
+          <select id="filterCategory" class="filter-select">
+            <option value="">Tất cả</option>
+          </select>
+        </label>
+      </div>
+
+      <div id="menuList" class="grid menu-grid"></div>
+    </main>
+
+    <!-- Modal chi tiết món -->
+    <div class="modal" id="itemModal" aria-hidden="true">
+      <div
+        class="sheet"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="mdTitle"
+      >
+        <button class="close" id="mdClose" aria-label="Đóng">×</button>
+        <div class="hero">
+          <div class="spinner" id="modalSpinner"></div>
+          <img id="mdImg" alt="" />
+        </div>
+        <div class="body">
+          <h2 class="h2" id="mdTitle"></h2>
+          <div class="meta" id="mdCategory"></div>
+          <div id="mdDesc" class="description"></div>
+
+          <div class="section" id="mdMore" style="display: none">
+            <div class="kv" id="mdNuocChamRow" style="display: none">
+              <strong>Nước chấm</strong>
+              <div id="mdNuocCham"></div>
+            </div>
+            <div class="kv" id="mdDoChuaRow" style="display: none">
+              <strong>Đồ chua</strong>
+              <div id="mdDoChua"></div>
+            </div>
+            <div class="kv" id="mdNoteRow" style="display: none">
+              <strong>Ghi chú</strong>
+              <div id="mdNote"></div>
+            </div>
+          </div>
+
+          <div class="xbar">
+            <div class="price" id="mdPrice"></div>
+            <div class="quantity-control">
+              <button class="btn qty-btn" id="mdQtyDec">
+                <i data-lucide="minus"></i>
+              </button>
+              <span id="mdQtyDisplay">1</span>
+              <button class="btn qty-btn" id="mdQtyInc">
+                <i data-lucide="plus"></i>
+              </button>
+              <button class="btn primary" id="mdAddToCartBtn">
+                <i data-lucide="shopping-bag"></i> Thêm vào giỏ
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="site-footer">
+      <div class="wrap">
+        <section>
+          <div class="brandline">
+            <span class="dot"></span>
+            <h4 style="margin: 0">Nhi Nhi Quán</h4>
+          </div>
+          <div class="contact-list">
+            <div class="contact-item">
+              <i data-lucide="phone"></i>
+              <div>
+                <div>Liên hệ đặt món</div>
+                <a href="tel:0906919019"><b>0906.919.019</b></a>
+              </div>
+            </div>
+            <div class="contact-item">
+              <i data-lucide="map-pin"></i>
+              <div>
+                <div>Địa chỉ</div>
+                <a
+                  href="https://maps.google.com/?q=63+T%C3%B4n+%C4%90%E1%BB%A9c+Th%E1%BA%AFng,+Tam+K%E1%BB%B3,+Qu%E1%BA%A3ng+Nam"
+                  target="_blank"
+                  rel="noopener"
+                  >63 Tôn Đức Thắng, Tam Kỳ, Quảng Nam</a
+                >
+              </div>
+            </div>
+            <div class="contact-item">
+              <i data-lucide="clock-3"></i>
+              <div>Mở cửa hàng ngày · Giao nhanh nội thành</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="map-card">
+          <iframe
+            loading="lazy"
+            referrerpolicy="no-referrer-when-downgrade"
+            src="https://www.google.com/maps?q=63+T%C3%B4n+%C4%90%E1%BB%A9c+Th%E1%BA%AFng,+Tam+K%E1%BB%B3,+Qu%E1%BA%A3ng+Nam&output=embed"
+          ></iframe>
+        </section>
+      </div>
+
+      <div class="footer-bar">
+        © <span id="y"></span> Nhi Nhi Quán · Made with ❤️
+      </div>
+    </footer>
+
+    <script>
+      (function () {
+        try {
+          const y = document.getElementById("y");
+          if (y) y.textContent = new Date().getFullYear();
+          if (window.lucide) window.lucide.createIcons();
+        } catch (e) {}
+      })();
+    </script>
+
+    <script type="module">
+      import { initUI } from "/js/ui.js";
+      initUI();
+    </script>
+    <script type="module" src="/js/menu.js"></script>
+  </body>
+</html>

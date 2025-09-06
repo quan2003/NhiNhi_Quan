@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Quản lý sản phẩm</title>
+    <link rel="stylesheet" href="/admin/css/admin.css" />
+    <style>
+      .thumb {
+        width: 64px;
+        height: 64px;
+        object-fit: cover;
+        border-radius: 8px;
+        border: 1px solid #1f2937;
+      }
+      .uploader {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .uploader input[type="file"] {
+        display: none;
+      }
+      .uploader .file-name {
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .grid-3 {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+      }
+      @media (max-width: 700px) {
+        .grid-3 {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="container">
+      <h1>Sản phẩm</h1>
+      <nav>
+        <a href="/admin/index.html">Trang chủ</a>
+        <a href="/admin/orders.html">Đơn hàng</a>
+        <a href="/admin/reports.html">Báo cáo</a>
+        <a href="#" id="logout">Đăng xuất</a>
+      </nav>
+    </header>
+
+    <main class="container">
+      <!-- TẠO MỚI -->
+      <section class="card">
+        <h2>Thêm sản phẩm</h2>
+        <form id="createForm" class="grid-3">
+          <label
+            >Tên
+            <input id="c_name" required />
+          </label>
+          <label
+            >Danh mục
+            <input id="c_category" placeholder="Gà/Vịt/Combo/Giải khát" />
+          </label>
+          <label
+            >Giá bán
+            <input id="c_sell" type="number" required />
+          </label>
+          <label
+            >Giá vốn
+            <input id="c_cost" type="number" required />
+          </label>
+          <label
+            >Đơn vị
+            <input id="c_unit" placeholder="con/nửa con/ly/combo…" />
+          </label>
+          <label
+            >Kích hoạt
+            <select id="c_active">
+              <option value="true" selected>Có</option>
+              <option value="false">Không</option>
+            </select>
+          </label>
+
+          <!-- ẢNH: chọn file hoặc dán URL -->
+          <div style="grid-column: 1/-1">
+            <h3 style="margin: 8px 0">Ảnh sản phẩm</h3>
+            <div class="uploader">
+              <img
+                id="c_preview"
+                class="thumb"
+                src=""
+                alt=""
+                style="display: none"
+              />
+              <button class="btn" type="button" id="c_pick">Chọn ảnh</button>
+              <input type="file" id="c_file" accept="image/*" />
+              <button class="btn" type="button" id="c_upload">Tải lên</button>
+              <span class="file-name" id="c_file_name"></span>
+            </div>
+            <div style="margin-top: 8px">
+              <input
+                id="c_image_url"
+                placeholder="Hoặc dán URL ảnh trực tiếp"
+                style="width: 100%"
+              />
+            </div>
+          </div>
+
+          <div style="grid-column: 1/-1">
+            <button class="btn" type="submit">Thêm</button>
+          </div>
+        </form>
+      </section>
+
+      <!-- DANH SÁCH -->
+      <section class="card">
+        <h2>Danh sách</h2>
+        <table class="table" id="tbl">
+          <thead>
+            <tr>
+              <th>Ảnh</th>
+              <th>Tên</th>
+              <th>Danh mục</th>
+              <th>Giá bán</th>
+              <th>Giá vốn</th>
+              <th>Đơn vị</th>
+              <th>Active</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </section>
+    </main>
+
+    <script src="/admin/js/admin-common.js"></script>
+    <script src="/admin/js/products.js"></script>
+  </body>
+</html>

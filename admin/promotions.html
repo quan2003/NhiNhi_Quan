@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Khuyến mãi</title>
+    <link rel="stylesheet" href="/admin/css/admin.css" />
+  </head>
+  <body>
+    <header class="container">
+      <h1>Chương trình khuyến mãi</h1>
+      <nav>
+        <a href="/admin/index.html">Trang chủ</a>
+        <a href="/admin/products.html">Sản phẩm</a>
+        <a href="/admin/orders.html">Đơn hàng</a>
+        <a href="/admin/reports.html">Báo cáo</a>
+        <a href="#" id="logout">Đăng xuất</a>
+      </nav>
+    </header>
+
+    <main class="container">
+      <section class="card">
+        <form id="promoForm" class="grid-2">
+          <label
+            >Bật khuyến mãi
+            <select id="enabled">
+              <option value="false">Tắt</option>
+              <option value="true">Bật</option>
+            </select>
+          </label>
+          <label
+            >Giảm (%)
+            <input
+              id="percent"
+              type="number"
+              min="0"
+              max="100"
+              step="1"
+              placeholder="VD: 10"
+            />
+          </label>
+          <label
+            >Ngày bắt đầu
+            <input id="start" type="datetime-local" />
+          </label>
+          <label
+            >Ngày kết thúc
+            <input id="end" type="datetime-local" />
+          </label>
+          <div style="grid-column: 1/-1">
+            <button class="btn" type="submit">Lưu</button>
+          </div>
+        </form>
+        <p class="muted">
+          * Thời gian để trống = áp dụng ngay khi bật và không giới hạn đến khi
+          tắt.
+        </p>
+      </section>
+    </main>
+
+    <script src="/admin/js/admin-common.js"></script>
+    <script type="module" src="/admin/js/promotions.js"></script>
+  </body>
+</html>
