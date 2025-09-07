@@ -4,6 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Nhi Nhi Quán - Gà nướng mắm nhĩ & Vịt quay ngũ vị</title>
+    <link rel="icon" type="image/png" sizes="16x16" href="/img/logo.jpg" />
     <link rel="stylesheet" href="/css/style.css" />
     <script src="https://unpkg.com/lucide@latest"></script>
   </head>
@@ -11,8 +12,10 @@
     <header>
       <div class="container">
         <div class="brand">
-          <div class="logo"></div>
-          <h1>Nhi Nhi Quán</h1>
+          <div class="logo">
+            <img src="/img/logo.jpg" alt="Nhi Nhi Quán" />
+          </div>
+          <h1>Hệ Thống Quay Nướng Gà Vịt Nhi Nhi</h1>
         </div>
         <nav class="primary">
           <a href="/" class="active"><i data-lucide="home"></i> Trang chủ</a>
@@ -27,8 +30,11 @@
         <button id="menuBtn" class="btn outline" aria-label="menu">
           <i data-lucide="menu"></i>
         </button>
-        <label class="switch" title="Đổi giao diện">
-          <input type="checkbox" id="themeSwitch" /><span>Light</span>
+       <label class="switch">
+          <input type="checkbox" id="themeSwitch" />
+          <span class="icon">
+            <i data-lucide="sun"></i>
+          </span>
         </label>
       </div>
       <aside id="drawer" class="drawer">
@@ -41,7 +47,7 @@
       </aside>
     </header>
 
-    <main class="container">
+    <!-- <main class="container">
       <section class="hero">
         <span class="pill ok">Mở cửa hôm nay · Giao nhanh</span>
         <h2>Đậm vị Việt: Gà nướng mắm nhĩ &amp; Vịt quay ngũ vị</h2>
@@ -67,7 +73,107 @@
           <p>Combo tiết kiệm cho cả nhà.</p>
         </div>
       </section>
-    </main>
+    </main> -->
+<main class="container">
+ <section class="hero">
+  <div class="hero-content">
+    <span class="pill ok">Mở cửa hôm nay · Giao nhanh</span>
+    <h2>Đậm vị Việt: Gà nướng mắm nhĩ &amp; Vịt quay ngũ vị</h2>
+    <p class="muted">Chuẩn vị, giòn bì, giao nóng tận nơi.</p>
+    <p>
+      <a class="btn" href="/menu.html">
+        <i data-lucide="chevrons-right"></i> Xem Menu
+      </a>
+    </p>
+  </div>
+
+  <div class="hero-image slider">
+    <div class="slide active">
+      <img src="/img/demo.png" alt="Gà nướng mắm nhĩ" />
+    </div>
+    <div class="slide">
+      <img src="/img/demo2.png" alt="Vịt quay ngũ vị" />
+    </div>
+    <div class="slide">
+      <img src="/img/demo3.png" alt="Combo đặc biệt" />
+    </div>
+  </div>
+</section>
+<section class="banner-carousel" aria-label="Banner ưu đãi">
+  <button class="bc-nav bc-prev" aria-label="Trước">‹</button>
+
+  <div class="bc-viewport">
+    <ul class="bc-track">
+      <li class="bc-card"><img src="/img/Banner.png" alt="Ưu đãi 1"></li>
+      <li class="bc-card"><img src="/img/Banner.png" alt="Ưu đãi 2"></li>
+      <li class="bc-card"><img src="/img/Banner.png" alt="Ưu đãi 3"></li>
+      <li class="bc-card"><img src="/img/Banner.png" alt="Ưu đãi 4"></li>
+    </ul>
+  </div>
+
+  <button class="bc-nav bc-next" aria-label="Sau">›</button>
+</section>
+<!-- ==== Flash sale ===== -->
+<section id="flashSale" class="flash-sale" data-deadline="2025-09-30T23:59:59+07:00">
+  <h3 class="flash-title">
+    <i data-lucide="zap"></i>
+    <span>Flash Sale</span>
+    <a href="/menu.html" class="flash-link" aria-label="Xem ưu đãi">
+      <i data-lucide="arrow-right"></i>
+    </a>
+  </h3>
+  <div class="flash-counter" role="timer" aria-live="polite">
+    <div class="tile"><span id="fsHour">00</span></div>
+    <span class="colon">:</span>
+    <div class="tile"><span id="fsMin">00</span></div>
+    <span class="colon">:</span>
+    <div class="tile"><span id="fsSec">00</span></div>
+  </div>
+</section>
+<!-- ==== End Flash Sale ===== -->
+
+<!-- ==== Băng rôn ===== -->
+<!-- Promo Banner (image) -->
+<div id="promoBar" class="promo-bar" role="region" aria-label="Khuyến mãi">
+  <div class="promo-wrap">
+    <a class="promo-img-link" href="/menu.html" aria-label="Xem ưu đãi">
+      <img
+        src="/img/bang_ron.png"
+        alt="Khai trương 30/09–01/10: Giảm 10% tổng bill hoặc tặng 2 lon nước"
+        loading="lazy" decoding="async" fetchpriority="low"
+        style="width:100%;height:auto;display:block;border-radius:12px;"
+      />
+    </a>
+  </div>
+</div>
+<!-- ==== End Băng rôn ===== -->
+
+  <section class="features">
+    <div class="card">
+      <div class="f-head">
+         <span class="f-ic"><i data-lucide="badge-check"></i></span>
+         <h3>Chất lượng</h3>
+      </div>
+      <p>Nguyên liệu tuyển chọn, chế biến sạch.</p>
+    </div>
+
+    <div class="card">
+      <div class="f-head">
+         <span class="f-ic"><i data-lucide="badge-check"></i></span>
+         <h3>Nhanh chóng</h3>
+      </div>  
+      <p>Đặt món online, giao hàng trong tích tắc.</p>
+    </div>
+    <div class="card">
+      <div class="f-head">
+         <span class="f-ic"><i data-lucide="badge-check"></i></span>
+         <h3>Giá hợp lý</h3>
+      </div>
+      <p>Combo tiết kiệm cho cả nhà.</p>
+    </div>
+    
+  </section>
+</main>
 
     <footer class="site-footer">
       <div class="wrap">
@@ -120,7 +226,6 @@
       </div>
     </footer>
     <script>
-      // set năm hiện tại + re-render icon Lucide cho footer
       (function () {
         try {
           const y = document.getElementById("y");
@@ -136,5 +241,81 @@
     </script>
     <script src="/js/utils.js"></script>
     <script src="/js/cart.js"></script>
+    <script src="/js/time.js"></script>
+    <!-- <script src="/js/ban_ron.js"></script> -->
+     
+ <script>
+document.addEventListener("DOMContentLoaded", () => {
+  const root = document.querySelector('.hero-image');
+  if (!root) return;
+
+  const slides = [...root.querySelectorAll('.slide')];
+  if (slides.length < 2) return;
+
+  let current = 0;
+  slides[current].classList.add("active");
+
+  const show = (i) => {
+    slides.forEach((s, idx) => {
+      s.classList.toggle("active", idx === i);
+    });
+  };
+
+  setInterval(() => {
+    current = (current + 1) % slides.length;
+    show(current);
+  }, 3000);
+});
+</script>
+<script>
+(() => {
+  const root = document.querySelector('.banner-carousel');
+  if (!root) return;
+
+  const viewport = root.querySelector('.bc-viewport');
+  const track    = root.querySelector('.bc-track');
+  const cards    = [...track.children];
+  const prevBtn  = root.querySelector('.bc-prev');
+  const nextBtn  = root.querySelector('.bc-next');
+
+  const gap = parseFloat(getComputedStyle(track).gap) || 0;
+
+  function step(dir = 1){
+    if (!cards.length) return;
+    const cardW = cards[0].getBoundingClientRect().width + gap;
+    viewport.scrollBy({ left: dir * cardW, behavior: 'smooth' });
+  }
+
+  prevBtn.addEventListener('click', () => step(-1));
+  nextBtn.addEventListener('click', () => step(1));
+
+  // Auto-play
+  let t = setInterval(() => step(1), 4000);
+  root.addEventListener('mouseenter', () => { clearInterval(t); });
+  root.addEventListener('mouseleave', () => { t = setInterval(() => step(1), 4000); });
+
+  // Drag/Swipe (desktop & mobile)
+  let startX = 0, startLeft = 0, dragging = false;
+  const onDown = (e) => {
+    dragging = true;
+    startX = (e.touches ? e.touches[0].clientX : e.clientX);
+    startLeft = viewport.scrollLeft;
+  };
+  const onMove = (e) => {
+    if (!dragging) return;
+    const x = (e.touches ? e.touches[0].clientX : e.clientX);
+    viewport.scrollLeft = startLeft - (x - startX);
+  };
+  const onUp = () => { dragging = false; };
+
+  viewport.addEventListener('mousedown', onDown);
+  viewport.addEventListener('mousemove', onMove);
+  window.addEventListener('mouseup', onUp);
+  viewport.addEventListener('touchstart', onDown, {passive:true});
+  viewport.addEventListener('touchmove', onMove, {passive:true});
+  viewport.addEventListener('touchend', onUp);
+})();
+</script>
+
   </body>
 </html>

@@ -4,6 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Menu - Nhi Nhi Quán</title>
+    <link rel="icon" type="image/png" sizes="16x16" href="/img/logo.jpg" />
     <link rel="stylesheet" href="/css/style.css" />
     <script src="https://unpkg.com/lucide@latest"></script>
   </head>
@@ -11,8 +12,10 @@
     <header>
       <div class="container">
         <div class="brand">
-          <div class="logo"></div>
-          <h1>Menu</h1>
+          <div class="logo">
+            <img src="/img/logo.jpg" alt="Nhi Nhi Quán" />
+          </div>
+          <h1>Hệ Thống Quay Nướng Gà Vịt Nhi Nhi</h1>
         </div>
         <nav class="primary">
           <a href="/"><i data-lucide="home"></i> Trang chủ</a>
@@ -29,9 +32,12 @@
         <button id="menuBtn" class="btn outline">
           <i data-lucide="menu"></i>
         </button>
-        <label class="switch"
-          ><input type="checkbox" id="themeSwitch" /><span>Light</span></label
-        >
+         <label class="switch">
+          <input type="checkbox" id="themeSwitch" />
+          <span class="icon">
+            <i data-lucide="sun"></i>
+          </span>
+        </label>
       </div>
       <aside id="drawer" class="drawer">
         <a href="/"><i data-lucide="home"></i> Trang chủ</a>
@@ -58,55 +64,54 @@
 
     <!-- Modal chi tiết món -->
     <div class="modal" id="itemModal" aria-hidden="true">
-      <div
-        class="sheet"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="mdTitle"
-      >
-        <button class="close" id="mdClose" aria-label="Đóng">×</button>
-        <div class="hero">
-          <div class="spinner" id="modalSpinner"></div>
-          <img id="mdImg" alt="" />
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="mdTitle">
+    <button class="close" id="mdClose" aria-label="Đóng">×</button>
+
+    <!-- Cột ảnh -->
+    <div class="modal-image">
+      <div class="spinner" id="modalSpinner"></div>
+      <img id="mdImg" alt="" />
+    </div>
+
+    <!-- Cột thông tin -->
+    <div class="body">
+      <h2 class="h2" id="mdTitle"></h2>
+      <div class="meta" id="mdCategory"></div>
+      <div id="mdDesc" class="description"></div>
+
+      <div class="section" id="mdMore" style="display: none">
+        <div class="kv" id="mdNuocChamRow" style="display: none">
+          <strong>Nước chấm</strong>
+          <div id="mdNuocCham"></div>
         </div>
-        <div class="body">
-          <h2 class="h2" id="mdTitle"></h2>
-          <div class="meta" id="mdCategory"></div>
-          <div id="mdDesc" class="description"></div>
+        <div class="kv" id="mdDoChuaRow" style="display: none">
+          <strong>Đồ chua</strong>
+          <div id="mdDoChua"></div>
+        </div>
+        <div class="kv" id="mdNoteRow" style="display: none">
+          <strong>Ghi chú</strong>
+          <div id="mdNote"></div>
+        </div>
+      </div>
 
-          <div class="section" id="mdMore" style="display: none">
-            <div class="kv" id="mdNuocChamRow" style="display: none">
-              <strong>Nước chấm</strong>
-              <div id="mdNuocCham"></div>
-            </div>
-            <div class="kv" id="mdDoChuaRow" style="display: none">
-              <strong>Đồ chua</strong>
-              <div id="mdDoChua"></div>
-            </div>
-            <div class="kv" id="mdNoteRow" style="display: none">
-              <strong>Ghi chú</strong>
-              <div id="mdNote"></div>
-            </div>
-          </div>
-
-          <div class="xbar">
-            <div class="price" id="mdPrice"></div>
-            <div class="quantity-control">
-              <button class="btn qty-btn" id="mdQtyDec">
-                <i data-lucide="minus"></i>
-              </button>
-              <span id="mdQtyDisplay">1</span>
-              <button class="btn qty-btn" id="mdQtyInc">
-                <i data-lucide="plus"></i>
-              </button>
-              <button class="btn primary" id="mdAddToCartBtn">
-                <i data-lucide="shopping-bag"></i> Thêm vào giỏ
-              </button>
-            </div>
-          </div>
+      <div class="xbar">
+        <div class="price" id="mdPrice"></div>
+        <div class="quantity-control">
+          <button class="btn qty-btn" id="mdQtyDec">
+            <i data-lucide="minus"></i>
+          </button>
+          <span id="mdQtyDisplay">1</span>
+          <button class="btn qty-btn" id="mdQtyInc">
+            <i data-lucide="plus"></i>
+          </button>
+          <button class="btn primary" id="mdAddToCartBtn">
+            <i data-lucide="shopping-bag"></i> Thêm vào giỏ
+          </button>
         </div>
       </div>
     </div>
+  </div>
+</div>
 
     <footer class="site-footer">
       <div class="wrap">

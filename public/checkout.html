@@ -5,14 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Thanh toán - Nhi Nhi Quán</title>
     <link rel="stylesheet" href="/css/style.css" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/img/logo.jpg" />
     <script src="https://unpkg.com/lucide@latest"></script>
   </head>
   <body>
     <header>
       <div class="container">
-        <div class="brand">
-          <div class="logo"></div>
-          <h1>Thanh toán</h1>
+       <div class="brand">
+          <div class="logo">
+            <img src="/img/logo.jpg" alt="Nhi Nhi Quán" />
+          </div>
+          <h1>Hệ Thống Quay Nướng Gà Vịt Nhi Nhi</h1>
         </div>
         <nav class="primary">
           <a href="/"><i data-lucide="home"></i> Trang chủ</a>
@@ -25,9 +28,13 @@
         <button id="menuBtn" class="btn outline">
           <i data-lucide="menu"></i>
         </button>
-        <label class="switch"
-          ><input type="checkbox" id="themeSwitch" /><span>Light</span></label
-        >
+        <label class="switch">
+          <input type="checkbox" id="themeSwitch" />
+          <span class="icon">
+            <i data-lucide="sun"></i>
+          </span>
+        </label>
+
       </div>
       <aside id="drawer" class="drawer">
         <a href="/"><i data-lucide="home"></i> Trang chủ</a>
