@@ -2269,3 +2269,73 @@ nav.primary a.active {
   text-align: center;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
 }
+/* ===== Cart badge (dùng chung) ===== */
+.cart-link {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+.cart-badge {
+  position: absolute;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  font-size: 12px;
+  line-height: 18px;
+  background: var(--accent);
+  color: #06140a;
+  font-weight: 700;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+
+/* Badge ở thanh nav chính (desktop) */
+nav.primary .cart-link {
+  padding-right: 8px;
+}
+nav.primary .cart-badge {
+  top: -6px;
+  right: -6px;
+}
+
+/* Badge trong drawer (mobile) */
+#drawer a.cart-link {
+  position: relative;
+  display: block;
+  padding-right: 42px; /* chừa chỗ cho badge */
+}
+#drawer a.cart-link .cart-badge {
+  top: 50%;
+  right: 14px;
+  transform: translateY(-50%);
+}
+/* Cart icon luôn hiển thị */
+header .cart-link {
+  margin-left: 12px;
+  display: inline-flex !important;
+  align-items: center;
+  position: relative;
+}
+
+header .cart-link .cart-badge {
+  position: absolute;
+  top: -6px;
+  right: -8px;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 700;
+  font-size: 12px;
+  border-radius: 999px;
+  padding: 2px 6px;
+  min-width: 18px;
+  text-align: center;
+  line-height: 1;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+
+@media (max-width: 760px) {
+  /* khi mobile, nav ẩn nhưng cart vẫn hiện bên phải */
+  header .cart-link {
+    margin-left: auto;
+  }
+}

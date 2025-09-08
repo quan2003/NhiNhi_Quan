@@ -23,28 +23,26 @@
             ><i data-lucide="home"></i> Trang chủ</a
           >
           <a href="menu.html"><i data-lucide="utensils-crossed"></i> Menu</a>
-          <a href="checkout.html"
-            ><i data-lucide="shopping-cart"></i> Giỏ hàng</a
-          >
           <a href="track.html"><i data-lucide="search"></i> Theo dõi đơn</a>
         </nav>
 
+        <!-- icon menu -->
         <button id="menuBtn" class="btn outline" aria-label="menu">
           <i data-lucide="menu"></i>
         </button>
 
+        <!-- icon giỏ hàng (luôn hiển thị) -->
+        <a href="/checkout.html" class="cart-link" aria-label="Giỏ hàng">
+          <i data-lucide="shopping-cart"></i>
+          <span id="cartBadge" class="cart-badge">0</span>
+        </a>
+
+        <!-- công tắc -->
         <label class="switch">
           <input type="checkbox" id="themeSwitch" />
           <span class="icon"><i data-lucide="sun"></i></span>
         </label>
       </div>
-
-      <aside id="drawer" class="drawer" aria-hidden="true">
-        <a href="index.html"><i data-lucide="home"></i> Trang chủ</a>
-        <a href="menu.html"><i data-lucide="utensils-crossed"></i> Xem Menu</a>
-        <a href="checkout.html"><i data-lucide="shopping-cart"></i> Giỏ hàng</a>
-        <a href="track.html"><i data-lucide="search"></i> Theo dõi đơn</a>
-      </aside>
     </header>
 
     <!-- <main class="container">

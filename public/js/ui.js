@@ -134,3 +134,23 @@ export function hideSpinner() {
 
 /* Expose to other scripts without import */
 window.__ui = { toast, showSpinner, hideSpinner };
+import { getCartCount } from "./cart.js";
+
+function updateCartBadge() {
+  const count = getCartCount();
+  const el1 = document.getElementById("cartBadge");
+  const el2 = document.getElementById("cartBadgeDrawer");
+  if (el1) el1.textContent = count;
+  if (el2) el2.textContent = count;
+}
+
+// chạy ngay khi load
+updateCartBadge();
+
+// nếu muốn auto cập nhật khi storage thay đổi (đa tab)
+window.addEventListener("storage", (e) => {
+  if (e.key === "cart_v1") updateCartBadge();
+});
+
+// expose cho chỗ khác gọi khi thêm/xoá giỏ hàng
+window.__ui.updateCartBadge = updateCartBadge;
