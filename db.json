@@ -37,13 +37,62 @@
       "updatedAt": "2025-09-08T03:08:11.423Z"
     }
   ],
-  "orders": [],
+  "orders": [
+    {
+      "id": "8BDBD-VIYDGR",
+      "status": "NEW",
+      "customer": {
+        "name": "Russel Tromp",
+        "phone": "0336440523",
+        "address": "Thon A Dong"
+      },
+      "paymentMethod": "COD",
+      "items": [
+        {
+          "productId": "GA-NC",
+          "name": "Gà nướng mắm nhĩ",
+          "priceSell": 159000,
+          "priceCost": 145000,
+          "qty": 1
+        }
+      ],
+      "subtotal": 159000,
+      "discount": 15900,
+      "total": 143100,
+      "costTotal": 145000,
+      "profit": -1900,
+      "promoSnapshot": {
+        "active": true,
+        "percent": 10
+      },
+      "meta": {
+        "orderType": "TAKEAWAY",
+        "tableNumber": "",
+        "guests": 0,
+        "scheduleAt": null,
+        "note": ""
+      },
+      "createdAt": "2025-09-08T12:44:10.690Z"
+    }
+  ],
   "settings": {
     "promo": {
       "enabled": true,
       "percent": 10,
       "start": null,
       "end": null
+    },
+    "push": {
+      "subscriptions": [
+        {
+          "endpoint": "https://fcm.googleapis.com/fcm/send/cBtvAVjHXeU:APA91bEIojE3Wij3xz8uZCUFEcDbKGJrHMpzRzR253XxLwtszuysg4c-DT90vWzwtIAzDqN2-QvNGZe-0_5OW5nNgdygtUhVFSwwmpf84AngPEZFxBpXnVGa6PKsyPzdb4Qhuz_JDoHd",
+          "expirationTime": null,
+          "keys": {
+            "p256dh": "BFgy7Fj9OKG2eJ4ccb63NQubq-fHlcgmt1oc8J9woB8qAthwoOAj28LsHKtdxDFgUtYQrFe_OQ1Zgbfhx7K49tE",
+            "auth": "FIFe9pIOBIxkIUKjmdbrFw"
+          }
+        }
+      ]
     }
   }
 }

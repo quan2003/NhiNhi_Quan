@@ -1,3 +1,4 @@
+// server.js
 import express from "express";
 import cors from "cors";
 import fs from "fs/promises";
@@ -6,6 +7,7 @@ import { fileURLToPath } from "url";
 import { nanoid } from "nanoid";
 import dotenv from "dotenv";
 import multer from "multer";
+import webpush from "web-push"; // <— Web Push
 
 dotenv.config();
 
@@ -21,6 +23,18 @@ const BANK_NAME = process.env.BANK_NAME || "BVBank";
 const BANK_ACCOUNT_NAME = process.env.BANK_ACCOUNT_NAME || "TRUONG LUU QUAN";
 const BANK_ACCOUNT_NUMBER = process.env.BANK_ACCOUNT_NUMBER || "0336440523";
 const VIETQR_IMAGE = process.env.VIETQR_IMAGE || "/img/vietqr.png";
+
+const VAPID_PUBLIC = process.env.VAPID_PUBLIC || "";
+const VAPID_PRIVATE = process.env.VAPID_PRIVATE || "";
+const VAPID_SUBJECT = process.env.VAPID_SUBJECT || "mailto:admin@example.com";
+
+// Cấu hình web-push (nếu có key)
+if (VAPID_PUBLIC && VAPID_PRIVATE) {
+  webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC, VAPID_PRIVATE);
+  console.log("Web Push: VAPID configured");
+} else {
+  console.warn("Web Push: VAPID_PUBLIC/PRIVATE not set — push disabled");
+}
 
 const DB_FILE = path.join(__dirname, "db.json");
 
@@ -60,17 +74,19 @@ async function readDB() {
     const db = JSON.parse(raw);
     if (!db.products) db.products = [];
     if (!db.orders) db.orders = [];
-    if (!db.settings) {
-      db.settings = {
-        promo: { enabled: false, percent: 0, start: null, end: null },
-      };
-    } else if (!db.settings.promo) {
+    if (!db.settings) db.settings = {};
+    if (!db.settings.promo) {
       db.settings.promo = {
         enabled: false,
         percent: 0,
         start: null,
         end: null,
       };
+    }
+    if (!db.settings.push) {
+      db.settings.push = { subscriptions: [] };
+    } else if (!Array.isArray(db.settings.push.subscriptions)) {
+      db.settings.push.subscriptions = [];
     }
     return db;
   } catch {
@@ -79,6 +95,7 @@ async function readDB() {
       orders: [],
       settings: {
         promo: { enabled: false, percent: 0, start: null, end: null },
+        push: { subscriptions: [] },
       },
     };
   }
@@ -209,7 +226,7 @@ app.post("/api/products", requireAdmin, async (req, res) => {
     return res.status(400).json({ error: "Thiếu trường bắt buộc" });
   const db = await readDB();
   const p = {
-    id: nanoid(10).toUpperCase(), // <— chuẩn hoá id sản phẩm (tuỳ chọn)
+    id: nanoid(10).toUpperCase(),
     name,
     category: category || "Khác",
     priceSell: +priceSell,
@@ -252,6 +269,121 @@ app.delete("/api/products/:id", requireAdmin, async (req, res) => {
 const AllowedStatus = ["NEW", "IN_PROGRESS", "COMPLETED", "CANCELED"];
 const AllowedOrderTypes = ["TAKEAWAY", "TAKE_AWAY", "DINE_IN", "RESERVE"];
 
+// ---- Web Push helpers ----
+async function addPushSubscription(sub) {
+  if (!VAPID_PUBLIC || !VAPID_PRIVATE) return; // disabled
+  const db = await readDB();
+  const list = db.settings.push.subscriptions || [];
+  if (!list.find((x) => x?.endpoint === sub?.endpoint)) {
+    list.push(sub);
+    db.settings.push.subscriptions = list;
+    await writeDB(db);
+  }
+}
+async function removePushSubscription(endpoint) {
+  const db = await readDB();
+  const list = db.settings.push.subscriptions || [];
+  db.settings.push.subscriptions = list.filter((x) => x?.endpoint !== endpoint);
+  await writeDB(db);
+}
+async function sendPushToAll(payload) {
+  if (!VAPID_PUBLIC || !VAPID_PRIVATE) return;
+  const db = await readDB();
+  const list = db.settings.push.subscriptions || [];
+  if (!list.length) return;
+  const dead = [];
+  await Promise.all(
+    list.map(async (sub) => {
+      try {
+        await webpush.sendNotification(sub, JSON.stringify(payload));
+      } catch (e) {
+        if (e?.statusCode === 404 || e?.statusCode === 410) {
+          dead.push(sub?.endpoint);
+        } else {
+          console.warn("Push error:", e?.statusCode, e?.message);
+        }
+      }
+    })
+  );
+  if (dead.length) {
+    db.settings.push.subscriptions = list.filter(
+      (x) => !dead.includes(x?.endpoint)
+    );
+    await writeDB(db);
+  }
+}
+
+// ---- Push routes ----
+app.get("/api/push/publicKey", requireAdmin, (_req, res) => {
+  res.json({ publicKey: VAPID_PUBLIC || "" });
+});
+app.post("/api/push/subscribe", requireAdmin, async (req, res) => {
+  try {
+    await addPushSubscription(req.body);
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+app.post("/api/push/unsubscribe", requireAdmin, async (req, res) => {
+  try {
+    await removePushSubscription(req.body?.endpoint);
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+app.post("/api/push/test", requireAdmin, async (_req, res) => {
+  await sendPushToAll({
+    type: "test",
+    notification: {
+      title: "🔔 Test thông báo",
+      body: "Bạn vừa bật Web Push thành công!",
+      data: {},
+    },
+  });
+  res.json({ ok: true });
+});
+
+// ==== SSE: stream đơn mới cho trang admin (auth qua query token) ====
+const sseClients = new Set();
+
+app.get("/api/orders/stream", (req, res) => {
+  const qtoken = req.query.token;
+  if (!qtoken || qtoken !== ADMIN_TOKEN) return res.sendStatus(401);
+
+  res.writeHead(200, {
+    "Content-Type": "text/event-stream",
+    "Cache-Control": "no-cache",
+    Connection: "keep-alive",
+  });
+  res.write(`event: ping\ndata: ${Date.now()}\n\n`);
+
+  const client = { res };
+  sseClients.add(client);
+
+  const keep = setInterval(() => {
+    try {
+      res.write(`event: ping\ndata: ${Date.now()}\n\n`);
+    } catch {}
+  }, 25000);
+
+  req.on("close", () => {
+    clearInterval(keep);
+    sseClients.delete(client);
+  });
+});
+
+function sseBroadcast(data) {
+  const payload = `data: ${JSON.stringify(data)}\n\n`;
+  for (const { res } of sseClients) {
+    try {
+      res.write(payload);
+    } catch {}
+  }
+}
+
+// ===== Create Order =====
 app.post("/api/orders", async (req, res) => {
   const { customer, items, paymentMethod, meta } = req.body || {};
   if (
@@ -305,7 +437,7 @@ app.post("/api/orders", async (req, res) => {
       .json({ error: "RESERVE cần thời gian đến (scheduleAt)" });
 
   const order = {
-    id: nanoid(12).toUpperCase(), // <— chuẩn hoá id HOÁ ĐƠN lên uppercase
+    id: nanoid(12).toUpperCase(),
     status: "NEW",
     customer: {
       name: customer.name,
@@ -332,6 +464,29 @@ app.post("/api/orders", async (req, res) => {
 
   db.orders.unshift(order);
   await writeDB(db);
+
+  // Realtime cho trang admin
+  sseBroadcast({ type: "new_order", order });
+
+  // Gửi push (không chặn phản hồi nếu lỗi)
+  (async () => {
+    try {
+      const totalVnd = (order.total || 0).toLocaleString("vi-VN") + "₫";
+      await sendPushToAll({
+        type: "new_order",
+        notification: {
+          title: "Đơn mới!",
+          body: `Mã: ${order.id}\nTổng: ${totalVnd}\n${
+            order?.customer?.name || ""
+          }`,
+          data: { orderId: order.id },
+        },
+      });
+    } catch (e) {
+      console.warn("sendPushToAll error:", e?.message);
+    }
+  })();
+
   res.json({
     ok: true,
     orderId: order.id,
@@ -341,6 +496,7 @@ app.post("/api/orders", async (req, res) => {
   });
 });
 
+// ===== Query Orders =====
 app.get("/api/orders", requireAdmin, async (req, res) => {
   const { status, page = 1, pageSize = 10 } = req.query;
   const db = await readDB();
@@ -361,12 +517,13 @@ app.get("/api/orders", requireAdmin, async (req, res) => {
   });
 });
 
+// ===== Update/Delete/Tracking/Reports (giữ nguyên) =====
 app.put("/api/orders/:id", requireAdmin, async (req, res) => {
   const { status } = req.body || {};
   if (status && !AllowedStatus.includes(status))
     return res.status(400).json({ error: "Trạng thái không hợp lệ" });
   const db = await readDB();
-  const idx = db.orders.findIndex((o) => sameId(o.id, req.params.id)); // <—
+  const idx = db.orders.findIndex((o) => sameId(o.id, req.params.id));
   if (idx === -1) return res.status(404).json({ error: "Not found" });
   db.orders[idx] = {
     ...db.orders[idx],
@@ -379,17 +536,16 @@ app.put("/api/orders/:id", requireAdmin, async (req, res) => {
 
 app.delete("/api/orders/:id", requireAdmin, async (req, res) => {
   const db = await readDB();
-  const idx = db.orders.findIndex((o) => sameId(o.id, req.params.id)); // <—
+  const idx = db.orders.findIndex((o) => sameId(o.id, req.params.id));
   if (idx === -1) return res.status(404).json({ error: "Not found" });
   const removed = db.orders.splice(idx, 1)[0];
   await writeDB(db);
   res.json({ ok: true, removedId: removed.id });
 });
 
-// ===== Tracking (public) =====
 app.get("/api/orders/public/:id", async (req, res) => {
   const db = await readDB();
-  const o = db.orders.find((x) => sameId(x.id, req.params.id)); // <—
+  const o = db.orders.find((x) => sameId(x.id, req.params.id));
   if (!o) return res.status(404).json({ error: "Không tìm thấy đơn" });
   res.json({
     id: o.id,
@@ -412,7 +568,7 @@ app.get("/api/orders/lookup", async (req, res) => {
   const { id, phone } = req.query || {};
   if (!id || !phone) return res.status(400).send("Missing id or phone");
   const db = await readDB();
-  const o = db.orders.find((x) => sameId(x.id, id)); // <—
+  const o = db.orders.find((x) => sameId(x.id, id));
   if (!o) return res.status(404).send("Order not found");
   if (last4(o.customer?.phone) !== String(phone).slice(-4))
     return res.status(403).send("Phone tail mismatch");
@@ -438,7 +594,7 @@ app.delete("/api/orders/guest/:id", async (req, res) => {
   const { phone } = req.query || {};
   if (!id || !phone) return res.status(400).send("Missing id or phone");
   const db = await readDB();
-  const idx = db.orders.findIndex((x) => sameId(x.id, id)); // <—
+  const idx = db.orders.findIndex((x) => sameId(x.id, id));
   if (idx === -1) return res.status(404).send("Order not found");
   const o = db.orders[idx];
   if (last4(o.customer?.phone) !== String(phone).slice(-4))
@@ -452,7 +608,6 @@ app.delete("/api/orders/guest/:id", async (req, res) => {
   res.json({ id: o.id, status: o.status });
 });
 
-// ===== Reports =====
 app.get("/api/reports/daily", requireAdmin, async (req, res) => {
   const { from, to } = req.query;
   const db = await readDB();
