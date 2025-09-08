@@ -98,7 +98,15 @@ function isPromoActive(promo) {
 }
 function maskPhone(p) {
   if (!p) return "";
-  return "****" + p.slice(-4);
+  const digits = String(p).replace(/\D/g, "");
+  return digits.length <= 4
+    ? digits
+    : "•".repeat(Math.max(0, digits.length - 4)) + digits.slice(-4);
+}
+function last4(p) {
+  if (!p) return "";
+  const digits = String(p).replace(/\D/g, "");
+  return digits.slice(-4);
 }
 function dstr(d) {
   const y = d.getFullYear(),
@@ -253,7 +261,8 @@ app.delete("/api/products/:id", requireAdmin, async (req, res) => {
 
 // ===== Orders =====
 const AllowedStatus = ["NEW", "IN_PROGRESS", "COMPLETED", "CANCELED"];
-const AllowedOrderTypes = ["TAKEAWAY", "DINE_IN", "RESERVE"];
+// Chấp nhận cả TAKEAWAY và TAKE_AWAY để tương thích FE
+const AllowedOrderTypes = ["TAKEAWAY", "TAKE_AWAY", "DINE_IN", "RESERVE"];
 
 app.post("/api/orders", async (req, res) => {
   const { customer, items, paymentMethod, meta } = req.body || {};
@@ -302,7 +311,9 @@ app.post("/api/orders", async (req, res) => {
 
   // Meta loại đơn
   const m = meta || {};
-  const orderType = (m.orderType || "TAKEAWAY").toUpperCase();
+  let orderType = (m.orderType || "TAKEAWAY").toUpperCase();
+  // normalize: thay dấu gạch nối thành gạch dưới (nếu có)
+  orderType = orderType.replace("-", "_");
   if (!AllowedOrderTypes.includes(orderType))
     return res.status(400).json({ error: "orderType không hợp lệ" });
   if (orderType === "RESERVE" && !m.scheduleAt) {
@@ -353,7 +364,7 @@ app.get("/api/orders", requireAdmin, async (req, res) => {
   const db = await readDB();
   let list = [...db.orders];
   if (status) {
-    const s = status.toUpperCase();
+    const s = String(status).toUpperCase();
     if (AllowedStatus.includes(s)) list = list.filter((o) => o.status === s);
   }
   const p = Math.max(1, parseInt(page));
@@ -390,6 +401,7 @@ app.delete("/api/orders/:id", requireAdmin, async (req, res) => {
 });
 
 // ===== Tracking (public) =====
+// 1) Endpoint public hiện có (vẫn giữ nguyên)
 app.get("/api/orders/public/:id", async (req, res) => {
   const db = await readDB();
   const o = db.orders.find((x) => x.id === req.params.id);
@@ -409,6 +421,63 @@ app.get("/api/orders/public/:id", async (req, res) => {
     meta: o.meta || {},
     itemCount: (o.items || []).reduce((s, i) => s + (i.qty || 0), 0),
   });
+});
+
+// 2) Endpoint mà track.js đang gọi: /api/orders/lookup?id=...&phone=0523
+app.get("/api/orders/lookup", async (req, res) => {
+  const { id, phone } = req.query || {};
+  if (!id || !phone) {
+    return res.status(400).send("Missing id or phone");
+  }
+  const db = await readDB();
+  const o = db.orders.find((x) => x.id === String(id));
+  if (!o) return res.status(404).send("Order not found");
+
+  // so khớp 4 số cuối
+  if (last4(o.customer?.phone) !== String(phone).slice(-4)) {
+    return res.status(403).send("Phone tail mismatch");
+  }
+
+  res.json({
+    id: o.id,
+    status: o.status,
+    total: o.total,
+    discount: o.discount || 0,
+    subtotal: o.subtotal ?? o.total,
+    paymentMethod: o.paymentMethod,
+    createdAt: o.createdAt,
+    customer: {
+      name: o.customer?.name || "",
+      phoneMasked: maskPhone(o.customer?.phone || ""),
+    },
+    meta: o.meta || {},
+    items: o.items || [],
+  });
+});
+
+// 3) Endpoint để khách hủy: /api/orders/guest/:id?phone=0523
+app.delete("/api/orders/guest/:id", async (req, res) => {
+  const { id } = req.params;
+  const { phone } = req.query || {};
+  if (!id || !phone) {
+    return res.status(400).send("Missing id or phone");
+  }
+  const db = await readDB();
+  const idx = db.orders.findIndex((x) => x.id === String(id));
+  if (idx === -1) return res.status(404).send("Order not found");
+
+  const o = db.orders[idx];
+  if (last4(o.customer?.phone) !== String(phone).slice(-4)) {
+    return res.status(403).send("Phone tail mismatch");
+  }
+  if (o.status !== "NEW") {
+    return res.status(409).send("Order cannot be canceled");
+  }
+  o.status = "CANCELED";
+  o.updatedAt = new Date().toISOString();
+  db.orders[idx] = o;
+  await writeDB(db);
+  res.json({ id: o.id, status: o.status });
 });
 
 // ===== Reports (bỏ qua CANCELED) =====

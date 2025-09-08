@@ -394,11 +394,16 @@
 
     <script type="module">
       import { initUI } from "/js/ui.js";
+      // Nếu cần chạy time.js (không export gì), có 2 cách:
+      // (A) Chuyển time.js thành module và import:
+      // import "/js/time.js";
+      // (B) Giữ lại một thẻ script thường ngay dưới (xem phần 2).
       initUI();
     </script>
-    <script src="/js/utils.js"></script>
-    <script src="/js/cart.js"></script>
+
+    <!-- Giữ lại TH script thường CHỈ khi time.js không phải module -->
     <script src="/js/time.js"></script>
+
     <!-- <script src="/js/ban_ron.js"></script> -->
 
     <script>
