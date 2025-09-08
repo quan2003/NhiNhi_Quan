@@ -11,7 +11,7 @@
   <body>
     <header>
       <div class="container">
-       <div class="brand">
+        <div class="brand">
           <div class="logo">
             <img src="/img/logo.jpg" alt="Nhi Nhi Quán" />
           </div>
@@ -34,7 +34,6 @@
             <i data-lucide="sun"></i>
           </span>
         </label>
-
       </div>
       <aside id="drawer" class="drawer">
         <a href="/"><i data-lucide="home"></i> Trang chủ</a>
@@ -223,21 +222,30 @@
     </main>
 
     <footer class="site-footer">
-      <div class="wrap">
-        <section>
+      <div class="footer-wrap container">
+        <!-- Cột 1: Logo + Liên hệ -->
+        <section class="footer-brand">
           <div class="brandline">
-            <span class="dot"></span>
-            <h4 style="margin: 0">Nhi Nhi Quán</h4>
+            <img
+              class="footer-logo"
+              src="/img/logo.jpg"
+              alt="Hệ Thống Quay Nướng Gà Vị Nhi Nhin"
+            />
+            <div>
+              <h4 class="footer-title">Hệ Thống Quay Nướng Gà Vị Nhi Nhi</h4>
+              <p class="footer-tag">Gà nướng mắm nhĩ · Vịt quay ngũ vị</p>
+            </div>
           </div>
-          <div class="contact-list">
-            <div class="contact-item">
+
+          <ul class="contact-list">
+            <li class="contact-item">
               <i data-lucide="phone"></i>
               <div>
                 <div>Liên hệ đặt món</div>
                 <a href="tel:0906919019"><b>0906.919.019</b></a>
               </div>
-            </div>
-            <div class="contact-item">
+            </li>
+            <li class="contact-item">
               <i data-lucide="map-pin"></i>
               <div>
                 <div>Địa chỉ</div>
@@ -246,28 +254,53 @@
                   target="_blank"
                   rel="noopener"
                 >
-                  63 Tôn Đức Thắng, Tam Kỳ, Quảng Nam
+                  <b
+                    >63 Tôn Đức Thắng, Phường An Sơn, Tam Kỳ, Quảng Nam, Việt
+                    Nam</b
+                  >
                 </a>
               </div>
-            </div>
-            <div class="contact-item">
+            </li>
+            <li class="contact-item">
               <i data-lucide="clock-3"></i>
-              <div>Mở cửa hàng ngày · Giao nhanh nội thành</div>
-            </div>
-          </div>
+              <div>Mở cửa hằng ngày · Giao nhanh nội thành</div>
+            </li>
+          </ul>
         </section>
 
-        <section class="map-card">
+        <!-- Cột 2: Giờ mở cửa / Liên kết nhanh -->
+        <section class="footer-hours">
+          <h5>Giờ mở cửa</h5>
+          <ul class="hours">
+            <li>Thứ 2 – Chủ nhật: <b>10:00 – 21:00</b></li>
+          </ul>
+
+          <h5 style="margin-top: 14px">Liên kết nhanh</h5>
+          <nav class="quick-links">
+            <a href="/menu.html"><i data-lucide="chef-hat"></i> Xem menu</a>
+            <a href="/checkout.html"
+              ><i data-lucide="shopping-cart"></i> Giỏ hàng</a
+            >
+            <a href="/track.html"><i data-lucide="search"></i> Theo dõi đơn</a>
+          </nav>
+        </section>
+
+        <!-- Cột 3: Bản đồ -->
+        <section class="map-card" aria-label="Bản đồ">
           <iframe
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3843.5859619646344!2d108.49100927828695!3d15.560311046494757!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3169dd004e338171%3A0xa99a1decfeb7cca0!2zSOG7hyBUaOG7kW5nIFF1YXkgTsaw4bubbmcgR8OgIFbhu4t0IE5oaSBOaGk!5e0!3m2!1svi!2sus!4v1757264543675!5m2!1svi!2sus"
+            width="600"
+            height="450"
+            style="border: 0"
+            allowfullscreen=""
             loading="lazy"
             referrerpolicy="no-referrer-when-downgrade"
-            src="https://www.google.com/maps?q=63+T%C3%B4n+%C4%Đ%E1%BB%A9c+Th%E1%BA%AFng,+Tam+K%E1%BB%B3,+Qu%E1%BA%A3ng+Nam&output=embed"
           ></iframe>
         </section>
       </div>
 
       <div class="footer-bar">
-        © <span id="y"></span> Nhi Nhi Quán · Made with ❤️
+        © <span id="y"></span> Nhi Nhi · Made with luuquancoder
       </div>
     </footer>
     <script>
