@@ -1676,3 +1676,136 @@ label {
     width: 54px;
   }
 }
+/* ===== Backdrop & no-scroll cho Drawer ===== */
+.drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+  z-index: 59; /* thấp hơn drawer (60) của bạn */
+}
+.drawer-backdrop.show {
+  opacity: 1;
+  visibility: visible;
+}
+.no-scroll {
+  overflow: hidden;
+}
+
+/* ===== Sửa light theme bị “nền trắng chữ trắng” (không đổi biến) ===== */
+/* Hero đang set color: #fff; -> khi light thì override về var(--text) */
+:root.theme-light .hero,
+:root.theme-light .hero .cta-row,
+:root.theme-light .hero .sub-note {
+  color: var(--text);
+}
+
+/* Đảm bảo icon/nav trong header theo màu chữ hiện hành */
+:root.theme-light header,
+:root.theme-light header .container,
+:root.theme-light nav.primary a {
+  color: var(--text);
+}
+
+/* Drawer link nền theo surface ở light để luôn tương phản tốt */
+@media (max-width: 760px) {
+  :root.theme-light .drawer {
+    background: var(--surface);
+  }
+  :root.theme-light .drawer a {
+    background: var(--surface);
+    color: var(--text);
+  }
+}
+
+/* Nút switch có nền nhạt ở light để không “trắng trên trắng” */
+:root.theme-light .switch {
+  background: rgba(0, 0, 0, 0.06);
+  border-color: var(--border);
+}
+
+/* Các button outline luôn đọc được ở light */
+:root.theme-light .btn.outline {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: transparent;
+}
+/* ===== Drawer: bỏ nền trắng cứng, dùng màu theo theme ===== */
+@media (max-width: 760px) {
+  .drawer {
+    background: var(--surface) !important;
+    color: var(--text) !important;
+  }
+  .drawer a {
+    background: var(--surface) !important; /* fix nền trắng */
+    color: var(--text) !important;
+    border-bottom: 1px solid var(--border) !important;
+  }
+}
+/* Backdrop tối vừa đủ */
+.drawer-backdrop {
+  background: rgba(0, 0, 0, 0.45);
+}
+
+/* ===== Hero ở Light: bỏ chữ trắng cố định ===== */
+:root.theme-light .hero,
+:root.theme-light .hero *:not(img):not(svg) {
+  color: var(--text) !important;
+}
+/* Nút phụ trong hero ở Light luôn đọc được */
+:root.theme-light .hero .btn.btn-ghost {
+  color: var(--text) !important;
+  border-color: color-mix(in srgb, var(--text) 30%, var(--border)) !important;
+}
+
+/* ===== Header ở Light: đảm bảo tương phản chữ/icon ===== */
+:root.theme-light header {
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.95),
+    rgba(255, 255, 255, 0.8)
+  ) !important;
+}
+:root.theme-light header .container,
+:root.theme-light nav.primary a {
+  color: var(--text) !important;
+}
+
+/* ===== Icon lucide luôn theo màu chữ hiện hành ===== */
+.lucide {
+  stroke: currentColor;
+}
+
+/* Khóa cuộn khi mở drawer (đã dùng trong JS) */
+.no-scroll {
+  overflow: hidden;
+}
+/* Chỉ ép chữ tối cho hero KHÔNG phải on-dark */
+:root.theme-light .hero:not(.on-dark),
+:root.theme-light .hero:not(.on-dark) *:not(img):not(svg) {
+  color: var(--text) !important;
+}
+
+/* Hero nền tối: luôn dùng chữ trắng kể cả Light */
+:root.theme-light .hero.on-dark,
+:root.theme-light .hero.on-dark *:not(img):not(svg) {
+  color: #fff !important;
+}
+
+/* Nút phụ trên nền tối (Light) – tương phản rõ */
+:root.theme-light .hero.on-dark .btn.btn-ghost {
+  color: #fff !important;
+  border-color: rgba(255, 255, 255, 0.6) !important;
+  background: rgba(0, 0, 0, 0.35) !important;
+}
+:root.theme-light .hero.on-dark .btn.btn-ghost:hover {
+  background: rgba(0, 0, 0, 0.45) !important;
+  border-color: rgba(255, 255, 255, 0.75) !important;
+}
+
+/* Đảm bảo icon theo màu chữ hiện hành */
+.hero.on-dark .lucide {
+  stroke: currentColor;
+}
