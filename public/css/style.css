@@ -180,7 +180,7 @@ body {
 header {
   position: sticky;
   top: 0;
-  z-index: 50;
+  z-index: 120; /* <-- tăng từ 50 lên 120 */
   border-bottom: 1px solid var(--border);
   backdrop-filter: blur(12px);
   background: linear-gradient(
@@ -189,6 +189,7 @@ header {
     rgba(15, 17, 21, 0.7)
   );
 }
+
 :root.theme-light header {
   background: linear-gradient(
     to bottom,
@@ -2036,3 +2037,235 @@ nav.primary a.active {
   }
 }
 /* ===== END Fieldset: Phương thức thanh toán ===== */
+/* Backdrop chỉ nhận click khi mở, tránh che menu */
+.drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+  z-index: 49 !important; /* < 50 của header */
+}
+.drawer-backdrop.show {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+/* Drawer trên cùng mọi thứ */
+@media (max-width: 760px) {
+  .drawer {
+    position: fixed;
+    inset: 0 0 0 auto;
+    width: min(85%, 320px);
+    background: var(--surface);
+    border-left: 1px solid var(--border);
+    transform: translateX(100%);
+    transition: transform 0.3s ease-in-out;
+    z-index: 130; /* <-- tăng từ 60 lên 130 */
+    box-shadow: var(--shadow);
+  }
+  .drawer.open {
+    transform: none;
+  }
+  .drawer a {
+    display: block;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+    text-decoration: none;
+    background: var(--surface);
+    position: relative;
+    z-index: 1; /* chắc chắn trên backdrop */
+    pointer-events: auto;
+  }
+}
+
+/* Backdrop chỉ bắt click khi show */
+.drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+  z-index: 9999; /* ngay dưới drawer */
+}
+.drawer-backdrop.show {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+/* Khóa cuộn khi mở drawer */
+.no-scroll {
+  overflow: hidden;
+}
+/* ===== Toast ===== */
+#toastHost {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 9999;
+  pointer-events: none; /* để click xuyên qua ngoài khối */
+}
+
+.toast {
+  pointer-events: auto;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 10px;
+  min-width: 280px;
+  max-width: min(92vw, 420px);
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-left: 5px solid var(--info);
+  padding: 12px 12px 12px 10px;
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+  transform: translateY(10px);
+  opacity: 0;
+  animation: toastIn 160ms ease-out forwards;
+}
+
+.toast.leaving {
+  animation: toastOut 160ms ease-in forwards;
+}
+
+.toast .t-icon i {
+  width: 22px;
+  height: 22px;
+}
+
+.toast .t-content {
+  line-height: 1.35;
+}
+.toast .t-title {
+  font-weight: 700;
+  margin-bottom: 3px;
+}
+.toast .t-message {
+  color: var(--muted);
+}
+
+.toast .t-close {
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  border-radius: 8px;
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.toast .t-close:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.toast.success {
+  border-left-color: var(--accent);
+}
+.toast.error {
+  border-left-color: var(--danger);
+}
+.toast.warning {
+  border-left-color: var(--warning);
+}
+.toast.info {
+  border-left-color: var(--info);
+}
+
+@keyframes toastIn {
+  from {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+@keyframes toastOut {
+  from {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+}
+
+/* Mobile: chuyển lên trên để tránh đè nút */
+@media (max-width: 640px) {
+  #toastHost {
+    right: 12px;
+    left: 12px;
+    bottom: auto;
+    top: 12px;
+  }
+  .toast {
+    max-width: 100%;
+  }
+}
+#cartCount {
+  background: var(--accent);
+  color: #fff;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  margin-left: 4px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+  min-width: 20px;
+  text-align: center;
+  display: inline-block;
+}
+/* Căn icon ngang hàng với chữ trong các nút */
+.menu-card .foot .btn {
+  display: inline-flex; /* đảm bảo dùng flex */
+  align-items: center; /* căn giữa theo trục dọc */
+  gap: 8px; /* khoảng cách icon - text */
+  line-height: 1; /* tránh icon bị lệch do line-height */
+}
+
+/* Lucide sẽ thay <i> bằng <svg> class="lucide" */
+.menu-card .foot .btn i,
+.menu-card .foot .btn svg,
+.menu-card .foot .btn .lucide {
+  width: 18px;
+  height: 18px;
+  display: block; /* tránh baseline làm lệch */
+  flex: 0 0 18px;
+}
+.cart-link {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cart-badge {
+  position: absolute;
+  top: -6px; /* đẩy lên trên */
+  right: -10px; /* đẩy sang phải */
+  background: #e53e3e; /* đỏ */
+  color: #fff;
+  font-weight: 700;
+  font-size: 12px;
+  border-radius: 999px;
+  padding: 2px 6px;
+  line-height: 1;
+  min-width: 18px;
+  text-align: center;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+}

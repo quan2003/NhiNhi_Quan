@@ -5,6 +5,15 @@ import { addToCart, getCartCount } from "./cart.js";
 const listEl = qs("#menuList");
 const filterEl = qs("#filterCategory");
 const cartCountEl = document.getElementById("cartCount");
+const cartBadge = document.getElementById("cartBadge");
+
+function updateCartBadge() {
+  if (cartBadge) {
+    const n = getCartCount();
+    cartBadge.textContent = n;
+    cartBadge.style.display = n > 0 ? "inline-block" : "none";
+  }
+}
 
 // ===== Modal refs =====
 const modal = qs("#itemModal");
@@ -93,8 +102,9 @@ function productCard(p) {
   );
   const orderBtn = create("button", {
     class: "btn primary",
-    html: '<i data-lucide="shopping-bag"></i> Đặt món',
+    html: '<i data-lucide="plus-circle"></i> Đặt món',
   });
+
   orderBtn.addEventListener("click", (ev) => {
     ev.stopPropagation();
     openModal(p);
@@ -242,8 +252,9 @@ function openModal(p) {
     setTimeout(() => {
       mdAddToCartBtn.style.animation = "";
     }, 300);
+
     addToCart(p.id, qty);
-    if (cartCountEl) cartCountEl.textContent = String(getCartCount());
+    updateCartBadge(); // ✅ cập nhật badge
     closeModal();
     window.__ui?.toast?.("Đã thêm vào giỏ", "ok");
   };
@@ -264,9 +275,7 @@ mdClose?.addEventListener("click", closeModal);
 modal?.addEventListener("click", (e) => {
   if (e.target === modal) closeModal();
 });
-document.addEventListener("keydown", (e) => {
-  if (e.key === "Escape" && modal.classList.contains("open")) closeModal();
+document.addEventListener("DOMContentLoaded", () => {
+  load();
+  updateCartBadge(); // ✅ khi load trang, đọc lại từ localStorage
 });
-
-document.addEventListener("DOMContentLoaded", load);
-// ========== Checkout page logic ==========

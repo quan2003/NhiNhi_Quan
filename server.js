@@ -20,8 +20,6 @@ const ADMIN_TOKEN = process.env.ADMIN_TOKEN || "changeme";
 const BANK_NAME = process.env.BANK_NAME || "BVBank";
 const BANK_ACCOUNT_NAME = process.env.BANK_ACCOUNT_NAME || "TRUONG LUU QUAN";
 const BANK_ACCOUNT_NUMBER = process.env.BANK_ACCOUNT_NUMBER || "0336440523";
-
-// đường dẫn ảnh QR cố định (nếu dùng), đặt file ở /public/img/vietqr.png
 const VIETQR_IMAGE = process.env.VIETQR_IMAGE || "/img/vietqr.png";
 
 const DB_FILE = path.join(__dirname, "db.json");
@@ -32,12 +30,11 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
 app.use("/admin", express.static(path.join(__dirname, "admin")));
 
-// Tạo thư mục uploads (nếu chưa có) & phục vụ tĩnh
 const UPLOAD_DIR = path.join(__dirname, "public", "uploads");
 await fs.mkdir(UPLOAD_DIR, { recursive: true }).catch(() => {});
 app.use("/uploads", express.static(UPLOAD_DIR));
 
-// Cấu hình multer để lưu file ảnh
+// Multer
 const storage = multer.diskStorage({
   destination: (_req, _file, cb) => cb(null, UPLOAD_DIR),
   filename: (_req, file, cb) => {
@@ -89,24 +86,24 @@ async function readDB() {
 async function writeDB(db) {
   await fs.writeFile(DB_FILE, JSON.stringify(db, null, 2), "utf-8");
 }
-function isPromoActive(promo) {
-  if (!promo || !promo.enabled || !promo.percent) return false;
+function isPromoActive(p) {
+  if (!p || !p.enabled || !p.percent) return false;
   const now = new Date();
-  if (promo.start && now < new Date(promo.start)) return false;
-  if (promo.end && now > new Date(promo.end)) return false;
+  if (p.start && now < new Date(p.start)) return false;
+  if (p.end && now > new Date(p.end)) return false;
   return true;
 }
 function maskPhone(p) {
   if (!p) return "";
-  const digits = String(p).replace(/\D/g, "");
-  return digits.length <= 4
-    ? digits
-    : "•".repeat(Math.max(0, digits.length - 4)) + digits.slice(-4);
+  const d = String(p).replace(/\D/g, "");
+  return d.length <= 4
+    ? d
+    : "•".repeat(Math.max(0, d.length - 4)) + d.slice(-4);
 }
 function last4(p) {
-  if (!p) return "";
-  const digits = String(p).replace(/\D/g, "");
-  return digits.slice(-4);
+  return String(p || "")
+    .replace(/\D/g, "")
+    .slice(-4);
 }
 function dstr(d) {
   const y = d.getFullYear(),
@@ -114,6 +111,9 @@ function dstr(d) {
     day = String(d.getDate()).padStart(2, "0");
   return `${y}-${m}-${day}`;
 }
+function sameId(a, b) {
+  return String(a || "").toUpperCase() === String(b || "").toUpperCase();
+} // <— so khớp id KHÔNG phân biệt hoa/thường
 
 // ===== Auth =====
 function requireAdmin(req, res, next) {
@@ -128,18 +128,17 @@ app.post("/api/auth/login", (req, res) => {
   res.status(401).json({ error: "Sai mật khẩu" });
 });
 
-// ===== Upload ảnh (ADMIN) =====
+// ===== Upload =====
 app.post("/api/upload", requireAdmin, upload.single("file"), (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: "No file" });
-    const url = "/uploads/" + req.file.filename;
-    res.json({ url });
+    res.json({ url: "/uploads/" + req.file.filename });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
 });
 
-// ===== Settings (promo %) =====
+// ===== Settings =====
 app.get("/api/settings", requireAdmin, async (_req, res) => {
   const db = await readDB();
   res.json(db.settings);
@@ -173,31 +172,25 @@ app.get("/api/config", async (_req, res) => {
       end: null,
     },
     promoActive: isPromoActive(db.settings?.promo),
-    // nếu file ảnh tồn tại trong public thì FE sẽ dùng ảnh này
     qrFixedImage: VIETQR_IMAGE,
   });
 });
 
-// ===== Products CRUD =====
-// Public: chỉ trả sản phẩm active
+// ===== Products =====
 app.get("/api/products", async (_req, res) => {
   const db = await readDB();
   res.json(db.products.filter((p) => p.active !== false));
 });
-
-// Admin: trả full (kể cả inactive)
 app.get("/api/admin/products", requireAdmin, async (_req, res) => {
   const db = await readDB();
   res.json(db.products);
 });
-
 app.get("/api/products/:id", async (req, res) => {
   const db = await readDB();
   const p = db.products.find((x) => x.id === req.params.id);
   if (!p) return res.status(404).json({ error: "Not found" });
   res.json(p);
 });
-
 app.post("/api/products", requireAdmin, async (req, res) => {
   const {
     name,
@@ -206,18 +199,17 @@ app.post("/api/products", requireAdmin, async (req, res) => {
     priceCost,
     unit,
     active = true,
-    imageUrl, // thêm
-    description, // thêm
-    nuocCham, // thêm
-    doChua, // thêm
-    ghiChu, // thêm
+    imageUrl,
+    description,
+    nuocCham,
+    doChua,
+    ghiChu,
   } = req.body || {};
   if (!name || priceSell == null || priceCost == null)
     return res.status(400).json({ error: "Thiếu trường bắt buộc" });
-
   const db = await readDB();
   const p = {
-    id: nanoid(10),
+    id: nanoid(10).toUpperCase(), // <— chuẩn hoá id sản phẩm (tuỳ chọn)
     name,
     category: category || "Khác",
     priceSell: +priceSell,
@@ -235,12 +227,10 @@ app.post("/api/products", requireAdmin, async (req, res) => {
   await writeDB(db);
   res.json(p);
 });
-
 app.put("/api/products/:id", requireAdmin, async (req, res) => {
   const db = await readDB();
   const idx = db.products.findIndex((x) => x.id === req.params.id);
   if (idx === -1) return res.status(404).json({ error: "Not found" });
-
   db.products[idx] = {
     ...db.products[idx],
     ...req.body,
@@ -249,7 +239,6 @@ app.put("/api/products/:id", requireAdmin, async (req, res) => {
   await writeDB(db);
   res.json(db.products[idx]);
 });
-
 app.delete("/api/products/:id", requireAdmin, async (req, res) => {
   const db = await readDB();
   const idx = db.products.findIndex((x) => x.id === req.params.id);
@@ -261,7 +250,6 @@ app.delete("/api/products/:id", requireAdmin, async (req, res) => {
 
 // ===== Orders =====
 const AllowedStatus = ["NEW", "IN_PROGRESS", "COMPLETED", "CANCELED"];
-// Chấp nhận cả TAKEAWAY và TAKE_AWAY để tương thích FE
 const AllowedOrderTypes = ["TAKEAWAY", "TAKE_AWAY", "DINE_IN", "RESERVE"];
 
 app.post("/api/orders", async (req, res) => {
@@ -275,10 +263,8 @@ app.post("/api/orders", async (req, res) => {
   ) {
     return res.status(400).json({ error: "Thiếu thông tin đơn hàng" });
   }
-
   const db = await readDB();
 
-  // subtotal/cost từ catalog
   let subtotal = 0,
     costTotal = 0;
   const normalizedItems = [];
@@ -300,7 +286,6 @@ app.post("/api/orders", async (req, res) => {
     });
   }
 
-  // Khuyến mãi
   const promo = db.settings?.promo || { enabled: false, percent: 0 };
   const promoActive = promo && promo.enabled && isPromoActive(promo);
   const discount = promoActive
@@ -309,21 +294,18 @@ app.post("/api/orders", async (req, res) => {
   const total = Math.max(0, subtotal - discount);
   const profit = total - costTotal;
 
-  // Meta loại đơn
-  const m = meta || {};
-  let orderType = (m.orderType || "TAKEAWAY").toUpperCase();
-  // normalize: thay dấu gạch nối thành gạch dưới (nếu có)
-  orderType = orderType.replace("-", "_");
+  let orderType = (meta?.orderType || "TAKEAWAY")
+    .toUpperCase()
+    .replace("-", "_");
   if (!AllowedOrderTypes.includes(orderType))
     return res.status(400).json({ error: "orderType không hợp lệ" });
-  if (orderType === "RESERVE" && !m.scheduleAt) {
+  if (orderType === "RESERVE" && !meta?.scheduleAt)
     return res
       .status(400)
       .json({ error: "RESERVE cần thời gian đến (scheduleAt)" });
-  }
 
   const order = {
-    id: nanoid(12),
+    id: nanoid(12).toUpperCase(), // <— chuẩn hoá id HOÁ ĐƠN lên uppercase
     status: "NEW",
     customer: {
       name: customer.name,
@@ -340,10 +322,10 @@ app.post("/api/orders", async (req, res) => {
     promoSnapshot: { active: !!promoActive, percent: promo?.percent || 0 },
     meta: {
       orderType,
-      tableNumber: m.tableNumber || "",
-      guests: Number(m.guests || 0) || 0,
-      scheduleAt: m.scheduleAt || null,
-      note: m.note || "",
+      tableNumber: meta?.tableNumber || "",
+      guests: Number(meta?.guests || 0) || 0,
+      scheduleAt: meta?.scheduleAt || null,
+      note: meta?.note || "",
     },
     createdAt: new Date().toISOString(),
   };
@@ -371,8 +353,12 @@ app.get("/api/orders", requireAdmin, async (req, res) => {
   const ps = Math.max(1, parseInt(pageSize));
   const start = (p - 1) * ps;
   const end = start + ps;
-  const pageItems = list.slice(start, end);
-  res.json({ page: p, pageSize: ps, total: list.length, items: pageItems });
+  res.json({
+    page: p,
+    pageSize: ps,
+    total: list.length,
+    items: list.slice(start, end),
+  });
 });
 
 app.put("/api/orders/:id", requireAdmin, async (req, res) => {
@@ -380,7 +366,7 @@ app.put("/api/orders/:id", requireAdmin, async (req, res) => {
   if (status && !AllowedStatus.includes(status))
     return res.status(400).json({ error: "Trạng thái không hợp lệ" });
   const db = await readDB();
-  const idx = db.orders.findIndex((o) => o.id === req.params.id);
+  const idx = db.orders.findIndex((o) => sameId(o.id, req.params.id)); // <—
   if (idx === -1) return res.status(404).json({ error: "Not found" });
   db.orders[idx] = {
     ...db.orders[idx],
@@ -393,7 +379,7 @@ app.put("/api/orders/:id", requireAdmin, async (req, res) => {
 
 app.delete("/api/orders/:id", requireAdmin, async (req, res) => {
   const db = await readDB();
-  const idx = db.orders.findIndex((o) => o.id === req.params.id);
+  const idx = db.orders.findIndex((o) => sameId(o.id, req.params.id)); // <—
   if (idx === -1) return res.status(404).json({ error: "Not found" });
   const removed = db.orders.splice(idx, 1)[0];
   await writeDB(db);
@@ -401,10 +387,9 @@ app.delete("/api/orders/:id", requireAdmin, async (req, res) => {
 });
 
 // ===== Tracking (public) =====
-// 1) Endpoint public hiện có (vẫn giữ nguyên)
 app.get("/api/orders/public/:id", async (req, res) => {
   const db = await readDB();
-  const o = db.orders.find((x) => x.id === req.params.id);
+  const o = db.orders.find((x) => sameId(x.id, req.params.id)); // <—
   if (!o) return res.status(404).json({ error: "Không tìm thấy đơn" });
   res.json({
     id: o.id,
@@ -423,21 +408,14 @@ app.get("/api/orders/public/:id", async (req, res) => {
   });
 });
 
-// 2) Endpoint mà track.js đang gọi: /api/orders/lookup?id=...&phone=0523
 app.get("/api/orders/lookup", async (req, res) => {
   const { id, phone } = req.query || {};
-  if (!id || !phone) {
-    return res.status(400).send("Missing id or phone");
-  }
+  if (!id || !phone) return res.status(400).send("Missing id or phone");
   const db = await readDB();
-  const o = db.orders.find((x) => x.id === String(id));
+  const o = db.orders.find((x) => sameId(x.id, id)); // <—
   if (!o) return res.status(404).send("Order not found");
-
-  // so khớp 4 số cuối
-  if (last4(o.customer?.phone) !== String(phone).slice(-4)) {
+  if (last4(o.customer?.phone) !== String(phone).slice(-4))
     return res.status(403).send("Phone tail mismatch");
-  }
-
   res.json({
     id: o.id,
     status: o.status,
@@ -455,24 +433,18 @@ app.get("/api/orders/lookup", async (req, res) => {
   });
 });
 
-// 3) Endpoint để khách hủy: /api/orders/guest/:id?phone=0523
 app.delete("/api/orders/guest/:id", async (req, res) => {
   const { id } = req.params;
   const { phone } = req.query || {};
-  if (!id || !phone) {
-    return res.status(400).send("Missing id or phone");
-  }
+  if (!id || !phone) return res.status(400).send("Missing id or phone");
   const db = await readDB();
-  const idx = db.orders.findIndex((x) => x.id === String(id));
+  const idx = db.orders.findIndex((x) => sameId(x.id, id)); // <—
   if (idx === -1) return res.status(404).send("Order not found");
-
   const o = db.orders[idx];
-  if (last4(o.customer?.phone) !== String(phone).slice(-4)) {
+  if (last4(o.customer?.phone) !== String(phone).slice(-4))
     return res.status(403).send("Phone tail mismatch");
-  }
-  if (o.status !== "NEW") {
+  if (o.status !== "NEW")
     return res.status(409).send("Order cannot be canceled");
-  }
   o.status = "CANCELED";
   o.updatedAt = new Date().toISOString();
   db.orders[idx] = o;
@@ -480,7 +452,7 @@ app.delete("/api/orders/guest/:id", async (req, res) => {
   res.json({ id: o.id, status: o.status });
 });
 
-// ===== Reports (bỏ qua CANCELED) =====
+// ===== Reports =====
 app.get("/api/reports/daily", requireAdmin, async (req, res) => {
   const { from, to } = req.query;
   const db = await readDB();

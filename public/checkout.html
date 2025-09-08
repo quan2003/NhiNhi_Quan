@@ -6,9 +6,11 @@
     <title>Thanh toán - Nhi Nhi Quán</title>
     <link rel="stylesheet" href="/css/style.css" />
     <link rel="icon" type="image/png" sizes="16x16" href="/img/logo.jpg" />
+    <!-- Lucide icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
   </head>
   <body>
+    <!-- ============ Header ============ -->
     <header>
       <div class="container">
         <div class="brand">
@@ -17,6 +19,7 @@
           </div>
           <h1>Hệ Thống Quay Nướng Gà Vịt Nhi Nhi</h1>
         </div>
+
         <nav class="primary">
           <a href="/"><i data-lucide="home"></i> Trang chủ</a>
           <a href="/menu.html"><i data-lucide="utensils-crossed"></i> Menu</a>
@@ -25,16 +28,17 @@
           >
           <a href="/track.html"><i data-lucide="search"></i> Theo dõi đơn</a>
         </nav>
-        <button id="menuBtn" class="btn outline">
+
+        <button id="menuBtn" class="btn outline" aria-label="menu">
           <i data-lucide="menu"></i>
         </button>
-        <label class="switch">
+
+        <label class="switch" title="Đổi giao diện">
           <input type="checkbox" id="themeSwitch" />
-          <span class="icon">
-            <i data-lucide="sun"></i>
-          </span>
+          <span class="icon"><i data-lucide="sun"></i></span>
         </label>
       </div>
+
       <aside id="drawer" class="drawer">
         <a href="/"><i data-lucide="home"></i> Trang chủ</a>
         <a href="/menu.html"><i data-lucide="utensils-crossed"></i> Menu</a>
@@ -45,19 +49,24 @@
       </aside>
     </header>
 
+    <!-- ============ Main ============ -->
     <main class="container">
       <div class="grid-2">
+        <!-- ===== Form ===== -->
         <section class="checkout-section">
           <h2 class="section-title">Thông tin khách hàng</h2>
+
           <form id="checkoutForm" class="checkout-form">
             <label
               >Họ và tên
-              <input type="text" id="name" required class="input-field"
-            /></label>
+              <input type="text" id="name" required class="input-field" />
+            </label>
+
             <label
               >Số điện thoại
-              <input type="tel" id="phone" required class="input-field"
-            /></label>
+              <input type="tel" id="phone" required class="input-field" />
+            </label>
+
             <label
               >Địa chỉ giao hàng
               <input
@@ -67,37 +76,39 @@
                 class="input-field"
               />
             </label>
+
             <fieldset class="form-group">
               <legend>Hình thức đặt</legend>
-              <label class="row"
-                ><input
+              <label class="row">
+                <input
                   type="radio"
                   name="orderType"
                   value="TAKEAWAY"
                   checked
                   class="radio-input"
                 />
-                Mang đi</label
-              >
-              <label class="row"
-                ><input
+                Mang đi
+              </label>
+              <label class="row">
+                <input
                   type="radio"
                   name="orderType"
                   value="DINE_IN"
                   class="radio-input"
                 />
-                Tại bàn</label
-              >
-              <label class="row"
-                ><input
+                Tại bàn
+              </label>
+              <label class="row">
+                <input
                   type="radio"
                   name="orderType"
                   value="RESERVE"
                   class="radio-input"
                 />
-                Đặt trước đến ăn</label
-              >
+                Đặt trước đến ăn
+              </label>
             </fieldset>
+
             <div id="typeFields" class="card">
               <div data-type="TAKEAWAY">
                 <label
@@ -106,8 +117,10 @@
                     type="datetime-local"
                     id="pickupAt"
                     class="input-field"
-                /></label>
+                  />
+                </label>
               </div>
+
               <div data-type="DINE_IN" class="hidden">
                 <label
                   >Số bàn (tuỳ chọn)
@@ -116,7 +129,8 @@
                     id="tableNumber"
                     placeholder="VD: B12"
                     class="input-field"
-                /></label>
+                  />
+                </label>
                 <label
                   >Số khách
                   <input
@@ -125,8 +139,10 @@
                     min="1"
                     placeholder="VD: 4"
                     class="input-field"
-                /></label>
+                  />
+                </label>
               </div>
+
               <div data-type="RESERVE" class="hidden">
                 <label
                   >Thời gian đến (bắt buộc)
@@ -134,7 +150,8 @@
                     type="datetime-local"
                     id="reserveAt"
                     class="input-field"
-                /></label>
+                  />
+                </label>
                 <label
                   >Số khách
                   <input
@@ -143,8 +160,10 @@
                     min="1"
                     placeholder="VD: 6"
                     class="input-field"
-                /></label>
+                  />
+                </label>
               </div>
+
               <label
                 >Ghi chú
                 <textarea
@@ -155,38 +174,42 @@
                 ></textarea>
               </label>
             </div>
+
             <fieldset class="form-group">
               <legend>Phương thức thanh toán</legend>
-              <label class="row"
-                ><input
+              <label class="row">
+                <input
                   type="radio"
                   name="payment"
                   value="COD"
                   checked
                   class="radio-input"
                 />
-                Thanh toán khi nhận (COD)</label
-              >
-              <label class="row"
-                ><input
+                Thanh toán khi nhận (COD)
+              </label>
+              <label class="row">
+                <input
                   type="radio"
                   name="payment"
                   value="TRANSFER"
                   class="radio-input"
                 />
-                Chuyển khoản (hiển thị QR)</label
-              >
+                Chuyển khoản (hiển thị QR)
+              </label>
             </fieldset>
+
             <button class="btn primary submit-btn" type="submit">
               <i data-lucide="check-circle-2"></i> Đặt hàng
             </button>
           </form>
 
+          <!-- Hộp QR chuyển khoản (ẩn/hiện theo lựa chọn) -->
           <div id="transferBox" class="hidden card transfer-box">
             <h3 class="section-title">Chuyển khoản</h3>
             <p><b>Ngân hàng:</b> <span id="bankName"></span></p>
             <p><b>Tên TK:</b> <span id="bankAccName"></span></p>
             <p><b>Số TK:</b> <span id="bankAccNumber"></span></p>
+
             <div id="qrWrap">
               <img id="qrImg" alt="VietQR" class="qr-image" />
               <div class="row" style="gap: 8px; justify-content: space-between">
@@ -195,8 +218,9 @@
                   class="btn outline"
                   href="#"
                   download="VietQR.png"
-                  ><i data-lucide="download"></i> Tải QR</a
                 >
+                  <i data-lucide="download"></i> Tải QR
+                </a>
                 <button id="qrCopy" class="btn outline" type="button">
                   <i data-lucide="copy"></i> Sao chép số TK
                 </button>
@@ -205,9 +229,11 @@
             </div>
           </div>
 
+          <!-- Kết quả sau khi tạo đơn -->
           <div id="result" class="hidden card result-box"></div>
         </section>
 
+        <!-- ===== Cart ===== -->
         <aside class="cart-section">
           <h2 class="section-title">Giỏ hàng</h2>
           <div id="promoNote" class="muted"></div>
@@ -221,18 +247,19 @@
       </div>
     </main>
 
+    <!-- ============ Footer ============ -->
     <footer class="site-footer">
       <div class="footer-wrap container">
-        <!-- Cột 1: Logo + Liên hệ -->
+        <!-- Cột 1 -->
         <section class="footer-brand">
           <div class="brandline">
             <img
               class="footer-logo"
               src="/img/logo.jpg"
-              alt="Hệ Thống Quay Nướng Gà Vị Nhi Nhin"
+              alt="Hệ Thống Quay Nướng Gà Vịt Nhi Nhi"
             />
             <div>
-              <h4 class="footer-title">Hệ Thống Quay Nướng Gà Vị Nhi Nhi</h4>
+              <h4 class="footer-title">Hệ Thống Quay Nướng Gà Vịt Nhi Nhi</h4>
               <p class="footer-tag">Gà nướng mắm nhĩ · Vịt quay ngũ vị</p>
             </div>
           </div>
@@ -268,7 +295,7 @@
           </ul>
         </section>
 
-        <!-- Cột 2: Giờ mở cửa / Liên kết nhanh -->
+        <!-- Cột 2 -->
         <section class="footer-hours">
           <h5>Giờ mở cửa</h5>
           <ul class="hours">
@@ -285,7 +312,7 @@
           </nav>
         </section>
 
-        <!-- Cột 3: Bản đồ -->
+        <!-- Cột 3 -->
         <section class="map-card" aria-label="Bản đồ">
           <iframe
             src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3843.5859619646344!2d108.49100927828695!3d15.560311046494757!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3169dd004e338171%3A0xa99a1decfeb7cca0!2zSOG7hyBUaOG7kW5nIFF1YXkgTsaw4bubbmcgR8OgIFbhu4t0IE5oaSBOaGk!5e0!3m2!1svi!2sus!4v1757264543675!5m2!1svi!2sus"
@@ -295,7 +322,8 @@
             allowfullscreen=""
             loading="lazy"
             referrerpolicy="no-referrer-when-downgrade"
-          ></iframe>
+          >
+          </iframe>
         </section>
       </div>
 
@@ -303,6 +331,8 @@
         © <span id="y"></span> Nhi Nhi · Made with luuquancoder
       </div>
     </footer>
+
+    <!-- ============ Scripts ============ -->
     <script>
       (function () {
         try {
@@ -313,10 +343,15 @@
       })();
     </script>
 
+    <!-- Khởi tạo UI + Toast trước, rồi mới nạp checkout.js -->
     <script type="module">
       import { initUI } from "/js/ui.js";
+      import { toast } from "/js/toast.js";
+      // Gắn global để có thể gọi ở bất kỳ file logic nào (ví dụ track.js/checkout.js)
+      window.toast = toast;
       initUI();
     </script>
+
     <script type="module" src="/js/checkout.js"></script>
   </body>
 </html>

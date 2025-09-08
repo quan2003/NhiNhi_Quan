@@ -13,35 +13,37 @@
       <div class="container">
         <div class="brand">
           <div class="logo">
-            <img src="/img/logo.jpg" alt="Nhi Nhi Quán" />
+            <img src="img/logo.jpg" alt="Nhi Nhi Quán" />
           </div>
           <h1>Hệ Thống Quay Nướng Gà Vịt Nhi Nhi</h1>
         </div>
+
         <nav class="primary">
-          <a href="/" class="active"><i data-lucide="home"></i> Trang chủ</a>
-          <a href="/menu.html"><i data-lucide="utensils-crossed"></i> Menu</a>
-          <a href="/checkout.html"
+          <a href="index.html" class="active"
+            ><i data-lucide="home"></i> Trang chủ</a
+          >
+          <a href="menu.html"><i data-lucide="utensils-crossed"></i> Menu</a>
+          <a href="checkout.html"
             ><i data-lucide="shopping-cart"></i> Giỏ hàng</a
           >
-          <a href="/track.html"><i data-lucide="search"></i> Theo dõi đơn</a>
+          <a href="track.html"><i data-lucide="search"></i> Theo dõi đơn</a>
         </nav>
+
         <button id="menuBtn" class="btn outline" aria-label="menu">
           <i data-lucide="menu"></i>
         </button>
+
         <label class="switch">
           <input type="checkbox" id="themeSwitch" />
-          <span class="icon">
-            <i data-lucide="sun"></i>
-          </span>
+          <span class="icon"><i data-lucide="sun"></i></span>
         </label>
       </div>
-      <aside id="drawer" class="drawer">
-        <a href="/"><i data-lucide="home"></i> Trang chủ</a>
-        <a href="/menu.html"><i data-lucide="utensils-crossed"></i> Xem Menu</a>
-        <a href="/checkout.html"
-          ><i data-lucide="shopping-cart"></i> Giỏ hàng</a
-        >
-        <a href="/track.html"><i data-lucide="search"></i> Theo dõi đơn</a>
+
+      <aside id="drawer" class="drawer" aria-hidden="true">
+        <a href="index.html"><i data-lucide="home"></i> Trang chủ</a>
+        <a href="menu.html"><i data-lucide="utensils-crossed"></i> Xem Menu</a>
+        <a href="checkout.html"><i data-lucide="shopping-cart"></i> Giỏ hàng</a>
+        <a href="track.html"><i data-lucide="search"></i> Theo dõi đơn</a>
       </aside>
     </header>
 
@@ -393,11 +395,7 @@
     </script>
 
     <script type="module">
-      import { initUI } from "/js/ui.js";
-      // Nếu cần chạy time.js (không export gì), có 2 cách:
-      // (A) Chuyển time.js thành module và import:
-      // import "/js/time.js";
-      // (B) Giữ lại một thẻ script thường ngay dưới (xem phần 2).
+      import { initUI } from "./js/ui.js";
       initUI();
     </script>
 

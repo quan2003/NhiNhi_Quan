@@ -11,7 +11,6 @@ export function initUI() {
       const isLight = switchEl.checked;
       document.documentElement.classList.toggle("theme-light", isLight);
       localStorage.setItem("theme", isLight ? "light" : "dark");
-
       try {
         if (window.lucide) window.lucide.createIcons();
       } catch {}
@@ -47,14 +46,30 @@ export function initUI() {
 
   if (btn && drawer) {
     btn.addEventListener("click", (e) => {
+      // KHÔNG preventDefault để không chặn điều hướng các control khác
       e.stopPropagation();
       drawer.classList.contains("open") ? closeDrawer() : openDrawer();
     });
 
-    // click link trong drawer -> đóng
-    drawer
-      .querySelectorAll("a")
-      .forEach((a) => a.addEventListener("click", () => closeDrawer()));
+    // Điều hướng khi bấm link trong drawer
+    drawer.addEventListener("click", (e) => {
+      const a = e.target.closest("a");
+      if (!a) return;
+
+      const href = a.getAttribute("href") || "";
+      if (href.startsWith("#")) {
+        // anchor/hash: để trình duyệt xử lý scroll; chỉ đóng drawer
+        closeDrawer();
+        return;
+      }
+
+      // link thật: điều hướng chủ động
+      e.preventDefault();
+      closeDrawer();
+      setTimeout(() => {
+        window.location.assign(a.href);
+      }, 0);
+    });
   }
 
   // click ra ngoài (backdrop) -> đóng
@@ -119,4 +134,3 @@ export function hideSpinner() {
 
 /* Expose to other scripts without import */
 window.__ui = { toast, showSpinner, hideSpinner };
-// End of ui.js

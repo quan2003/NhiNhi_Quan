@@ -2,43 +2,31 @@
   "products": [
     {
       "id": "GA-NC",
-      "name": "Gà nướng mắm nhĩ (nguyên con)",
+      "name": "Gà nướng mắm nhĩ",
       "category": "Gà",
-      "priceSell": 199000,
+      "priceSell": 159000,
       "priceCost": 145000,
       "unit": "con",
       "active": true,
       "createdAt": "2025-09-01T00:00:00.000Z",
-      "updatedAt": "2025-09-03T18:08:21.247Z",
+      "updatedAt": "2025-09-08T03:07:04.998Z",
       "imageUrl": "/uploads/1756922897866-n0o8oo.jpg"
     },
     {
       "id": "VIT-NC",
-      "name": "Vịt quay ngũ vị (nguyên con)",
+      "name": "Vịt quay ngũ vị",
       "category": "Vịt",
-      "priceSell": 299000,
+      "priceSell": 219000,
       "priceCost": 210000,
       "unit": "con",
       "active": true,
       "createdAt": "2025-09-01T00:00:00.000Z",
       "imageUrl": "/uploads/1756924367680-chy8vu.jpg",
-      "updatedAt": "2025-09-03T18:32:49.509Z"
-    },
-    {
-      "id": "COMBO-3P",
-      "name": "Combo gia đình 3-4 người",
-      "category": "Combo",
-      "priceSell": 329000,
-      "priceCost": 250000,
-      "unit": "combo",
-      "active": true,
-      "createdAt": "2025-09-01T00:00:00.000Z",
-      "imageUrl": "",
-      "updatedAt": "2025-09-03T19:00:40.668Z"
+      "updatedAt": "2025-09-08T03:07:30.085Z"
     },
     {
       "id": "COCA",
-      "name": "Coca-Cola (lon)",
+      "name": "Coca-Cola",
       "category": "Giải khát",
       "priceSell": 12000,
       "priceCost": 7000,
@@ -46,34 +34,14 @@
       "active": true,
       "createdAt": "2025-09-01T00:00:00.000Z",
       "imageUrl": "/uploads/1756924434685-evkoys.png",
-      "updatedAt": "2025-09-03T18:33:56.865Z"
-    },
-    {
-      "id": "BIA",
-      "name": "Bia (chai/lon)",
-      "category": "Giải khát",
-      "priceSell": 18000,
-      "priceCost": 11000,
-      "unit": "chai",
-      "active": true,
-      "createdAt": "2025-09-01T00:00:00.000Z"
-    },
-    {
-      "id": "TRATAK",
-      "name": "Trà tắc",
-      "category": "Giải khát",
-      "priceSell": 15000,
-      "priceCost": 6000,
-      "unit": "ly",
-      "active": true,
-      "createdAt": "2025-09-01T00:00:00.000Z"
+      "updatedAt": "2025-09-08T03:08:11.423Z"
     }
   ],
   "orders": [],
   "settings": {
     "promo": {
       "enabled": true,
-      "percent": 50,
+      "percent": 10,
       "start": null,
       "end": null
     }

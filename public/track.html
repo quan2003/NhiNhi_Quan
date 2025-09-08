@@ -8,15 +8,329 @@
     <link rel="stylesheet" href="/css/style.css" />
     <!-- Lucide icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+      .confirm-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.55);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+      }
+      .confirm-dialog {
+        background: var(--bg-soft);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 20px;
+        max-width: 300px;
+        text-align: center;
+        box-shadow: var(--shadow);
+      }
+      .confirm-actions {
+        margin-top: 16px;
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+      }
+      .hidden {
+        display: none !important;
+      }
+
+      /* ========= Tăng cường input ========= */
+      .field {
+        display: grid;
+        gap: 6px;
+      }
+      .input-wrap {
+        position: relative;
+        display: flex;
+        align-items: center;
+        background: var(--bg-soft);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 10px 12px;
+        transition: var(--transition);
+      }
+      .input-wrap:focus-within {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(56, 161, 105, 0.25);
+      }
+      .input-wrap.error {
+        border-color: var(--danger);
+        box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.2);
+      }
+      .input-wrap .leading,
+      .input-wrap .trailing {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0.9;
+      }
+      .input-wrap .leading {
+        margin-right: 8px;
+      }
+      .input-wrap .trailing {
+        margin-left: 8px;
+        gap: 6px;
+      }
+      .input-wrap input[type="text"] {
+        flex: 1;
+        background: transparent;
+        border: 0;
+        outline: 0;
+        color: var(--text);
+        font-size: 16px;
+        letter-spacing: 0.2px;
+      }
+      .mono {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      }
+      .helper {
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .counter {
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .clear-btn,
+      .paste-btn {
+        border: 1px solid var(--border);
+        background: transparent;
+        color: var(--text);
+        padding: 4px 8px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 12px;
+      }
+      .clear-btn:hover,
+      .paste-btn:hover {
+        background: rgba(255, 255, 255, 0.05);
+      }
+
+      /* ======== OTP 4 ô ======== */
+      .otp-row {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+      }
+      .otp-boxes {
+        display: flex;
+        gap: 8px;
+      }
+      .otp {
+        width: 46px;
+        height: 48px;
+        text-align: center;
+        font-size: 20px;
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        background: var(--bg-soft);
+        color: var(--text);
+        outline: none;
+        transition: var(--transition);
+      }
+      .otp:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(56, 161, 105, 0.25);
+      }
+      .otp.error {
+        border-color: var(--danger);
+        box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.2);
+      }
+
+      /* ======== Stepper/progress (đã làm dày & runner nổi bật) ======== */
+      .stepper {
+        display: flex;
+        gap: 10px;
+        margin: 10px 0 2px;
+      }
+      .step {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        border-radius: 999px;
+        background: var(--bg-soft);
+        border: 1px solid var(--border);
+        opacity: 0.6;
+        transition: 0.25s ease;
+      }
+      .step.done {
+        opacity: 1;
+        box-shadow: var(--shadow-soft);
+      }
+
+      .progressbar {
+        position: relative;
+        width: 100%;
+        height: 30px;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        border-radius: 999px;
+        overflow: hidden;
+        box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.4);
+      }
+      .progressbar > span#progressFill {
+        position: absolute;
+        inset: 0 auto 0 0;
+        width: 0%;
+        background: linear-gradient(90deg, var(--accent) 0%, #7cc3ff 100%);
+        box-shadow: inset 0 0 8px rgba(255, 255, 255, 0.35);
+        transition: width 0.35s ease;
+      }
+      .progressbar.moving #progressFill {
+        background-image: repeating-linear-gradient(
+            45deg,
+            rgba(255, 255, 255, 0.35) 0 10px,
+            rgba(255, 255, 255, 0) 10px 20px
+          ),
+          linear-gradient(90deg, var(--accent) 0%, #7cc3ff 100%);
+        animation: stripes 1s linear infinite;
+      }
+      @keyframes stripes {
+        from {
+          background-position: 0 0, 0 0;
+        }
+        to {
+          background-position: 40px 0, 0 0;
+        }
+      }
+
+      #progressRunner {
+        position: absolute;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        width: 44px;
+        height: 34px;
+        border-radius: 999px;
+        background: #0f172a;
+        border: 2px solid var(--accent);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+        transition: left 0.35s ease, background 0.2s ease,
+          border-color 0.2s ease;
+        z-index: 2;
+      }
+      #progressRunner svg {
+        width: 22px;
+        height: 22px;
+        stroke-width: 2.4;
+        color: #fff;
+      }
+      #progressRunner.moving {
+        animation: bob 1.2s ease-in-out infinite;
+      }
+      @keyframes bob {
+        0%,
+        100% {
+          transform: translate(-50%, -50%) scale(1);
+        }
+        50% {
+          transform: translate(-50%, -56%) scale(1.03);
+        }
+      }
+
+      /* Bảng & tiện ích cũ giữ nguyên */
+      .spinner {
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        border-radius: 999px;
+        border: 2px solid var(--border);
+        border-top-color: var(--accent);
+        animation: spin 0.9s linear infinite;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      .table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 8px;
+        font-size: 14px;
+      }
+      .table th,
+      .table td {
+        padding: 8px;
+        border-bottom: 1px solid var(--border);
+        text-align: left;
+      }
+      .table th {
+        color: var(--muted);
+        font-weight: 600;
+      }
+      .right {
+        text-align: right;
+      }
+      .hidden {
+        display: none !important;
+      }
+      .muted {
+        color: var(--muted);
+      }
+      .row {
+        display: flex;
+        align-items: center;
+      }
+      .gap-8 {
+        gap: 8px;
+      }
+      .gap-12 {
+        gap: 12px;
+      }
+      .gap-16 {
+        gap: 16px;
+      }
+      .justify-between {
+        justify-content: space-between;
+      }
+      .inline {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 10px;
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        font-size: 12px;
+        background: var(--bg-soft);
+      }
+      .badge.success {
+        border-color: #2f855a;
+      }
+      .badge.warn {
+        border-color: #d69e2e;
+      }
+      .badge.info {
+        border-color: #4299e1;
+      }
+      .mini {
+        font-size: 12px;
+      }
+      .copy-btn {
+        border: none;
+        background: transparent;
+        cursor: pointer;
+        padding: 4px;
+      }
+    </style>
   </head>
   <body>
     <!-- Header đồng bộ -->
     <header>
       <div class="container">
         <div class="brand">
-          <div class="logo">
-            <img src="/img/logo.jpg" alt="Nhi Nhi Quán" />
-          </div>
+          <div class="logo"><img src="/img/logo.jpg" alt="Nhi Nhi Quán" /></div>
           <h1>Hệ Thống Quay Nướng Gà Vịt Nhi Nhi</h1>
         </div>
         <nav class="primary">
@@ -32,11 +346,9 @@
         <button id="menuBtn" class="btn outline" aria-label="menu">
           <i data-lucide="menu"></i>
         </button>
-        <label class="switch">
+        <label class="switch" title="Đổi giao diện sáng/tối">
           <input type="checkbox" id="themeSwitch" />
-          <span class="icon">
-            <i data-lucide="sun"></i>
-          </span>
+          <span class="icon"><i data-lucide="sun"></i></span>
         </label>
       </div>
       <aside id="drawer" class="drawer">
@@ -51,87 +363,230 @@
 
     <main class="container">
       <div class="card">
-        <form id="lookupForm" class="grid-2">
-          <label
-            >Mã đơn (Order ID)
-            <input id="orderId" required placeholder="VD: 12 ký tự" />
+        <form id="lookupForm" class="grid-2" autocomplete="off">
+          <!-- ======== MÃ ĐƠN ======== -->
+          <label class="field">
+            <div class="row justify-between">
+              <span>Mã đơn (Order ID)</span>
+              <span id="idCounter" class="counter">0/24</span>
+            </div>
+            <div class="input-wrap" id="idWrap">
+              <span class="leading" aria-hidden="true"
+                ><i data-lucide="hash"></i
+              ></span>
+              <input
+                id="orderId"
+                class="mono"
+                type="text"
+                inputmode="latin"
+                autocapitalize="characters"
+                placeholder="VD: 12–24 ký tự"
+                maxlength="24"
+                aria-describedby="idHelp"
+              />
+              <div class="trailing">
+                <button
+                  type="button"
+                  class="clear-btn"
+                  id="clearIdBtn"
+                  title="Xoá nhanh"
+                >
+                  Xoá
+                </button>
+              </div>
+            </div>
+            <div id="idHelp" class="helper">
+              Bạn có thể dán trực tiếp nếu copy từ hóa đơn/điện thoại. Hệ thống
+              tự bỏ ký tự lạ và viết HOA.
+            </div>
           </label>
-          <label
-            >4 số cuối SĐT
-            <input
-              id="phoneTail"
-              required
-              maxlength="4"
-              placeholder="VD: 1234"
-            />
+
+          <!-- ======== 4 SỐ CUỐI SĐT (OTP) ======== -->
+          <label class="field">
+            <span>4 số cuối SĐT</span>
+            <div class="otp-row">
+              <div class="otp-boxes" id="otpBoxes" aria-describedby="otpHelp">
+                <input
+                  class="otp"
+                  type="text"
+                  inputmode="numeric"
+                  pattern="[0-9]*"
+                  maxlength="1"
+                  aria-label="Số thứ 1"
+                />
+                <input
+                  class="otp"
+                  type="text"
+                  inputmode="numeric"
+                  pattern="[0-9]*"
+                  maxlength="1"
+                  aria-label="Số thứ 2"
+                />
+                <input
+                  class="otp"
+                  type="text"
+                  inputmode="numeric"
+                  pattern="[0-9]*"
+                  maxlength="1"
+                  aria-label="Số thứ 3"
+                />
+                <input
+                  class="otp"
+                  type="text"
+                  inputmode="numeric"
+                  pattern="[0-9]*"
+                  maxlength="1"
+                  aria-label="Số thứ 4"
+                />
+              </div>
+              <button
+                type="button"
+                class="paste-btn"
+                id="pasteOtpBtn"
+                title="Dán 4 số"
+              >
+                Dán
+              </button>
+            </div>
+            <div id="otpHelp" class="helper">
+              Chúng tôi dùng 4 số cuối SĐT để xác thực nhanh. Có thể dán 1 lần 4
+              số.
+            </div>
           </label>
-          <div style="grid-column: 1/-1">
-            <button class="btn" type="submit">
+
+          <div style="grid-column: 1/-1" class="row gap-12">
+            <button class="btn" type="submit" id="submitBtn">
               <i data-lucide="search"></i> Xem trạng thái
             </button>
+            <button class="btn outline" type="button" id="refreshBtn" disabled>
+              <i data-lucide="refresh-cw"></i> Làm mới (<span id="countdown"
+                >—</span
+              >s)
+            </button>
+            <span id="loading" class="inline hidden"
+              ><span class="spinner"></span> Đang tải…</span
+            >
           </div>
         </form>
       </div>
 
       <section id="resultBox" class="card hidden" style="margin-top: 12px">
-        <h2>Kết quả</h2>
-        <p><b>Mã đơn:</b> <span id="r_id"></span></p>
-        <p>
-          <b>Khách:</b> <span id="r_name"></span> — <span id="r_phone"></span>
-        </p>
-        <p><b>Hình thức:</b> <span id="r_type"></span></p>
-        <p><b>Thời gian đến/lấy:</b> <span id="r_sched"></span></p>
-        <p>
-          <b>Số bàn:</b> <span id="r_table"></span> · <b>Số khách:</b>
-          <span id="r_guests"></span>
-        </p>
-        <p><b>Thời gian tạo:</b> <span id="r_time"></span></p>
-        <p><b>Thanh toán:</b> <span id="r_pay"></span></p>
-        <p>
-          <b>Tổng tiền:</b> <span id="r_total"></span> (tạm tính
-          <span id="r_sub"></span>, giảm <span id="r_disc"></span>)
-        </p>
-
-        <div class="card" style="margin-top: 12px">
-          <h3>Trạng thái đơn</h3>
-          <ol id="steps">
-            <li id="st-new">Mới</li>
-            <li id="st-prog">Đang làm</li>
-            <li id="st-done">Hoàn tất</li>
-          </ol>
-          <p class="muted">Trang sẽ tự làm mới mỗi 10 giây.</p>
+        <div class="row justify-between">
+          <h2>Kết quả tra cứu</h2>
+          <span id="statusBadge" class="badge info"
+            ><i data-lucide="loader"></i> Đang cập nhật</span
+          >
         </div>
 
-        <div
-          id="guestActions"
-          class="row"
-          style="gap: 8px; margin-top: 8px"
-        ></div>
+        <div class="row gap-16">
+          <div class="inline">
+            <b>Mã đơn:</b> <span id="r_id" class="mini"></span>
+            <button class="copy-btn" id="copyIdBtn" title="Sao chép mã đơn">
+              <i data-lucide="copy"></i>
+            </button>
+          </div>
+          <div>
+            <b>Khách:</b> <span id="r_name"></span> — <span id="r_phone"></span>
+          </div>
+        </div>
+
+        <p class="row gap-12">
+          <span class="badge"
+            ><i data-lucide="concierge-bell"></i> <b>Hình thức:</b>
+            <span id="r_type"></span
+          ></span>
+          <span class="badge"
+            ><i data-lucide="calendar-clock"></i> <b>Thời gian đến/lấy:</b>
+            <span id="r_sched"></span
+          ></span>
+          <span class="badge" id="payBadge"
+            ><i data-lucide="credit-card"></i> <span id="r_pay"></span
+          ></span>
+        </p>
+
+        <p>
+          <b>Số bàn:</b> <span id="r_table"></span> · <b>Số khách:</b>
+          <span id="r_guests"></span> · <b>Thời gian tạo:</b>
+          <span id="r_time"></span>
+        </p>
+
+        <div class="row gap-16">
+          <div><b>Tổng tiền:</b> <span id="r_total"></span></div>
+          <div class="muted">
+            (tạm tính <span id="r_sub"></span>, giảm <span id="r_disc"></span>)
+          </div>
+        </div>
+
+        <div class="card" style="margin-top: 12px">
+          <div class="row justify-between">
+            <h3>Trạng thái đơn</h3>
+            <span class="muted mini">Trang tự làm mới mỗi 10 giây</span>
+          </div>
+
+          <div class="stepper">
+            <div id="st-new" class="step">
+              <i data-lucide="sparkles"></i> Mới
+            </div>
+            <div id="st-prog" class="step">
+              <i data-lucide="chef-hat"></i> Đang làm
+            </div>
+            <div id="st-done" class="step">
+              <i data-lucide="check-circle-2"></i> Hoàn tất
+            </div>
+          </div>
+
+          <div id="statusBar" class="progressbar" aria-hidden="true">
+            <span id="progressFill"></span>
+            <div id="progressRunner"><i data-lucide="shopping-cart"></i></div>
+          </div>
+        </div>
+
+        <div id="guestActions" class="row gap-8" style="margin-top: 8px"></div>
 
         <details style="margin-top: 8px">
           <summary>Chi tiết món</summary>
-          <pre id="r_items"></pre>
+          <div id="itemsWrap">
+            <table class="table" id="itemsTable">
+              <thead>
+                <tr>
+                  <th>Món</th>
+                  <th class="right">SL</th>
+                  <th class="right">Đơn giá</th>
+                  <th class="right">Thành tiền</th>
+                </tr>
+              </thead>
+              <tbody id="itemsTbody"></tbody>
+            </table>
+          </div>
         </details>
       </section>
     </main>
+    <!-- Hộp xác nhận tuỳ chỉnh -->
+    <div id="confirmBox" class="hidden confirm-overlay">
+      <div class="confirm-dialog">
+        <p id="confirmMessage">Bạn có chắc muốn huỷ đơn?</p>
+        <div class="confirm-actions">
+          <button id="confirmYes" class="btn danger">Đồng ý</button>
+          <button id="confirmNo" class="btn outline">Hủy</button>
+        </div>
+      </div>
+    </div>
 
     <!-- Footer đồng bộ -->
     <footer class="site-footer">
       <div class="footer-wrap container">
-        <!-- Cột 1: Logo + Liên hệ -->
         <section class="footer-brand">
           <div class="brandline">
             <img
               class="footer-logo"
               src="/img/logo.jpg"
-              alt="Hệ Thống Quay Nướng Gà Vị Nhi Nhin"
+              alt="Hệ Thống Quay Nướng Gà Vịt Nhi Nhi"
             />
             <div>
-              <h4 class="footer-title">Hệ Thống Quay Nướng Gà Vị Nhi Nhi</h4>
+              <h4 class="footer-title">Hệ Thống Quay Nướng Gà Vịt Nhi Nhi</h4>
               <p class="footer-tag">Gà nướng mắm nhĩ · Vịt quay ngũ vị</p>
             </div>
           </div>
-
           <ul class="contact-list">
             <li class="contact-item">
               <i data-lucide="phone"></i>
@@ -163,13 +618,11 @@
           </ul>
         </section>
 
-        <!-- Cột 2: Giờ mở cửa / Liên kết nhanh -->
         <section class="footer-hours">
           <h5>Giờ mở cửa</h5>
           <ul class="hours">
             <li>Thứ 2 – Chủ nhật: <b>10:00 – 21:00</b></li>
           </ul>
-
           <h5 style="margin-top: 14px">Liên kết nhanh</h5>
           <nav class="quick-links">
             <a href="/menu.html"><i data-lucide="chef-hat"></i> Xem menu</a>
@@ -180,7 +633,6 @@
           </nav>
         </section>
 
-        <!-- Cột 3: Bản đồ -->
         <section class="map-card" aria-label="Bản đồ">
           <iframe
             src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3843.5859619646344!2d108.49100927828695!3d15.560311046494757!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3169dd004e338171%3A0xa99a1decfeb7cca0!2zSOG7hyBUaOG7kW5nIFF1YXkgTsaw4bubbmcgR8OgIFbhu4t0IE5oaSBOaGk!5e0!3m2!1svi!2sus!4v1757264543675!5m2!1svi!2sus"
@@ -190,16 +642,16 @@
             allowfullscreen=""
             loading="lazy"
             referrerpolicy="no-referrer-when-downgrade"
-          ></iframe>
+          >
+          </iframe>
         </section>
       </div>
-
       <div class="footer-bar">
         © <span id="y"></span> Nhi Nhi · Made with luuquancoder
       </div>
     </footer>
+
     <script>
-      // set năm hiện tại + render icon Lucide cho footer nếu cần
       (function () {
         try {
           const y = document.getElementById("y");
@@ -209,12 +661,14 @@
       })();
     </script>
 
-    <!-- Khởi tạo UI (drawer/theme/toast/spinner) -->
+    <!-- Khởi tạo UI + Toast -->
     <script type="module">
       import { initUI } from "/js/ui.js";
+      import { toast } from "/js/toast.js";
+      window.toast = toast; // cho phép gọi toast trong track.js
       initUI();
     </script>
-    <!-- Track logic (ESM) -->
+
     <script type="module" src="/js/track.js"></script>
   </body>
 </html>
