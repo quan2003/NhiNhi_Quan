@@ -2339,3 +2339,103 @@ header .cart-link .cart-badge {
     margin-left: auto;
   }
 }
+
+/* ======= cart section giỏ hàng ======= */
+aside.cart-section {
+  margin-top: 20px;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+  padding: 18px;
+  max-width: 360px;
+  margin-inline: auto;
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+aside.cart-section:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(0,0,0,0.16);
+}
+aside.cart-section .section-title {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 10px;
+  color: #1f2937;
+  border-bottom: 2px solid #eef2f7;
+  padding-bottom: 8px;
+}
+aside.cart-section .muted { color: #6b7280; font-size: 14px; }
+
+aside.cart-section .cart-items {
+  max-height: 260px;
+  overflow-y: auto;
+  margin-bottom: 14px;
+  padding-right: 6px;
+}
+aside.cart-section .cart-items::-webkit-scrollbar { width: 6px; }
+aside.cart-section .cart-items::-webkit-scrollbar-thumb {
+  background: #cfd8e3; border-radius: 8px;
+}
+
+aside.cart-section .cart-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+aside.cart-section .cart-item:last-child { border-bottom: none; }
+
+aside.cart-section .cart-item-name {
+  flex: 1;
+  font-size: 14px;
+  color: #111827;
+  font-weight: 600;
+}
+aside.cart-section .cart-item-controls {
+  display: flex; align-items: center; gap: 10px;
+}
+
+aside.cart-section .qty-input {
+  width: 70px;
+  height: 36px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 6px 8px;
+  font-size: 14px;
+  text-align: center;
+  outline: none;
+}
+aside.cart-section .qty-input:focus {
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 3px rgba(96,165,250,.25);
+}
+
+aside.cart-section .cart-item-price {
+  min-width: 96px;
+  text-align: right;
+  font-weight: 700;
+  color: #16a34a; /* xanh nhấn giá */
+}
+
+aside.cart-section .btn.outline.danger {
+  background: transparent;
+  border: 1px solid #ef4444;
+  color: #ef4444;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 13px;
+  cursor: pointer;
+}
+aside.cart-section .btn.outline.danger:hover {
+  background: #fee2e2;
+}
+
+aside.cart-section .total.card {
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 14px;
+  font-size: 15px;
+  line-height: 1.6;
+}
+aside.cart-section .total.card span { float: right; font-weight: 600; color: #111827; }
+aside.cart-section .total.card b { display:block; margin-top: 6px; font-size: 16px; color: #0f172a; }
+/* ======= END cart section giỏ hàng ======= */
