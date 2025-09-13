@@ -4,6 +4,16 @@
 (() => {
   const $ = (id) => document.getElementById(id);
 
+  // ---- Utils số học (QUAN TRỌNG: ép số về Number) ----
+  const num = (v) => {
+    const n = Number(v);
+    return Number.isFinite(n) ? n : 0;
+  };
+  const vnd = (n) => num(n).toLocaleString("vi-VN") + "₫";
+  const hasItems = (a) => Array.isArray(a) && a.length > 0;
+  const showLoading = (el, on) => el && el.classList.toggle("show", !!on);
+  const showEmpty = (el, on) => el && el.classList.toggle("show", !!on);
+
   // Elements
   const btnDaily = $("btnDaily");
   const btnMonthly = $("btnMonthly");
@@ -27,12 +37,6 @@
   const kpiCostDelta = $("kpiCostDelta");
   const kpiProfitDelta = $("kpiProfitDelta");
   const kpiOrdersDelta = $("kpiOrdersDelta");
-
-  // Utils
-  const showLoading = (el, on) => el && el.classList.toggle("show", !!on);
-  const showEmpty = (el, on) => el && el.classList.toggle("show", !!on);
-  const hasItems = (a) => Array.isArray(a) && a.length > 0;
-  const vnd = (n) => (n ?? 0).toLocaleString("vi-VN") + "₫";
 
   // Dates helpers
   const pad = (n) => String(n).padStart(2, "0");
@@ -61,7 +65,6 @@
     return {};
   }
   function prevPeriodOf({ from, to }) {
-    // tạo kỳ trước có cùng số ngày, lùi về trước
     const f = new Date(from + "T00:00:00Z");
     const t = new Date(to + "T00:00:00Z");
     const days = Math.max(1, Math.round((t - f) / 86400000) + 1);
@@ -100,21 +103,25 @@
     grid: { drawOnChartArea: false },
   });
 
-  // ===== KPI helpers =====
+  // ===== KPI helpers (DÙNG num() MỌI CHỖ) =====
   function sumDaily(items) {
     return (items || []).reduce(
       (acc, x) => {
-        acc.revenue += x.revenue || 0;
-        acc.cost += x.cost || 0;
-        acc.profit += x.profit ?? (x.revenue || 0) - (x.cost || 0);
-        acc.orders += x.orders || 0;
+        const r = num(x.revenue);
+        const c = num(x.cost);
+        const p = Number.isFinite(Number(x.profit)) ? num(x.profit) : r - c;
+        acc.revenue += r;
+        acc.cost += c;
+        acc.profit += p;
+        acc.orders += num(x.orders);
         return acc;
       },
       { revenue: 0, cost: 0, profit: 0, orders: 0 }
     );
   }
   function pctDelta(cur, prev) {
-    if (prev === undefined || prev === null) return "—";
+    cur = num(cur);
+    prev = num(prev);
     if (prev === 0) return cur === 0 ? "0%" : "+100%";
     const d = ((cur - prev) / prev) * 100;
     const sign = d > 0 ? "+" : "";
@@ -127,7 +134,7 @@
     kpiRevenue.textContent = vnd(cur.revenue);
     kpiCost.textContent = vnd(cur.cost);
     kpiProfit.textContent = vnd(cur.profit);
-    kpiOrders.textContent = String(cur.orders || 0);
+    kpiOrders.textContent = num(cur.orders).toLocaleString("vi-VN");
 
     kpiRevenueDelta.textContent =
       "So với kỳ trước: " + pctDelta(cur.revenue, prev.revenue);
@@ -139,7 +146,7 @@
       "So với kỳ trước: " + pctDelta(cur.orders, prev.orders);
   }
 
-  // ===== Renders =====
+  // ===== Renders (ÉP SỐ CHO DATASETS) =====
   function renderDaily(data) {
     const it = data?.items || [];
     showEmpty(dailyEmpty, !hasItems(it));
@@ -155,7 +162,7 @@
         datasets: [
           {
             label: "Doanh thu",
-            data: it.map((x) => x.revenue),
+            data: it.map((x) => num(x.revenue)),
             borderColor: COLORS.revenue,
             yAxisID: "yMoney",
             fill: false,
@@ -165,7 +172,7 @@
           },
           {
             label: "Chi phí",
-            data: it.map((x) => x.cost),
+            data: it.map((x) => num(x.cost)),
             borderColor: COLORS.cost,
             yAxisID: "yMoney",
             fill: false,
@@ -175,7 +182,11 @@
           },
           {
             label: "Lợi nhuận",
-            data: it.map((x) => x.profit),
+            data: it.map((x) =>
+              Number.isFinite(Number(x.profit))
+                ? num(x.profit)
+                : num(x.revenue) - num(x.cost)
+            ),
             borderColor: COLORS.profit,
             yAxisID: "yMoney",
             fill: false,
@@ -185,7 +196,7 @@
           },
           {
             label: "Số đơn",
-            data: it.map((x) => x.orders),
+            data: it.map((x) => num(x.orders)),
             borderColor: COLORS.orders,
             yAxisID: "yCount",
             fill: false,
@@ -231,25 +242,25 @@
         datasets: [
           {
             label: "Doanh thu",
-            data: it.map((x) => x.revenue),
+            data: it.map((x) => num(x.revenue)),
             backgroundColor: COLORS.revenue,
             yAxisID: "yMoney",
           },
           {
             label: "Chi phí",
-            data: it.map((x) => x.cost),
+            data: it.map((x) => num(x.cost)),
             backgroundColor: COLORS.cost,
             yAxisID: "yMoney",
           },
           {
             label: "Lợi nhuận",
-            data: it.map((x) => x.profit),
+            data: it.map((x) => num(x.profit)),
             backgroundColor: COLORS.profit,
             yAxisID: "yMoney",
           },
           {
             label: "Số đơn",
-            data: it.map((x) => x.orders),
+            data: it.map((x) => num(x.orders)),
             type: "line",
             borderColor: COLORS.orders,
             yAxisID: "yCount",
@@ -282,19 +293,19 @@
         datasets: [
           {
             label: "Doanh thu",
-            data: it.map((x) => x.revenue),
+            data: it.map((x) => num(x.revenue)),
             backgroundColor: COLORS.revenue,
             yAxisID: "yMoney",
           },
           {
             label: "Lợi nhuận",
-            data: it.map((x) => x.profit),
+            data: it.map((x) => num(x.profit)),
             backgroundColor: COLORS.profit,
             yAxisID: "yMoney",
           },
           {
             label: "Số đơn",
-            data: it.map((x) => x.orders),
+            data: it.map((x) => num(x.orders)),
             type: "line",
             borderColor: COLORS.orders,
             yAxisID: "yCount",
@@ -348,33 +359,7 @@
       .forEach((c) => c.classList.remove("active"));
     el?.classList.add("active");
   }
-  quickRanges?.addEventListener("click", async (e) => {
-    const b = e.target.closest(".chip");
-    if (!b) return;
 
-    // cập nhật trạng thái hiển thị
-    setActiveChip(b);
-
-    const r = rangeOf(b.dataset.range);
-    document.getElementById("from").value = r.from || "";
-    document.getElementById("to").value = r.to || "";
-
-    try {
-      showLoading(dailyLoading, true);
-      const data = await window.__adminFetch(
-        "/api/reports/daily?" + new URLSearchParams(r).toString()
-      );
-      renderDaily(data);
-      if (!hasItems(data?.items))
-        showToast("Không có dữ liệu trong khoảng thời gian này.");
-    } catch (e) {
-      console.error("Daily quick-range error:", e);
-      toggleEmpty(dailyEmpty, true);
-      showToast("Lỗi khi tải dữ liệu báo cáo theo ngày.");
-    } finally {
-      showLoading(dailyLoading, false);
-    }
-  });
   // default date inputs = 7 ngày
   (function setDefaultDates() {
     const r = rangeOf("7");
@@ -423,7 +408,7 @@
     }
   });
 
-  // Theo ngày: chips nhanh
+  // Theo ngày: chips nhanh (1 listener duy nhất)
   quickRanges?.addEventListener("click", async (e) => {
     const b = e.target.closest(".chip");
     if (!b) return;
@@ -436,9 +421,13 @@
       const [d, prevD] = await Promise.all([fetchDaily(r), fetchDaily(prevR)]);
       renderDaily(d);
       updateKPI(d.items, prevD.items);
-    } catch (e) {
-      console.error("Daily quick-range error:", e);
+      if (!hasItems(d?.items) && window.showToast) {
+        showToast("Không có dữ liệu trong khoảng thời gian này.");
+      }
+    } catch (err) {
+      console.error("Daily quick-range error:", err);
       showEmpty(dailyEmpty, true);
+      if (window.showToast) showToast("Lỗi khi tải dữ liệu báo cáo theo ngày.");
     }
   });
 

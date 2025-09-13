@@ -1,10 +1,8 @@
 // ===== Products Admin — Danh sách nâng cấp: tìm, lọc, sort, phân trang =====
 (async function () {
-  /* =================== Toast unify (giống orders.js) =================== */
-  // Ưu tiên __ui.toast nếu có; nếu không, tạo fallback nhỏ và bọc window.toast.*
+  /* =================== Toast unify =================== */
   (function () {
     if (window.__ui?.toast) {
-      // mapping cũ -> mới
       window.toast = window.toast || {};
       window.toast.success = (m) => window.__ui.toast(m, "ok");
       window.toast.warning = (m) => window.__ui.toast(m, "warn", 1600);
@@ -12,7 +10,6 @@
       window.toast.info = (m) => window.__ui.toast(m, "info");
       return;
     }
-    // Fallback mini toast
     const el = document.createElement("div");
     el.style.cssText =
       "position:fixed;left:50%;bottom:12px;transform:translateX(-50%);background:#111827;border:1px solid rgba(148,163,184,.18);color:#e5e7eb;padding:10px 14px;border-radius:10px;box-shadow:0 10px 24px rgba(2,6,23,.35);font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:9999";
@@ -39,10 +36,8 @@
           : 1400;
       pop(msg, d);
     }
-    // gắn __ui.toast
     window.__ui = window.__ui || {};
     window.__ui.toast = t;
-    // tương thích window.toast.*
     window.toast = window.toast || {};
     window.toast.success = (m) => t(m, "ok");
     window.toast.warning = (m) => t(m, "warn");
@@ -50,7 +45,6 @@
     window.toast.info = (m) => t(m, "info");
   })();
 
-  // Shorthand notify — luôn về 1 nơi duy nhất
   const N = {
     ok: (m) => window.__ui.toast(m, "ok"),
     warn: (m) => window.__ui.toast(m, "warn", 1600),
@@ -58,8 +52,7 @@
     info: (m) => window.__ui.toast(m, "info"),
   };
 
-  /* =================== Modal confirm (giống orders.js) =================== */
-  // HTML modal đã được nhúng ngay trong products.html (id=confirmBackdrop)
+  /* =================== Modal confirm =================== */
   window.showConfirm = function (
     title,
     message,
@@ -102,7 +95,7 @@
     });
   };
 
-  /* =================== Broadcast tới index để refresh =================== */
+  /* =================== Broadcast =================== */
   let bch = null;
   try {
     bch = new BroadcastChannel("admin-update");
@@ -153,11 +146,13 @@
   const cImgUrl = document.getElementById("c_image_url");
   const cPreview = document.getElementById("c_preview");
   const cDrop = document.getElementById("c_drop");
+  const cSortOrder = document.getElementById("c_sortOrder"); // NEW
 
   /* =================== Data =================== */
   let list = [];
   try {
-    list = await fetch("/api/products").then((r) => r.json());
+    // Lấy API admin để có cả inactive + sortOrder
+    list = await window.__adminFetch("/api/admin/products");
   } catch (e) {
     N.err("Không tải được danh sách sản phẩm: " + (e?.message || e));
   }
@@ -257,7 +252,7 @@
       arr = arr.filter((p) => (p.active !== false) === on);
     }
 
-    const [key, dir] = (sortSel.value || "updatedAt:desc").split(":");
+    const [key, dir] = (sortSel.value || "sortOrder:asc").split(":");
     arr.sort((a, b) => {
       if (key === "name") {
         const va = (a.name || "").toLowerCase(),
@@ -267,10 +262,19 @@
         const va = +a.priceSell || 0,
           vb = +b.priceSell || 0;
         return dir === "asc" ? va - vb : vb - va;
-      } else {
+      } else if (key === "updatedAt") {
         const va = new Date(a.updatedAt || a.createdAt || 0).getTime();
         const vb = new Date(b.updatedAt || b.createdAt || 0).getTime();
         return dir === "asc" ? va - vb : vb - va;
+      } else {
+        // sortOrder (ưu tiên)
+        const va = Number.isFinite(+a.sortOrder) ? +a.sortOrder : 9999;
+        const vb = Number.isFinite(+b.sortOrder) ? +b.sortOrder : 9999;
+        if (va !== vb) return dir === "asc" ? va - vb : vb - va;
+        // fallback theo updatedAt mới nhất
+        const ua = new Date(a.updatedAt || a.createdAt || 0).getTime();
+        const ub = new Date(b.updatedAt || b.createdAt || 0).getTime();
+        return ub - ua;
       }
     });
     return arr;
@@ -348,6 +352,9 @@
             p.active !== false ? "checked" : ""
           }/><span></span></label>
         </td>
+        <td data-th="Thứ tự"><input class="sortOrder input num" type="number" min="1" step="1" value="${
+          p.sortOrder ?? 9999
+        }"/></td>
         <td class="col-actions">
           <div class="action-stack" style="display:flex;gap:6px;">
             <button class="btn primary btn-xs btn-save" type="button" title="Lưu">
@@ -373,6 +380,7 @@
       const unit = tr.querySelector(".unit");
       const active = tr.querySelector(".active");
       const desc = tr.querySelector(".desc");
+      const order = tr.querySelector(".sortOrder");
       const numHints = tr.querySelectorAll(".num-hint");
 
       desc.value = p.description || "";
@@ -433,21 +441,23 @@
           active: !!active.checked,
           imageUrl: (imgUrlInput.value || "").trim(),
           description: (desc.value || "").trim(),
+          sortOrder: Number(order.value || 9999),
         };
         try {
           const r = await window.__adminFetch(`/api/products/${p.id}`, {
             method: "PUT",
             body: JSON.stringify(body),
           });
-          Object.assign(p, r);
+          Object.assign(p, r); // giữ nguyên vị trí hiển thị hiện tại
           N.ok("Đã lưu sản phẩm");
           pingIndex();
+          draw(); // vẽ lại để cập nhật sort nếu đổi thứ tự
         } catch (e) {
           N.err("Lỗi lưu: " + e.message);
         }
       });
 
-      // Delete (xác nhận bằng modal giống orders.js)
+      // Delete
       tr.querySelector(".btn-del").addEventListener("click", async () => {
         const ok = await (window.showConfirm?.(
           "Xoá sản phẩm",
@@ -473,7 +483,6 @@
       tblBody.appendChild(tr);
     });
 
-    // Render Lucide icons sau khi DOM đã cập nhật
     try {
       window.lucide?.createIcons?.();
     } catch {}
@@ -491,6 +500,7 @@
       active: cActive.value === "true",
       imageUrl: (cImgUrl.value || "").trim(),
       description: (cDesc.value || "").trim(),
+      sortOrder: Number(cSortOrder.value || 9999),
     };
     try {
       const p = await window.__adminFetch("/api/products", {

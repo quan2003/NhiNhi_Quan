@@ -59,12 +59,7 @@
         background: color-mix(in oklab, var(--bg) 86%, transparent);
         border-bottom: 1px solid var(--line);
       }
-      .topbar {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-      }
+
       .brand {
         display: flex;
         align-items: center;
@@ -76,17 +71,7 @@
         border-radius: 8px;
         object-fit: cover;
       }
-      .brand h1 {
-        margin: 0;
-        font-size: clamp(16px, 2.2vw, 18px);
-      }
-      nav {
-        display: flex;
-        gap: 10px;
-        flex-wrap: wrap;
-      }
-      nav a,
-      nav button.linky {
+      .tabs a {
         text-decoration: none;
         color: var(--text);
         border: 1px solid var(--line);
@@ -98,51 +83,11 @@
         align-items: center;
         gap: 8px;
       }
-      nav a:hover,
-      nav button.linky:hover {
+      .tabs a.active,
+      .tabs a:hover {
         border-color: var(--accent);
       }
-      nav button.linky {
-        cursor: pointer;
-      }
-      .hamburger {
-        display: none;
-        border: 1px solid var(--line);
-        background: var(--chip);
-        padding: 8px 10px;
-        border-radius: 10px;
-        cursor: pointer;
-      }
-      .nav-wrap {
-        display: contents;
-      }
-      @media (max-width: 760px) {
-        .nav-wrap {
-          display: none;
-        }
-        .hamburger {
-          display: inline-flex;
-        }
-        .sheet {
-          position: fixed;
-          top: 56px;
-          right: 0;
-          background: var(--card);
-          border-left: 1px solid var(--line);
-          border-bottom: 1px solid var(--line);
-          border-top-left-radius: 12px;
-          padding: 12px;
-          display: none;
-          box-shadow: 0 12px 40px rgba(2, 6, 23, 0.4);
-        }
-        .sheet.open {
-          display: block;
-        }
-        .sheet nav {
-          flex-direction: column;
-          align-items: stretch;
-        }
-      }
+
       main {
         padding: 10px 0 24px;
       }
@@ -151,15 +96,17 @@
       }
       .controls {
         display: grid;
-        grid-template-columns: 1.2fr 0.9fr 0.8fr 0.8fr auto auto;
+        grid-template-columns: 1.2fr 0.9fr 0.8fr 0.8fr;
         gap: 10px;
         align-items: center;
       }
+
       @media (max-width: 980px) {
         .controls {
           grid-template-columns: 1fr 1fr;
         }
       }
+
       .input,
       .textarea,
       select.input {
@@ -224,6 +171,7 @@
         margin-left: 4px;
         opacity: 0.8;
       }
+
       .card {
         background: var(--card);
         border: 1px solid #1f2937;
@@ -245,6 +193,7 @@
           grid-template-columns: 1fr;
         }
       }
+
       .uploader {
         display: flex;
         align-items: center;
@@ -292,13 +241,14 @@
         border-color: #22c55e;
         background: #0e1712;
       }
+
       .table-wrap {
         overflow: auto;
       }
       table.table {
         width: 100%;
         border-collapse: collapse;
-        min-width: 980px;
+        min-width: 1080px;
       }
       .table th,
       .table td {
@@ -336,6 +286,7 @@
         margin-top: 4px;
         text-align: right;
       }
+
       .switch {
         position: relative;
         width: 40px;
@@ -368,12 +319,27 @@
       .switch input:checked + span::after {
         transform: translateX(16px);
       }
+
       @media (max-width: 700px) {
         table.table {
           min-width: 700px;
         }
       }
-      /* Confirm Modal (giống Orders) */
+
+      .pager {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 10px;
+        margin-top: 10px;
+      }
+      @media (max-width: 700px) {
+        .pager {
+          justify-content: center;
+        }
+      }
+
+      /* Confirm Modal */
       .confirm-backdrop {
         position: fixed;
         inset: 0;
@@ -409,7 +375,6 @@
     </style>
   </head>
   <body>
-    <!-- ===== Header ===== -->
     <header class="site">
       <div class="wrap container">
         <a href="/admin/index.html" class="brand">
@@ -419,30 +384,6 @@
             <small>Quản trị hệ thống</small>
           </div>
         </a>
-
-        <!-- Hamburger -->
-        <button
-          class="hamburger"
-          id="btnHamburger"
-          aria-expanded="false"
-          aria-controls="mSheet"
-          aria-label="Mở menu"
-        >
-          <svg
-            width="22"
-            height="18"
-            viewBox="0 0 24 18"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            aria-hidden="true"
-          >
-            <rect y="0" width="24" height="2" rx="1" fill="currentColor" />
-            <rect y="8" width="24" height="2" rx="1" fill="currentColor" />
-            <rect y="16" width="24" height="2" rx="1" fill="currentColor" />
-          </svg>
-        </button>
-
-        <!-- Tabs (desktop) -->
         <nav class="tabs" role="navigation" aria-label="Admin">
           <a href="/admin/index.html">Trang chủ</a>
           <a href="/admin/promotions.html">Khuyến mãi</a>
@@ -487,21 +428,13 @@
             <option value="false">Ẩn</option>
           </select>
           <select id="sort" class="input">
+            <option value="sortOrder:asc">Thứ tự (ưu tiên)</option>
             <option value="updatedAt:desc">Mới cập nhật</option>
             <option value="name:asc">Tên A → Z</option>
             <option value="name:desc">Tên Z → A</option>
             <option value="sell:asc">Giá thấp → cao</option>
             <option value="sell:desc">Giá cao → thấp</option>
           </select>
-          <button id="prev" class="btn btn-sm">← Trước</button>
-          <div
-            id="pageInfo"
-            class="muted"
-            style="font-size: 13px; text-align: center"
-          >
-            0–0 / 0
-          </div>
-          <button id="next" class="btn btn-sm">Sau →</button>
         </div>
       </section>
 
@@ -555,6 +488,19 @@
               <option value="false">Không</option>
             </select>
           </label>
+
+          <label>
+            Thứ tự hiển thị
+            <input
+              id="c_sortOrder"
+              class="input"
+              type="number"
+              min="1"
+              step="1"
+              value="9999"
+            />
+          </label>
+
           <label style="grid-column: 1/-1">
             Mô tả
             <textarea
@@ -626,40 +572,35 @@
                 <th>Đơn vị</th>
                 <th>Mô tả</th>
                 <th>Kích hoạt</th>
+                <th>Thứ tự</th>
                 <th style="width: 160px">Thao tác</th>
               </tr>
             </thead>
             <tbody></tbody>
           </table>
         </div>
+
+        <!-- Pager moved to bottom -->
+        <div class="pager">
+          <button id="prev" class="btn btn-sm">← Trước</button>
+          <div
+            id="pageInfo"
+            class="muted"
+            style="font-size: 13px; text-align: center"
+          >
+            0–0 / 0
+          </div>
+          <button id="next" class="btn btn-sm">Sau →</button>
+        </div>
       </section>
     </main>
 
     <!-- Common JS -->
-    <script src="/admin/js/admin-common.js" defer></script>
-    <!-- <script>
-      // Mobile sheet + logout
-      const sheet = document.getElementById("sheet");
-      document.getElementById("btnHamburger")?.addEventListener("click", () => {
-        const open = sheet.classList.toggle("open");
-        sheet.setAttribute("aria-hidden", String(!open));
-      });
-      document.getElementById("logout")?.addEventListener("click", () => {
-        window.__adminLogout?.();
-        window.toast?.success?.("Đã đăng xuất");
-      });
-      document
-        .getElementById("logout_m")
-        ?.addEventListener("click", () => window.__adminLogout?.());
-    </script> -->
-
-    <!-- Lucide Icons (PHẢI trước products.js) -->
+    <script src="/admin/js/admin-common.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-
-    <!-- Products JS -->
     <script src="/admin/js/products.js"></script>
 
-    <!-- Confirm Modal (giống Orders) -->
+    <!-- Confirm Modal -->
     <div id="confirmBackdrop" class="confirm-backdrop" aria-hidden="true">
       <div
         class="confirm-dialog"
