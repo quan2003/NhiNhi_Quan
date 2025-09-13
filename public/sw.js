@@ -1,5 +1,6 @@
 // public/sw.js
 
+// ======== PUSH HANDLERS ========
 self.addEventListener("push", (event) => {
   let data = {};
   try {
@@ -9,10 +10,10 @@ self.addEventListener("push", (event) => {
   const n = data.notification || {};
   const orderId = n?.data?.orderId;
 
-  /** Gợi ý actions: Chrome/Edge/Android hỗ trợ; iOS Safari hiện chưa hiển thị buttons. */
+  /** Actions: Chrome/Edge/Android hỗ trợ; iOS Safari hiện chưa hiển thị buttons. */
   const actions = [
     { action: "open-orders", title: "Xem đơn" },
-    // Có thể thêm: { action: "mute", title: "Tạm ẩn" } (tự xử lý phía dưới)
+    // { action: "mute", title: "Tạm ẩn" }, // ví dụ bổ sung nếu muốn
   ];
 
   const options = {
@@ -72,3 +73,94 @@ async function openOrFocus(url = "/admin/orders.html") {
   // Chưa có tab admin → mở tab mới
   await clients.openWindow(url);
 }
+
+// ======== RE-SUBSCRIBE NỀN KHI TOKEN HẾT HẠN ========
+
+// Tiny helper để lấy applicationServerKey
+function urlBase64ToUint8Array(base64String) {
+  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+  const rawData = atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+  for (let i = 0; i < rawData.length; ++i)
+    outputArray[i] = rawData.charCodeAt(i);
+  return outputArray;
+}
+
+// Lưu adminToken vào IndexedDB để SW tự gọi API requireAdmin khi re-subscribe
+const DB_NAME = "nnq-sw";
+const DB_STORE = "kv";
+
+function idbPut(key, value) {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(DB_NAME, 1);
+    req.onupgradeneeded = () => req.result.createObjectStore(DB_STORE);
+    req.onsuccess = () => {
+      const tx = req.result.transaction(DB_STORE, "readwrite");
+      tx.objectStore(DB_STORE).put(value, key);
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error);
+    };
+    req.onerror = () => reject(req.error);
+  });
+}
+
+function idbGet(key) {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(DB_NAME, 1);
+    req.onupgradeneeded = () => req.result.createObjectStore(DB_STORE);
+    req.onsuccess = () => {
+      const tx = req.result.transaction(DB_STORE, "readonly");
+      const g = tx.objectStore(DB_STORE).get(key);
+      g.onsuccess = () => resolve(g.result);
+      g.onerror = () => reject(g.error);
+    };
+    req.onerror = () => reject(req.error);
+  });
+}
+
+// Nhận token từ trang (sau khi đăng nhập) để SW dùng trong fetch requireAdmin
+self.addEventListener("message", (event) => {
+  if (event.data && event.data.type === "SET_ADMIN_TOKEN") {
+    idbPut("adminToken", String(event.data.token || ""));
+  }
+});
+
+// Khi subscription thay đổi/hết hạn → tự đăng ký lại + báo server
+self.addEventListener("pushsubscriptionchange", (event) => {
+  event.waitUntil(
+    (async () => {
+      try {
+        const adminToken = (await idbGet("adminToken")) || "";
+        const r = await fetch("/api/push/publicKey", {
+          headers: { "x-admin-token": adminToken },
+        });
+        const { publicKey } = await r.json();
+        if (!publicKey) return;
+
+        const newSub = await self.registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array(publicKey),
+        });
+
+        await fetch("/api/push/subscribe", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-admin-token": adminToken,
+          },
+          body: JSON.stringify(newSub),
+        });
+
+        // Báo UI (nếu đang mở) để cập nhật nút
+        const all = await clients.matchAll({
+          type: "window",
+          includeUncontrolled: true,
+        });
+        all.forEach((c) => c.postMessage({ type: "PUSH_READY" }));
+      } catch (e) {
+        console.warn("pushsubscriptionchange re-subscribe failed:", e);
+      }
+    })()
+  );
+});

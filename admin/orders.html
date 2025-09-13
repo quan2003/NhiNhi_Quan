@@ -1,43 +1,504 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="vi">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Quản lý đơn hàng</title>
-  <link rel="stylesheet" href="/admin/css/admin.css" />
-</head>
-<body>
-  <header class="container">
-    <h1>Đơn hàng</h1>
-    <nav>
-      <a href="/admin/index.html">Trang chủ</a>
-      <a href="/admin/products.html">Sản phẩm</a>
-      <a href="/admin/reports.html">Báo cáo</a>
-      <a href="#" id="logout">Đăng xuất</a>
-    </nav>
-  </header>
-  <main class="container">
-    <div class="row" style="gap:12px;margin-bottom:10px">
-      <label>Trạng thái
-        <select id="status">
-          <option value="">Tất cả</option>
-          <option value="NEW">Mới</option>
-          <option value="IN_PROGRESS">Đang làm</option>
-          <option value="COMPLETED">Hoàn tất</option>
-        </select>
-      </label>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Quản lý đơn hàng — Admin</title>
+    <link rel="icon" type="image/png" sizes="16x16" href="/img/logo.jpg" />
+    <link rel="stylesheet" href="/admin/css/admin.css?v=2" />
+
+    <!-- Styles RIÊNG cho trang Đơn hàng (không đụng tới header/nav) -->
+    <style>
+      :root {
+        --header-h: 56px;
+      }
+
+      .orders-page {
+        padding: 10px 0 48px;
+      }
+
+      /* Toolbar né header sticky */
+      .toolbar {
+        position: sticky;
+        top: calc(var(--header-h) + env(safe-area-inset-top, 0px));
+        z-index: 8;
+        backdrop-filter: blur(8px);
+        background: color-mix(in oklab, var(--bg) 70%, transparent);
+        border-bottom: 1px solid var(--border);
+        padding: 12px 0;
+        margin-bottom: 12px;
+      }
+      .toolbar .row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        align-items: center;
+      }
+      .toolbar .row label {
+        color: var(--muted);
+        font-size: 14px;
+      }
+      .toolbar select,
+      .toolbar input {
+        background: var(--card);
+        color: var(--text);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 8px 10px;
+        outline: none;
+      }
+      .toolbar .spacer {
+        flex: 1;
+      }
+
+      /* Table */
+      .table {
+        width: 100%;
+        border-collapse: collapse;
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        overflow: hidden;
+      }
+      .table thead th {
+        text-align: left;
+        font-weight: 600;
+        font-size: 13px;
+        color: #cbd5e1;
+        background: #0c1328;
+        padding: 12px 14px;
+        border-bottom: 1px solid var(--border);
+        white-space: nowrap;
+      }
+      .table tbody td {
+        padding: 12px 14px;
+        border-bottom: 1px solid var(--border);
+        vertical-align: top;
+        color: var(--text);
+        font-size: 14px;
+      }
+      .table tbody tr:hover {
+        background: rgba(148, 163, 184, 0.06);
+      }
+
+      .muted {
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 10px;
+        border-radius: 999px;
+        font-size: 12px;
+        border: 1px solid;
+      }
+      .badge.info {
+        color: #93c5fd;
+        border-color: #1d4ed8;
+        background: rgba(29, 78, 216, 0.15);
+      }
+      .badge.warn {
+        color: #fcd34d;
+        border-color: #b45309;
+        background: rgba(180, 83, 9, 0.15);
+      }
+      .badge.success {
+        color: #86efac;
+        border-color: #15803d;
+        background: rgba(21, 128, 61, 0.15);
+      }
+      .badge.danger {
+        color: #fecaca;
+        border-color: #b91c1c;
+        background: rgba(185, 28, 28, 0.15);
+      }
+      .badge.gray {
+        color: #cbd5e1;
+        border-color: #334155;
+        background: rgba(51, 65, 85, 0.35);
+      }
+
+      .btn {
+        padding: 8px 10px;
+        border-radius: 10px;
+        border: 1px solid var(--border);
+        background: #0c1328;
+        color: var(--text);
+        font-size: 13px;
+        cursor: pointer;
+      }
+      .btn:hover {
+        filter: brightness(1.1);
+      }
+      .btn.ghost {
+        background: transparent;
+      }
+      .btn.danger {
+        border-color: rgba(239, 68, 68, 0.4);
+        background: rgba(239, 68, 68, 0.08);
+        color: #fecaca;
+      }
+      .btn[disabled] {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+      .cell-actions {
+        display: flex;
+        gap: 8px;
+        margin-top: 8px;
+      }
+
+      .pagination {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        justify-content: center;
+        margin-top: 14px;
+      }
+      #pageInfo {
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      @media (max-width: 900px) {
+        .table thead {
+          display: none;
+        }
+        .table,
+        .table tbody,
+        .table tr,
+        .table td {
+          display: block;
+          width: 100%;
+        }
+        .table tr {
+          background: var(--card);
+          margin: 10px 0;
+          border: 1px solid var(--border);
+          border-radius: 14px;
+          overflow: hidden;
+        }
+        .table tbody td {
+          border: 0;
+          padding: 10px 12px;
+          display: flex;
+          gap: 8px;
+          align-items: flex-start;
+        }
+        .table tbody td::before {
+          content: attr(data-label);
+          flex: 0 0 110px;
+          color: var(--muted);
+          font-size: 12px;
+        }
+        .cell-actions {
+          padding: 0 12px 12px;
+        }
+      }
+
+      /* Toast */
+      .toast-wrap {
+        position: fixed;
+        top: 16px;
+        right: 16px;
+        z-index: 50;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .toast {
+        min-width: 240px;
+        max-width: 320px;
+        padding: 10px 12px;
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        background: #0c1328;
+        color: var(--text);
+        font-size: 13px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+        display: flex;
+        gap: 10px;
+        animation: slideIn 0.22s ease;
+      }
+      .toast.success {
+        border-color: rgba(34, 197, 94, 0.4);
+      }
+      .toast.error {
+        border-color: rgba(239, 68, 68, 0.4);
+      }
+      .toast.warn {
+        border-color: rgba(245, 158, 11, 0.4);
+      }
+      @keyframes slideIn {
+        from {
+          transform: translateY(-8px);
+          opacity: 0;
+        }
+        to {
+          transform: translateY(0);
+          opacity: 1;
+        }
+      }
+
+      /* Drawer */
+      .drawer {
+        position: fixed;
+        inset: 0 0 0 auto;
+        width: min(520px, 96vw);
+        transform: translateX(100%);
+        transition: transform 0.25s ease;
+        z-index: 70;
+        display: flex;
+      }
+      .drawer.open {
+        transform: translateX(0);
+      }
+      .drawer .back {
+        position: absolute;
+        inset: 0;
+        right: auto;
+        width: 100vw;
+        background: rgba(0, 0, 0, 0.45);
+        z-index: 0;
+      }
+      .drawer .panel {
+        margin-left: auto;
+        height: 100%;
+        width: 100%;
+        max-width: min(520px, 96vw);
+        background: var(--card);
+        border-left: 1px solid var(--border);
+        padding: 16px;
+        overflow: auto;
+        position: relative;
+        z-index: 1;
+        pointer-events: auto;
+      }
+      .dl {
+        display: grid;
+        grid-template-columns: 120px 1fr;
+        gap: 8px 12px;
+      }
+      .dl .dt {
+        color: var(--muted);
+      }
+      .items {
+        margin-top: 8px;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        overflow: hidden;
+      }
+      .items table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      .items th,
+      .items td {
+        padding: 8px 10px;
+        border-bottom: 1px solid var(--border);
+        font-size: 14px;
+      }
+      .total-box {
+        margin-top: 12px;
+        padding: 10px;
+        border: 1px dashed var(--border);
+        border-radius: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- ===== Header ===== -->
+    <header class="site">
+      <div class="wrap container">
+        <a href="/admin/index.html" class="brand">
+          <img src="/img/logo.jpg" alt="Logo" />
+          <div>
+            <div style="font-weight: 800">Admin — Nhi Nhi Quán</div>
+            <small>Quản trị hệ thống</small>
+          </div>
+        </a>
+
+        <!-- Hamburger -->
+        <button
+          class="hamburger"
+          id="btnHamburger"
+          aria-expanded="false"
+          aria-controls="mSheet"
+          aria-label="Mở menu"
+        >
+          <svg
+            width="22"
+            height="18"
+            viewBox="0 0 24 18"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            aria-hidden="true"
+          >
+            <rect y="0" width="24" height="2" rx="1" fill="currentColor" />
+            <rect y="8" width="24" height="2" rx="1" fill="currentColor" />
+            <rect y="16" width="24" height="2" rx="1" fill="currentColor" />
+          </svg>
+        </button>
+
+        <!-- Tabs (desktop) -->
+        <nav class="tabs" role="navigation" aria-label="Admin">
+          <a href="/admin/index.html">Trang chủ</a>
+          <a href="/admin/promotions.html">Khuyến mãi</a>
+          <a href="/admin/products.html">Sản phẩm</a>
+          <a class="active" href="/admin/orders.html">Đơn hàng</a>
+          <a href="/admin/reports.html">Báo cáo</a>
+          <a href="/admin/login.html" id="logout">Đăng xuất</a>
+        </nav>
+      </div>
+    </header>
+
+    <!-- Mobile Sheet -->
+    <div id="mSheet" class="sheet" aria-hidden="true">
+      <div class="sheet-back" id="mBack"></div>
+      <div class="sheet-panel">
+        <nav>
+          <a href="/admin/index.html">Trang chủ</a>
+          <a href="/admin/promotions.html">Khuyến mãi</a>
+          <a href="/admin/products.html">Sản phẩm</a>
+          <a href="/admin/orders.html">Đơn hàng</a>
+          <a href="/admin/reports.html">Báo cáo</a>
+          <a href="#" id="logout_m">Đăng xuất</a>
+        </nav>
+      </div>
     </div>
-    <table class="table" id="tbl">
-      <thead><tr><th>Mã</th><th>Khách</th><th>Tổng</th><th>Thanh toán</th><th>Trạng thái</th><th>Thời gian</th><th></th></tr></thead>
-      <tbody></tbody>
-    </table>
-    <div class="pagination">
-      <button id="prev">Trước</button>
-      <span id="pageInfo"></span>
-      <button id="next">Sau</button>
+
+    <main class="container orders-page">
+      <div class="toolbar">
+        <div class="row">
+          <label
+            >Trạng thái
+            <select id="status">
+              <option value="">Tất cả</option>
+              <option value="NEW">Mới</option>
+              <option value="IN_PROGRESS">Đang làm</option>
+              <option value="COMPLETED">Hoàn tất</option>
+              <option value="CANCELED">Đã huỷ</option>
+            </select>
+          </label>
+
+          <div class="spacer"></div>
+
+          <label
+            >Tìm nhanh
+            <input id="q" type="search" placeholder="Mã / SĐT / Tên" />
+          </label>
+        </div>
+      </div>
+
+      <section class="card" style="padding: 0">
+        <table class="table" id="tbl">
+          <thead>
+            <tr>
+              <th>Mã</th>
+              <th>Khách</th>
+              <th>Tổng</th>
+              <th>Thanh toán</th>
+              <th>Loại - Lịch</th>
+              <th>Trạng thái</th>
+              <th>Tạo lúc</th>
+              <th>Thao tác</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </section>
+
+      <div class="pagination">
+        <button id="prev" class="btn">« Trước</button>
+        <span id="pageInfo"></span>
+        <button id="next" class="btn">Sau »</button>
+      </div>
+    </main>
+
+    <div class="toast-wrap" id="toastWrap"></div>
+
+    <!-- Modal xác nhận -->
+    <div
+      class="modal-backdrop"
+      id="confirmBackdrop"
+      role="dialog"
+      aria-modal="true"
+    >
+      <div class="modal">
+        <h3 id="confirmTitle">Xác nhận</h3>
+        <p id="confirmMsg" class="muted">Bạn chắc chắn?</p>
+        <div class="actions">
+          <button id="confirmCancel" class="btn ghost">Huỷ</button>
+          <button id="confirmOk" class="btn danger">Xoá</button>
+        </div>
+      </div>
     </div>
-  </main>
-  <script src="/admin/js/admin-common.js"></script>
-  <script src="/admin/js/orders.js"></script>
-</body>
+
+    <!-- Drawer chi tiết + hoá đơn -->
+    <div class="drawer" id="detailDrawer" aria-hidden="true">
+      <div class="back" id="detailBack"></div>
+      <div class="panel">
+        <div
+          style="
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+          "
+        >
+          <h3 style="margin: 0">Chi tiết đơn <code id="d_id"></code></h3>
+          <div style="display: flex; gap: 8px">
+            <button class="btn" id="d_invoice" title="Chỉ xem khi Hoàn tất">
+              Xem hoá đơn
+            </button>
+            <button class="btn ghost" id="d_close">Đóng</button>
+          </div>
+        </div>
+
+        <div class="dl" style="margin-top: 10px">
+          <div class="dt">Khách</div>
+          <div id="d_customer"></div>
+          <div class="dt">Liên hệ</div>
+          <div id="d_contact" class="muted"></div>
+          <div class="dt">Địa chỉ</div>
+          <div id="d_address" class="muted"></div>
+          <div class="dt">Loại</div>
+          <div id="d_type"></div>
+          <div class="dt">Lịch</div>
+          <div id="d_schedule" class="muted"></div>
+          <div class="dt">Bàn/Khách</div>
+          <div id="d_table" class="muted"></div>
+          <div class="dt">Thanh toán</div>
+          <div id="d_pay"></div>
+          <div class="dt">Ghi chú</div>
+          <div id="d_note" class="muted"></div>
+        </div>
+
+        <div class="items" style="margin-top: 12px">
+          <table>
+            <thead>
+              <tr>
+                <th style="text-align: left">Món</th>
+                <th>SL</th>
+                <th style="text-align: right">Thành tiền</th>
+              </tr>
+            </thead>
+            <tbody id="d_items"></tbody>
+          </table>
+        </div>
+
+        <div class="total-box">
+          <div>Tạm tính: <b id="d_sub"></b></div>
+          <div>Giảm: <b id="d_disc"></b></div>
+          <div>Tổng: <b id="d_total" style="font-size: 18px"></b></div>
+        </div>
+      </div>
+    </div>
+
+    <script defer src="/admin/js/admin-common.js?v=2"></script>
+    <script defer src="/admin/js/orders.js?v=2"></script>
+  </body>
 </html>

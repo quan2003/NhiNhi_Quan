@@ -2338,104 +2338,737 @@ header .cart-link .cart-badge {
   header .cart-link {
     margin-left: auto;
   }
-}
-
-/* ======= cart section giỏ hàng ======= */
-aside.cart-section {
-  margin-top: 20px;
-  background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.12);
-  padding: 18px;
-  max-width: 360px;
-  margin-inline: auto;
-  transition: transform .2s ease, box-shadow .2s ease;
-}
-aside.cart-section:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 24px rgba(0,0,0,0.16);
-}
-aside.cart-section .section-title {
-  font-size: 20px;
-  font-weight: 700;
-  margin-bottom: 10px;
-  color: #1f2937;
-  border-bottom: 2px solid #eef2f7;
-  padding-bottom: 8px;
-}
-aside.cart-section .muted { color: #6b7280; font-size: 14px; }
-
-aside.cart-section .cart-items {
-  max-height: 260px;
-  overflow-y: auto;
-  margin-bottom: 14px;
-  padding-right: 6px;
-}
-aside.cart-section .cart-items::-webkit-scrollbar { width: 6px; }
-aside.cart-section .cart-items::-webkit-scrollbar-thumb {
-  background: #cfd8e3; border-radius: 8px;
-}
-
+} /* Cart item = 2 cột: trái tên, phải controls */
 aside.cart-section .cart-item {
-  display: flex; align-items: center; gap: 12px;
-  padding: 10px 0;
-  border-bottom: 1px solid #e5e7eb;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--bg-soft);
 }
-aside.cart-section .cart-item:last-child { border-bottom: none; }
 
+/* Tên món linh hoạt, cho phép xuống dòng mà không đẩy cụm nút */
 aside.cart-section .cart-item-name {
-  flex: 1;
-  font-size: 14px;
-  color: #111827;
-  font-weight: 600;
+  min-width: 0;
+  font-weight: 700;
+  line-height: 1.4;
+  white-space: normal;
+  word-break: break-word;
 }
+
+/* Cụm nút bên phải luôn 1 hàng */
 aside.cart-section .cart-item-controls {
-  display: flex; align-items: center; gap: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: nowrap;
 }
 
-aside.cart-section .qty-input {
-  width: 70px;
-  height: 36px;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  padding: 6px 8px;
-  font-size: 14px;
+/* Viên số lượng đồng bộ */
+aside.cart-section .qty-pill {
+  /* hoặc input qty hiện có */
+  min-width: 44px;
+  height: 32px;
+  padding: 6px 10px;
   text-align: center;
-  outline: none;
-}
-aside.cart-section .qty-input:focus {
-  border-color: #60a5fa;
-  box-shadow: 0 0 0 3px rgba(96,165,250,.25);
+  font-weight: 800;
+  border-radius: 10px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  line-height: 20px;
 }
 
+/* Giá không xuống dòng, canh phải */
 aside.cart-section .cart-item-price {
   min-width: 96px;
+  white-space: nowrap;
   text-align: right;
-  font-weight: 700;
-  color: #16a34a; /* xanh nhấn giá */
+  font-weight: 800;
+  color: #ef4444; /* hoặc var(--accent) nếu muốn xanh */
 }
 
+/* Nút thùng rác dạng icon tròn */
+aside.cart-section .icon-btn.danger,
 aside.cart-section .btn.outline.danger {
-  background: transparent;
-  border: 1px solid #ef4444;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
   color: #ef4444;
-  border-radius: 8px;
-  padding: 6px 10px;
-  font-size: 13px;
-  cursor: pointer;
+  border: 1px solid color-mix(in srgb, #ef4444 60%, var(--border));
+  background: rgba(239, 68, 68, 0.08);
 }
+aside.cart-section .icon-btn.danger:hover,
 aside.cart-section .btn.outline.danger:hover {
-  background: #fee2e2;
+  background: rgba(239, 68, 68, 0.18);
 }
 
-aside.cart-section .total.card {
-  background: #f8fafc;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  padding: 14px;
-  font-size: 15px;
-  line-height: 1.6;
+/* Ẩn aside giỏ hàng trên mobile, thay bằng thanh dính chân */
+@media (max-width: 980px) {
+  .cart-section {
+    display: none !important;
+  }
 }
-aside.cart-section .total.card span { float: right; font-weight: 600; color: #111827; }
-aside.cart-section .total.card b { display:block; margin-top: 6px; font-size: 16px; color: #0f172a; }
-/* ======= END cart section giỏ hàng ======= */
+
+/* ===== Footer mini bar ===== */
+.cart-fab-mobile {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 60;
+  background: var(--accent);
+  color: #fff;
+  padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+  box-shadow: 0 -6px 16px rgba(0, 0, 0, 0.18);
+}
+.cart-fab-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.cart-fab-mobile .btn.sm {
+  padding: 8px 12px;
+  border-radius: 12px;
+}
+
+/* ===== Bottom sheet ===== */
+.cart-sheet {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 70;
+  transform: translateY(100%);
+  transition: transform 0.22s ease-out;
+  background: var(--surface);
+  color: var(--text);
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+  box-shadow: 0 -16px 36px rgba(0, 0, 0, 0.28);
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+}
+.cart-sheet.open {
+  transform: translateY(0);
+}
+.cart-sheet-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+}
+.cart-sheet-items {
+  padding: 10px 14px;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.sheet-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.sheet-item .name {
+  flex: 1;
+  font-weight: 600;
+}
+.sheet-item .right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.iconbtn {
+  padding: 6px 10px;
+  border-radius: 10px;
+  background: var(--bg-soft);
+  border: 1px solid var(--border);
+}
+.iconbtn.danger {
+  background: transparent;
+  border-color: transparent;
+}
+.qty .mini {
+  width: 44px;
+  text-align: center;
+}
+.cart-sheet-total {
+  padding: 10px 14px;
+  border-top: 1px solid var(--border);
+  background: var(--bg-soft);
+  display: grid;
+  row-gap: 6px;
+}
+.cart-sheet-total .strong {
+  font-weight: 700;
+}
+.cart-sheet-actions {
+  padding: 12px 14px;
+  border-top: 1px solid var(--border);
+}
+.cart-sheet .btn.wide {
+  width: 100%;
+}
+/* ==== Cart: icon buttons (cộng/trừ/thùng rác) ==== */
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, transform 0.15s;
+  border: 1px solid transparent;
+  /* mặc định cho dark theme */
+  background: rgba(255, 255, 255, 0.08);
+  color: #f3f4f6;
+}
+.icon-btn:hover {
+  background: rgba(255, 255, 255, 0.18);
+  transform: translateY(-1px);
+}
+.icon-btn:active {
+  transform: translateY(0);
+}
+
+/* Icon Lucide đậm hơn */
+.icon-btn i,
+.icon-btn svg,
+.icon-btn .lucide {
+  width: 18px;
+  height: 18px;
+  stroke-width: 2.2;
+}
+
+/* Light theme: đổi nền/màu để tương phản */
+:root.theme-light .icon-btn {
+  background: rgba(0, 0, 0, 0.06);
+  color: #374151;
+  border-color: rgba(0, 0, 0, 0.06);
+}
+:root.theme-light .icon-btn:hover {
+  background: rgba(0, 0, 0, 0.12);
+}
+
+/* Trạng thái nguy hiểm (thùng rác) */
+.icon-btn.danger {
+  color: #ef4444;
+}
+:root.theme-light .icon-btn.danger {
+  color: #b91c1c;
+}
+
+/* Vô hiệu hoá */
+.icon-btn[disabled] {
+  opacity: 0.55;
+  pointer-events: none;
+}
+/* ===== UNIFY CART (desktop + mobile) ===== */
+
+/* 1) Card giỏ hàng (desktop) dùng biến màu, không hard-code trắng */
+aside.cart-section {
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text) !important;
+  box-shadow: var(--shadow-soft) !important;
+}
+aside.cart-section .section-title {
+  color: var(--text) !important;
+  border-bottom: 1px solid var(--border) !important;
+}
+aside.cart-section .muted {
+  color: var(--muted) !important;
+}
+
+aside.cart-section .cart-items {
+  padding-right: 6px;
+}
+aside.cart-section .cart-items::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--border) 80%, transparent) !important;
+}
+
+/* Tên món + giá dùng chung tone */
+aside.cart-section .cart-item-name {
+  color: var(--text) !important;
+}
+aside.cart-section .cart-item-price {
+  color: var(--accent) !important;
+}
+
+/* Tổng tiền giống mobile */
+aside.cart-section .total.card {
+  background: var(--bg-soft) !important;
+  border: 1px solid var(--border) !important;
+}
+aside.cart-section .total.card span {
+  color: var(--text) !important;
+}
+
+/* 2) Nút icon tròn (dùng CHUNG cho desktop & mobile) */
+.icon-btn,
+.cart-sheet .iconbtn {
+  /* giữ tương thích class cũ trên mobile */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: background 0.2s, color 0.2s, transform 0.15s;
+  background: rgba(255, 255, 255, 0.08);
+  color: #f3f4f6;
+  padding: 0;
+}
+.icon-btn:hover,
+.cart-sheet .iconbtn:hover {
+  background: rgba(255, 255, 255, 0.18);
+  transform: translateY(-1px);
+}
+.icon-btn:active,
+.cart-sheet .iconbtn:active {
+  transform: translateY(0);
+}
+.icon-btn[disabled],
+.cart-sheet .iconbtn[disabled] {
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.icon-btn i,
+.icon-btn svg,
+.icon-btn .lucide,
+.cart-sheet .iconbtn i,
+.cart-sheet .iconbtn svg,
+.cart-sheet .iconbtn .lucide {
+  width: 18px;
+  height: 18px;
+  stroke-width: 2.2;
+}
+
+.icon-btn.danger,
+.cart-sheet .iconbtn.danger {
+  color: #ef4444;
+}
+:root.theme-light .icon-btn.danger,
+:root.theme-light .cart-sheet .iconbtn.danger {
+  color: #b91c1c;
+}
+
+/* Light theme */
+:root.theme-light .icon-btn,
+:root.theme-light .cart-sheet .iconbtn {
+  background: rgba(0, 0, 0, 0.06);
+  color: #374151;
+  border-color: rgba(0, 0, 0, 0.06);
+}
+:root.theme-light .icon-btn:hover,
+:root.theme-light .cart-sheet .iconbtn:hover {
+  background: rgba(0, 0, 0, 0.12);
+}
+
+.qty-pill,
+aside.cart-section .qty-input,
+.cart-sheet .qty .mini,
+#mdQtyDisplay {
+  min-width: 44px;
+  height: 32px;
+  padding: 6px 10px;
+  text-align: center;
+  font-weight: 700;
+  border-radius: 10px;
+  background: var(--bg-soft) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text) !important;
+  line-height: 20px;
+}
+
+/* 4) Khoảng cách controls giống nhau */
+.cart-item-controls,
+.cart-sheet .right,
+.cart-sheet .qty {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* 5) Icon Lucide luôn ăn theo màu chữ */
+.lucide {
+  stroke: currentColor;
+}
+.qty-pill {
+  min-width: 44px;
+  height: 32px;
+  padding: 6px 10px;
+  text-align: center;
+  font-weight: 700;
+  border-radius: 10px;
+  background: var(--bg-soft);
+  border: 1px solid var(--border);
+  color: var(--text);
+  line-height: 20px;
+}
+/* === Cart Desktop Polish === */
+@media (min-width: 981px) {
+  .checkout-layout {
+    grid-template-columns: minmax(0, 1fr) 500px !important;
+  }
+}
+
+aside.cart-section {
+  padding: 16px;
+  border-radius: 14px;
+  background: var(--surface);
+  box-shadow: var(--shadow-soft);
+}
+
+/* Item layout: 2 cột */
+aside.cart-section .cart-item {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--bg-soft);
+}
+
+/* Tên món xuống dòng thoải mái */
+aside.cart-section .cart-item-name {
+  font-weight: 600;
+  line-height: 1.45;
+  word-break: break-word;
+  white-space: normal;
+}
+
+/* Cụm controls ngang hàng */
+aside.cart-section .cart-item-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: nowrap;
+}
+
+/* Nút qty */
+aside.cart-section .qty-pill,
+aside.cart-section .qty-input {
+  min-width: 46px;
+  height: 34px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  font-weight: 700;
+  text-align: center;
+}
+
+/* Giá đỏ */
+aside.cart-section .cart-item-price {
+  min-width: 100px;
+  text-align: right;
+  white-space: nowrap;
+  font-weight: 700;
+  color: #ef4444;
+}
+
+/* Thùng rác = icon tròn đỏ */
+aside.cart-section .icon-btn.danger,
+aside.cart-section .btn.outline.danger {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #ef4444;
+  border: 1px solid color-mix(in srgb, #ef4444 60%, var(--border));
+  background: rgba(239, 68, 68, 0.08);
+  transition: 0.2s;
+}
+aside.cart-section .icon-btn.danger:hover,
+aside.cart-section .btn.outline.danger:hover {
+  background: rgba(239, 68, 68, 0.18);
+}
+
+/* Light mode tinh chỉnh icon */
+:root.theme-light aside.cart-section .btn.outline.danger {
+  color: #b91c1c;
+}
+/* Cart item = 2 cột: trái tên, phải controls */
+aside.cart-section .cart-item {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--bg-soft);
+}
+
+/* Tên món linh hoạt, cho phép xuống dòng mà không đẩy cụm nút */
+aside.cart-section .cart-item-name {
+  min-width: 0;
+  font-weight: 700;
+  line-height: 1.4;
+  white-space: normal;
+  word-break: break-word;
+}
+
+/* Cụm nút bên phải luôn 1 hàng */
+aside.cart-section .cart-item-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: nowrap;
+}
+
+/* Viên số lượng đồng bộ */
+aside.cart-section .qty-pill {
+  /* hoặc input qty hiện có */
+  min-width: 44px;
+  height: 32px;
+  padding: 6px 10px;
+  text-align: center;
+  font-weight: 800;
+  border-radius: 10px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  line-height: 20px;
+}
+
+/* Giá không xuống dòng, canh phải */
+aside.cart-section .cart-item-price {
+  min-width: 96px;
+  white-space: nowrap;
+  text-align: right;
+  font-weight: 800;
+  color: #ef4444; /* hoặc var(--accent) nếu muốn xanh */
+}
+
+/* Nút thùng rác dạng icon tròn */
+aside.cart-section .icon-btn.danger,
+aside.cart-section .btn.outline.danger {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  color: #ef4444;
+  border: 1px solid color-mix(in srgb, #ef4444 60%, var(--border));
+  background: rgba(239, 68, 68, 0.08);
+}
+aside.cart-section .icon-btn.danger:hover,
+aside.cart-section .btn.outline.danger:hover {
+  background: rgba(239, 68, 68, 0.18);
+}
+/* ========== Cart sheet (mobile) – align icons/qty ========== */
+.cart-sheet .sheet-item {
+  align-items: center;
+} /* trục dọc */
+.cart-sheet .right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Nút +/–/🗑: 32px, căn giữa tuyệt đối và không dính baseline */
+.cart-sheet .iconbtn,
+.cart-sheet .iconbtn.danger,
+.cart-sheet .iconbtn i,
+.cart-sheet .iconbtn svg {
+  width: 32px;
+  height: 32px;
+}
+.cart-sheet .iconbtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  line-height: 1; /* bỏ baseline */
+  vertical-align: middle; /* iOS */
+}
+
+/* Viên số lượng: cao 32px, text nằm giữa thật */
+.cart-sheet .qty .mini,
+.qty-pill {
+  display: inline-flex; /* thay vì inline/inline-block */
+  align-items: center;
+  justify-content: center;
+  height: 32px;
+  min-width: 44px;
+  padding: 0 10px;
+  line-height: 32px; /* fallback cho input trên iOS */
+  vertical-align: middle; /* iOS */
+}
+
+/* Icon Lucide trong button: không bị lệch do baseline */
+.cart-sheet .iconbtn .lucide,
+.cart-sheet .iconbtn i,
+.cart-sheet .iconbtn svg {
+  display: block;
+  width: 18px;
+  height: 18px;
+  stroke-width: 2.2;
+}
+
+/* Tránh chữ giá làm “đội” hàng cao hơn */
+.cart-sheet .right .price,
+.cart-sheet-total .strong {
+  white-space: nowrap;
+}
+
+/* Nếu còn lệch nhẹ do phông chữ, ép height đồng bộ cho cả cụm */
+.cart-sheet .right > * {
+  height: 32px;
+}
+/* === UNIFY PRICE COLOR (desktop + mobile) === */
+/* Chọn một màu: dùng var(--accent) (cam) cho đồng bộ */
+aside.cart-section .cart-item-price,
+.cart-sheet .sheet-item .price,
+.cart-sheet .sheet-item .cart-item-price {
+  color: var(--accent) !important;
+  font-weight: 800;
+  white-space: nowrap;
+  text-align: right;
+}
+
+/* Gỡ rule làm giá thành đỏ nếu còn ở dưới file */
+aside.cart-section .cart-item-price.force-red {
+  color: #ef4444 !important;
+} /* chỉ dùng nếu cần ép đỏ chỗ đặc biệt */
+/* === ALIGN +/- & QTY (mobile + desktop) === */
+.icon-btn,
+.cart-sheet .iconbtn {
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border-radius: 50%;
+  line-height: 1; /* ngăn baseline kéo lệch */
+}
+
+/* Lucide/ionicon luôn block để không “tụt” */
+.icon-btn i,
+.icon-btn svg,
+.icon-btn .lucide,
+.cart-sheet .iconbtn i,
+.cart-sheet .iconbtn svg,
+.cart-sheet .iconbtn .lucide {
+  width: 18px;
+  height: 18px;
+  display: block;
+}
+
+/* Viên số lượng: cao đúng 32px, canh giữa */
+.qty-pill,
+aside.cart-section .qty-input,
+.cart-sheet .qty .mini {
+  min-width: 44px;
+  height: 32px;
+  padding: 6px 10px;
+  line-height: 20px; /* text cao 20 -> vẫn giữa với 32px */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Hàng control trong bottom sheet phải canh giữa theo trục dọc */
+.cart-sheet .right,
+.cart-sheet .qty {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Nếu còn lệch, ép container item canh giữa luôn */
+.cart-sheet .sheet-item {
+  align-items: center;
+}
+#detailCta {
+  display: none !important;
+}
+/* Giữ icon trong nút gọn gàng, không tràn */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  vertical-align: middle;
+}
+
+.btn i,
+.btn svg,
+.btn .lucide {
+  width: 18px;
+  height: 18px;
+  display: block; /* tránh lệch do baseline */
+  flex: 0 0 18px;
+  stroke-width: 2; /* lucide trông gọn */
+}
+/* Căn giữa nút Đặt hàng trong form checkout */
+.checkout-form .submit-btn {
+  grid-column: 1 / -1; /* vẫn chiếm 1 hàng */
+  justify-self: center; /* cách chuẩn trong CSS Grid */
+  margin: 12px auto 0; /* fallback & tạo khoảng cách trên */
+  display: inline-flex; /* giữ layout của .btn */
+  justify-content: center; /* icon + chữ ở giữa */
+  width: min(320px, 100%); /* rộng vừa đẹp, không tràn mobile */
+  border-radius: 999px; /* (tuỳ chọn) bo tròn kiểu pill */
+}
+/* === Button: icon + text luôn căn giữa, không bị lệch baseline === */
+.btn,
+.cart-sheet .btn,
+.checkout-form .submit-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center; /* nội dung ngay giữa nút */
+  gap: 8px;
+  line-height: 1;
+  vertical-align: middle;
+}
+
+/* Icon trong nút: kích thước cố định, không bị baseline kéo lệch */
+.btn i,
+.btn svg,
+.btn .lucide,
+.icon-btn i,
+.icon-btn svg,
+.icon-btn .lucide,
+.cart-sheet .iconbtn i,
+.cart-sheet .iconbtn svg,
+.cart-sheet .iconbtn .lucide {
+  width: 18px;
+  height: 18px;
+  display: block;
+  flex: 0 0 18px;
+  stroke-width: 2;
+}
+
+/* Nút “Đặt hàng” trong trang checkout nằm giữa form */
+.checkout-form .submit-btn {
+  grid-column: 1 / -1;
+  justify-self: center;
+  margin: 12px auto 0;
+  width: min(320px, 100%);
+  border-radius: 999px;
+}

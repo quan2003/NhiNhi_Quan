@@ -6,8 +6,214 @@
     <title>Thanh toán - Nhi Nhi Quán</title>
     <link rel="stylesheet" href="/css/style.css" />
     <link rel="icon" type="image/png" sizes="16x16" href="/img/logo.jpg" />
-    <!-- Lucide icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Page-scoped CSS cho layout checkout -->
+    <style>
+      /* ===== Layout 2 cột desktop / 1 cột mobile ===== */
+      .checkout-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 380px;
+        gap: 24px;
+        align-items: start;
+      }
+      @media (max-width: 1200px) {
+        .checkout-layout {
+          grid-template-columns: minmax(0, 1fr) 340px;
+        }
+      }
+      @media (max-width: 980px) {
+        .checkout-layout {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      /* ===== Form ===== */
+      .checkout-section .checkout-form {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+      }
+      .checkout-section .checkout-form > label,
+      .checkout-section .checkout-form fieldset,
+      .checkout-section .checkout-form .submit-row {
+        grid-column: span 2;
+      }
+      #typeFields .input-field,
+      #typeFields .textarea {
+        width: 100%;
+      }
+      @media (max-width: 720px) {
+        .checkout-section .checkout-form {
+          grid-template-columns: 1fr;
+        }
+        .checkout-section .checkout-form > label,
+        .checkout-section .checkout-form fieldset,
+        .checkout-section .checkout-form .submit-row {
+          grid-column: span 1;
+        }
+      }
+
+      /* ===== Cart sticky trên desktop, ẩn trên mobile (dùng footer bar) ===== */
+      .cart-section {
+        position: sticky;
+        top: 92px;
+        align-self: start;
+      }
+      @media (max-width: 980px) {
+        .cart-section {
+          display: none !important;
+        }
+      }
+
+      /* QR */
+      .transfer-box img.qr-image {
+        width: 240px;
+        height: 240px;
+        object-fit: contain;
+        display: block;
+        margin: 8px auto 12px;
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        background: var(--bg-soft);
+        box-shadow: var(--shadow-soft);
+      }
+
+      #successBanner .section-title {
+        display: inline-flex;
+        gap: 6px;
+        align-items: center;
+      }
+      .submit-btn {
+        min-width: 200px;
+      }
+      @media (max-width: 720px) {
+        .submit-btn {
+          width: 100%;
+        }
+      }
+
+      /* Gọn cart items (desktop) */
+      .cart-items {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .cart-item {
+        justify-content: space-between;
+        align-items: center;
+      }
+      .cart-item-name {
+        font-weight: 600;
+      }
+      .cart-item-controls {
+        gap: 10px;
+        align-items: center;
+      }
+      .cart-item-price {
+        font-weight: 700;
+      }
+
+      /* Chừa chỗ cho footer cart bar trên mobile */
+      @media (max-width: 980px) {
+        body {
+          padding-bottom: 64px;
+        }
+      }
+
+      /* ===== Nút chọn thời gian nhanh ===== */
+      .time-quick {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 8px;
+      }
+      .time-quick .btn.sm {
+        padding: 6px 10px;
+        border-radius: 999px;
+        line-height: 1;
+        white-space: nowrap;
+      }
+      .time-hint {
+        margin-top: 6px;
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      /* ===== Nút icon nằm trong ô input (open picker) ===== */
+      .input-wrap {
+        position: relative;
+      }
+      .input-wrap .input-field {
+        padding-right: 40px; /* chừa chỗ cho nút */
+      }
+      .field-icon-btn {
+        position: absolute;
+        right: 8px;
+        top: 50%;
+        transform: translateY(-50%);
+        border: 1px solid var(--border);
+        background: var(--bg-soft);
+        height: 32px;
+        min-width: 32px;
+        width: 32px;
+        padding: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        cursor: pointer;
+      }
+      .field-icon-btn:hover {
+        filter: brightness(1.05);
+      }
+      .field-icon-btn i {
+        width: 18px;
+        height: 18px;
+      }
+
+      /* ===== (NEW) Icon cộng/trừ/thùng rác — vòng tròn nền mờ, hợp dark/light ===== */
+      /* Dùng cho cart desktop (aside) */
+      aside.cart-section .cart-item-controls button,
+      aside.cart-section .cart-item-controls .btn,
+      /* Dùng cho bottom sheet (mobile) */
+      .cart-sheet .iconbtn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        border: 1px solid var(--border);
+        background: rgba(255, 255, 255, 0.08);
+        color: inherit;
+        padding: 0;
+        cursor: pointer;
+        transition: background 0.2s, transform 0.12s;
+      }
+      aside.cart-section .cart-item-controls button:hover,
+      aside.cart-section .cart-item-controls .btn:hover,
+      .cart-sheet .iconbtn:hover {
+        background: rgba(255, 255, 255, 0.18);
+        transform: translateY(-1px);
+      }
+      /* Icon lucide theo màu chữ hiện hành + đậm nét hơn */
+      .lucide {
+        stroke: currentColor;
+        stroke-width: 2.2;
+      }
+      /* Light-mode: icon sẫm vừa, dễ nhìn trên nền sáng */
+      :root.theme-light aside.cart-section .cart-item-controls button,
+      :root.theme-light aside.cart-section .cart-item-controls .btn,
+      :root.theme-light .cart-sheet .iconbtn {
+        background: rgba(0, 0, 0, 0.04);
+      }
+      :root.theme-light aside.cart-section .cart-item-controls button:hover,
+      :root.theme-light aside.cart-section .cart-item-controls .btn:hover,
+      :root.theme-light .cart-sheet .iconbtn:hover {
+        background: rgba(0, 0, 0, 0.08);
+      }
+    </style>
   </head>
   <body>
     <!-- ============ Header ============ -->
@@ -20,31 +226,29 @@
           <h1>Hệ Thống Quay Nướng Gà Vịt Nhi Nhi</h1>
         </div>
 
-        <!-- Nav chính -->
         <nav class="primary">
-          <a href="index.html"> <i data-lucide="home"></i> Trang chủ </a>
+          <a href="index.html"><i data-lucide="home"></i> Trang chủ</a>
           <a href="menu.html"><i data-lucide="utensils-crossed"></i> Menu</a>
           <a href="track.html"><i data-lucide="search"></i> Theo dõi đơn</a>
         </nav>
 
-        <!-- Cart icon luôn hiển thị -->
-        <a href="/checkout.html" class="cart-link">
-          <i data-lucide="shopping-cart"></i>
-          <span id="cartBadge" class="cart-badge">0</span>
-        </a>
-
-        <!-- Nút mở menu di động -->
+        <!-- icon menu -->
         <button id="menuBtn" class="btn outline" aria-label="menu">
           <i data-lucide="menu"></i>
         </button>
 
-        <!-- Switch theme -->
+        <!-- icon giỏ hàng (luôn hiển thị) -->
+        <a href="/checkout.html" class="cart-link" aria-label="Giỏ hàng">
+          <i data-lucide="shopping-cart"></i>
+          <span id="cartBadge" class="cart-badge">0</span>
+        </a>
+
+        <!-- công tắc -->
         <label class="switch">
           <input type="checkbox" id="themeSwitch" />
           <span class="icon"><i data-lucide="sun"></i></span>
         </label>
       </div>
-
       <aside id="drawer" class="drawer" aria-hidden="true">
         <a href="index.html"><i data-lucide="home"></i> Trang chủ</a>
         <a href="menu.html"><i data-lucide="utensils-crossed"></i> Xem Menu</a>
@@ -54,20 +258,33 @@
 
     <!-- ============ Main ============ -->
     <main class="container">
-      <div class="grid-2">
-        <!-- ===== Form ===== -->
+      <div class="checkout-layout">
+        <!-- ===== Form (trái) ===== -->
         <section class="checkout-section">
           <h2 class="section-title">Thông tin khách hàng</h2>
 
-          <form id="checkoutForm" class="checkout-form">
+          <form id="checkoutForm" class="checkout-form" novalidate>
             <label
               >Họ và tên
-              <input type="text" id="name" required class="input-field" />
+              <input
+                type="text"
+                id="name"
+                required
+                class="input-field"
+                autocomplete="name"
+              />
             </label>
 
             <label
               >Số điện thoại
-              <input type="tel" id="phone" required class="input-field" />
+              <input
+                type="tel"
+                id="phone"
+                required
+                class="input-field"
+                inputmode="tel"
+                autocomplete="tel"
+              />
             </label>
 
             <label
@@ -75,53 +292,109 @@
               <input
                 type="text"
                 id="address"
-                placeholder="Số nhà, đường, phường/xã, quận/huyện (để trống nếu ăn tại quán)"
                 class="input-field"
+                autocomplete="street-address"
+                placeholder="Số nhà, đường, phường/xã, quận/huyện (để trống nếu ăn tại quán)"
               />
             </label>
 
             <fieldset class="form-group">
               <legend>Hình thức đặt</legend>
-              <label class="row">
-                <input
+              <label class="row"
+                ><input
                   type="radio"
                   name="orderType"
                   value="TAKEAWAY"
                   checked
                   class="radio-input"
                 />
-                Mang đi
-              </label>
-              <label class="row">
-                <input
+                Mang đi</label
+              >
+              <label class="row"
+                ><input
                   type="radio"
                   name="orderType"
                   value="DINE_IN"
                   class="radio-input"
                 />
-                Tại bàn
-              </label>
-              <label class="row">
-                <input
+                Tại bàn</label
+              >
+              <label class="row"
+                ><input
                   type="radio"
                   name="orderType"
                   value="RESERVE"
                   class="radio-input"
                 />
-                Đặt trước đến ăn
-              </label>
+                Đặt trước đến ăn</label
+              >
             </fieldset>
 
             <div id="typeFields" class="card">
               <div data-type="TAKEAWAY">
-                <label
-                  >Thời gian lấy (tuỳ chọn)
+                <label>Thời gian lấy (tuỳ chọn)</label>
+                <div class="input-wrap">
                   <input
                     type="datetime-local"
                     id="pickupAt"
                     class="input-field"
                   />
-                </label>
+                  <button
+                    class="field-icon-btn"
+                    type="button"
+                    aria-label="Chọn thời gian lấy"
+                    title="Chọn thời gian"
+                    data-open-picker="pickupAt"
+                  >
+                    <i data-lucide="clock-9"></i>
+                  </button>
+                </div>
+                <!-- Nút chọn nhanh cho TAKEAWAY -->
+                <div class="time-quick" aria-label="Chọn nhanh thời gian lấy">
+                  <button
+                    class="btn outline sm"
+                    type="button"
+                    data-for="pickupAt"
+                    data-action="now15"
+                  >
+                    Ngay
+                  </button>
+                  <button
+                    class="btn outline sm"
+                    type="button"
+                    data-for="pickupAt"
+                    data-action="add30"
+                  >
+                    +30p
+                  </button>
+                  <button
+                    class="btn outline sm"
+                    type="button"
+                    data-for="pickupAt"
+                    data-action="add60"
+                  >
+                    +1h
+                  </button>
+                  <button
+                    class="btn outline sm"
+                    type="button"
+                    data-for="pickupAt"
+                    data-action="today-18"
+                  >
+                    18:00 hôm nay
+                  </button>
+                  <button
+                    class="btn outline sm"
+                    type="button"
+                    data-for="pickupAt"
+                    data-action="tomorrow-1130"
+                  >
+                    11:30 ngày mai
+                  </button>
+                </div>
+                <div class="time-hint">
+                  Mẹo: bấm “Ngay” sẽ tự làm tròn đến 15 phút gần nhất.
+                </div>
               </div>
 
               <div data-type="DINE_IN" class="hidden">
@@ -147,24 +420,58 @@
               </div>
 
               <div data-type="RESERVE" class="hidden">
-                <label
-                  >Thời gian đến (bắt buộc)
+                <label>Thời gian đến (bắt buộc)</label>
+                <div class="input-wrap">
                   <input
                     type="datetime-local"
                     id="reserveAt"
                     class="input-field"
                   />
-                </label>
-                <label
-                  >Số khách
-                  <input
-                    type="number"
-                    id="guests_reserve"
-                    min="1"
-                    placeholder="VD: 6"
-                    class="input-field"
-                  />
-                </label>
+                  <button
+                    class="field-icon-btn"
+                    type="button"
+                    aria-label="Chọn thời gian đến"
+                    title="Chọn thời gian"
+                    data-open-picker="reserveAt"
+                  >
+                    <i data-lucide="calendar"></i>
+                  </button>
+                </div>
+                <!-- Nút chọn nhanh cho RESERVE -->
+                <div class="time-quick" aria-label="Chọn nhanh thời gian đến">
+                  <button
+                    class="btn outline sm"
+                    type="button"
+                    data-for="reserveAt"
+                    data-action="today-18"
+                  >
+                    18:00 hôm nay
+                  </button>
+                  <button
+                    class="btn outline sm"
+                    type="button"
+                    data-for="reserveAt"
+                    data-action="today-19"
+                  >
+                    19:00 hôm nay
+                  </button>
+                  <button
+                    class="btn outline sm"
+                    type="button"
+                    data-for="reserveAt"
+                    data-action="tomorrow-1130"
+                  >
+                    11:30 ngày mai
+                  </button>
+                  <button
+                    class="btn outline sm"
+                    type="button"
+                    data-for="reserveAt"
+                    data-action="tomorrow-18"
+                  >
+                    18:00 ngày mai
+                  </button>
+                </div>
               </div>
 
               <label
@@ -172,42 +479,48 @@
                 <textarea
                   id="note"
                   rows="2"
-                  placeholder="Ghi chú cho quán..."
                   class="input-field textarea"
+                  placeholder="Ghi chú cho quán..."
                 ></textarea>
               </label>
             </div>
 
             <fieldset class="form-group">
               <legend>Phương thức thanh toán</legend>
-              <label class="row">
-                <input
+              <label class="row"
+                ><input
                   type="radio"
                   name="payment"
                   value="COD"
                   checked
                   class="radio-input"
                 />
-                Thanh toán khi nhận (COD)
-              </label>
-              <label class="row">
-                <input
+                Thanh toán khi nhận (COD)</label
+              >
+              <label class="row"
+                ><input
                   type="radio"
                   name="payment"
                   value="TRANSFER"
                   class="radio-input"
                 />
-                Chuyển khoản (hiển thị QR)
-              </label>
+                Chuyển khoản (hiển thị QR)</label
+              >
             </fieldset>
 
-            <button class="btn primary submit-btn" type="submit">
-              <i data-lucide="check-circle-2"></i> Đặt hàng
-            </button>
+            <div class="submit-row">
+              <button class="btn primary submit-btn" type="submit">
+                <i data-lucide="check-circle-2"></i> Đặt hàng
+              </button>
+            </div>
           </form>
 
-          <!-- Hộp QR chuyển khoản (ẩn/hiện theo lựa chọn) -->
-          <div id="transferBox" class="hidden card transfer-box">
+          <!-- QR chuyển khoản -->
+          <div
+            id="transferBox"
+            class="hidden card transfer-box"
+            aria-live="polite"
+          >
             <h3 class="section-title">Chuyển khoản</h3>
             <p><b>Ngân hàng:</b> <span id="bankName"></span></p>
             <p><b>Tên TK:</b> <span id="bankAccName"></span></p>
@@ -232,16 +545,16 @@
             </div>
           </div>
 
-          <!-- Kết quả sau khi tạo đơn -->
+          <!-- (giữ để tương thích nếu cần) -->
           <div id="result" class="hidden card result-box"></div>
         </section>
 
-        <!-- ===== Cart ===== -->
-        <aside class="cart-section">
+        <!-- ===== Cart (phải - desktop) ===== -->
+        <aside class="cart-section" aria-label="Giỏ hàng">
           <h2 class="section-title">Giỏ hàng</h2>
           <div id="promoNote" class="muted"></div>
           <div id="cartItems" class="cart-items"></div>
-          <div class="total card">
+          <div class="total card" aria-live="polite">
             Tạm tính: <span id="cartSubtotal">0</span><br />
             Giảm: <span id="cartDiscount">0</span><br />
             <b>Tổng cộng: <span id="cartTotal">0</span></b>
@@ -253,7 +566,6 @@
     <!-- ============ Footer ============ -->
     <footer class="site-footer">
       <div class="footer-wrap container">
-        <!-- Cột 1 -->
         <section class="footer-brand">
           <div class="brandline">
             <img
@@ -266,7 +578,6 @@
               <p class="footer-tag">Gà nướng mắm nhĩ · Vịt quay ngũ vị</p>
             </div>
           </div>
-
           <ul class="contact-list">
             <li class="contact-item">
               <i data-lucide="phone"></i>
@@ -298,13 +609,11 @@
           </ul>
         </section>
 
-        <!-- Cột 2 -->
         <section class="footer-hours">
           <h5>Giờ mở cửa</h5>
           <ul class="hours">
             <li>Thứ 2 – Chủ nhật: <b>10:00 – 21:00</b></li>
           </ul>
-
           <h5 style="margin-top: 14px">Liên kết nhanh</h5>
           <nav class="quick-links">
             <a href="/menu.html"><i data-lucide="chef-hat"></i> Xem menu</a>
@@ -315,7 +624,6 @@
           </nav>
         </section>
 
-        <!-- Cột 3 -->
         <section class="map-card" aria-label="Bản đồ">
           <iframe
             src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3843.5859619646344!2d108.49100927828695!3d15.560311046494757!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3169dd004e338171%3A0xa99a1decfeb7cca0!2zSOG7hyBUaOG7kW5nIFF1YXkgTsaw4bubbmcgR8OgIFbhu4t0IE5oaSBOaGk!5e0!3m2!1svi!2sus!4v1757264543675!5m2!1svi!2sus"
@@ -325,11 +633,9 @@
             allowfullscreen=""
             loading="lazy"
             referrerpolicy="no-referrer-when-downgrade"
-          >
-          </iframe>
+          ></iframe>
         </section>
       </div>
-
       <div class="footer-bar">
         © <span id="y"></span> Nhi Nhi · Made with luuquancoder
       </div>
@@ -350,11 +656,143 @@
     <script type="module">
       import { initUI } from "/js/ui.js";
       import { toast } from "/js/toast.js";
-      // Gắn global để có thể gọi ở bất kỳ file logic nào (ví dụ track.js/checkout.js)
       window.toast = toast;
       initUI();
     </script>
 
+    <!-- Logic đặt hàng/giỏ desktop -->
     <script type="module" src="/js/checkout.js"></script>
+
+    <!-- ===== Footer Cart Bar (mobile) ===== -->
+    <div id="cartFab" class="cart-fab-mobile hidden" aria-live="polite">
+      <div class="cart-fab-row">
+        <span><b id="mf_count">0</b> Món · <b id="mf_total">0</b></span>
+        <button id="mf_open" class="btn primary sm" type="button">
+          Xem giỏ
+        </button>
+      </div>
+    </div>
+
+    <!-- ===== Bottom Sheet (mobile) ===== -->
+    <div id="cartSheet" class="cart-sheet" aria-hidden="true">
+      <div class="cart-sheet-header">
+        <b>Giỏ hàng</b>
+        <button id="mf_close" class="btn outline sm" aria-label="Đóng">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+      <div id="mf_items" class="cart-sheet-items"></div>
+      <div class="cart-sheet-total">
+        <div>Tạm tính: <span id="mf_sub">0</span></div>
+        <div>Giảm: <span id="mf_disc">0</span></div>
+        <div class="strong">Tổng cộng: <span id="mf_tot">0</span></div>
+      </div>
+      <div class="cart-sheet-actions">
+        <a class="btn primary wide" href="/checkout.html">
+          <i data-lucide="check-circle-2"></i> Đặt hàng
+        </a>
+      </div>
+    </div>
+
+    <!-- Kích hoạt thanh giỏ hàng mobile -->
+    <script type="module" src="/js/cartbar.js"></script>
+
+    <!-- ===== Quick-pick time & open-picker buttons ===== -->
+    <script>
+      (function () {
+        /* ---------- Helpers định dạng ---------- */
+        const pad = (n) => String(n).padStart(2, "0");
+        const toLocalDatetime = (d) => {
+          const yyyy = d.getFullYear();
+          const mm = pad(d.getMonth() + 1);
+          const dd = pad(d.getDate());
+          const hh = pad(d.getHours());
+          const mi = pad(d.getMinutes());
+          return `${yyyy}-${mm}-${dd}T${hh}:${mi}`;
+        };
+        const setInputTime = (id, date) => {
+          const el = document.getElementById(id);
+          if (!el) return;
+          el.value = toLocalDatetime(date);
+          el.dispatchEvent(new Event("change", { bubbles: true }));
+        };
+        const ceilTo15Min = (d) => {
+          const r = new Date(d);
+          const m = r.getMinutes();
+          const step = 15;
+          const rounded = Math.ceil(m / step) * step;
+          if (rounded >= 60) {
+            r.setHours(r.getHours() + 1, 0, 0, 0);
+          } else {
+            r.setMinutes(rounded, 0, 0);
+          }
+          return r;
+        };
+        const todayAt = (h, m) => {
+          const d = new Date();
+          d.setHours(h, m, 0, 0);
+          return d;
+        };
+        const tomorrowAt = (h, m) => {
+          const d = new Date();
+          d.setDate(d.getDate() + 1);
+          d.setHours(h, m, 0, 0);
+          return d;
+        };
+
+        /* ---------- Quick picks ---------- */
+        function handleAction(forId, action) {
+          const now = new Date();
+          switch (action) {
+            case "now15":
+              return setInputTime(forId, ceilTo15Min(now));
+            case "add30": {
+              const d = ceilTo15Min(now);
+              d.setMinutes(d.getMinutes() + 30);
+              return setInputTime(forId, d);
+            }
+            case "add60": {
+              const d = ceilTo15Min(now);
+              d.setMinutes(d.getMinutes() + 60);
+              return setInputTime(forId, d);
+            }
+            case "today-18":
+              return setInputTime(forId, todayAt(18, 0));
+            case "today-19":
+              return setInputTime(forId, todayAt(19, 0));
+            case "tomorrow-1130":
+              return setInputTime(forId, tomorrowAt(11, 30));
+            case "tomorrow-18":
+              return setInputTime(forId, tomorrowAt(18, 0));
+          }
+        }
+
+        document.addEventListener("click", (e) => {
+          const quick = e.target.closest("[data-action][data-for]");
+          if (quick) {
+            e.preventDefault();
+            handleAction(
+              quick.getAttribute("data-for"),
+              quick.getAttribute("data-action")
+            );
+            return;
+          }
+          const openBtn = e.target.closest("[data-open-picker]");
+          if (openBtn) {
+            e.preventDefault();
+            const id = openBtn.getAttribute("data-open-picker");
+            const el = document.getElementById(id);
+            if (el && typeof el.showPicker === "function") {
+              el.showPicker();
+            } else if (el) {
+              // Fallback nếu trình duyệt không hỗ trợ showPicker
+              el.focus();
+              el.click?.();
+            }
+          }
+        });
+      })();
+    </script>
+    <script type="module" src="/js/loading.js"></script>
   </body>
 </html>

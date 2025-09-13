@@ -1,123 +1,511 @@
+/* =========================
+   THEME TOKENS & BASE
+   ========================= */
 :root {
-  --bg: #0b0b0b;
-  --card: #131313;
-  --text: #f1f1f1;
-  --muted: #aaaaaa;
-  --brand: #22c55e;
+  --bg: #0d1117;
+  --card: #161b22;
+  --text: #e6edf3;
+  --muted: #8b949e;
+  --brand: #2ea043;
+  --brand-hover: #36c057;
+  --border: #30363d;
+  --line: #21262d;
+  --shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  --header-h: 56px;
+
+  /* Light theme */
+  --bg-light: #ffffff;
+  --card-light: #f6f8fa;
+  --text-light: #24292e;
+  --muted-light: #6b7280;
+  --brand-light: #2ea043;
+  --border-light: #d0d7de;
+  --line-light: #e1e4e8;
 }
+
 * {
   box-sizing: border-box;
 }
+
 body {
   margin: 0;
-  background: #0f1012;
   color: var(--text);
-  font-family: system-ui, -apple-system, Segoe UI, Roboto, Inter, Ubuntu, Arial;
+  background: radial-gradient(
+      1200px 600px at 10% -10%,
+      rgba(34, 211, 238, 0.08),
+      transparent
+    ),
+    radial-gradient(
+      1200px 600px at 110% 110%,
+      rgba(56, 189, 248, 0.08),
+      transparent
+    ),
+    linear-gradient(180deg, var(--bg), #161b22);
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Inter, Ubuntu, Arial,
+    "Apple Color Emoji", "Segoe UI Emoji";
+  line-height: 1.6;
 }
+body.light {
+  --bg: var(--bg-light);
+  --card: var(--card-light);
+  --text: var(--text-light);
+  --muted: var(--muted-light);
+  --brand: var(--brand-light);
+  --border: var(--border-light);
+  --line: var(--line-light);
+}
+
 a {
-  color: #5eead4;
+  color: var(--brand);
   text-decoration: none;
+  transition: 0.2s;
+}
+a:hover {
+  color: var(--brand-hover);
 }
 .active {
   font-weight: 700;
 }
+
 .container {
   max-width: 1100px;
   margin: 0 auto;
-  padding: 16px;
+  padding: 12px 16px;
 }
-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-nav a {
-  margin-right: 12px;
-}
+
+/* =========================
+   BUTTON & CARD
+   ========================= */
 .btn {
   display: inline-block;
   background: var(--brand);
-  color: #06140a;
+  color: #fff;
   padding: 10px 16px;
   border-radius: 10px;
   font-weight: 700;
   border: none;
   cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
 }
+.btn:hover {
+  background: var(--brand-hover);
+  transform: translateY(-2px);
+}
+.btn:active {
+  transform: translateY(0);
+}
+
 .card {
-  background: #121417;
-  border: 1px solid #1f2937;
-  border-radius: 12px;
-  padding: 16px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px;
   margin-bottom: 16px;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  transition: transform 0.2s ease;
 }
-.grid-2 {
-  display: grid;
-  gap: 12px;
-  grid-template-columns: 1fr 1fr;
+.card:hover {
+  transform: translateY(-3px);
 }
-.row {
-  display: flex;
-  align-items: center;
-}
-.small {
-  max-width: 420px;
-}
-input,
-select,
-button {
-  padding: 10px;
-  border-radius: 8px;
-  border: 1px solid #334155;
-  background: #0b0e12;
-  color: #fff;
-  width: 100%;
-}
-label {
-  display: block;
-  margin: 8px 0;
-}
-.table {
-  width: 100%;
-  border-collapse: collapse;
-}
-.table th,
-.table td {
-  border-bottom: 1px solid #1f2937;
-  padding: 8px;
-  text-align: left;
-  vertical-align: top;
-}
-.pagination {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  margin: 12px 0;
-}
+
 .muted {
   color: var(--muted);
   font-size: 13px;
 }
-/* Đảm bảo bố cục lưới tương thích trên màn hình nhỏ */
-@media (max-width: 600px) {
-  .grid-2 {
-    grid-template-columns: 1fr; /* Xếp chồng các trường nhập trên màn hình nhỏ */
+
+/* =========================
+   ADMIN HEADER
+   ========================= */
+header.site {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  backdrop-filter: blur(12px);
+  background: color-mix(in oklab, var(--bg) 78%, transparent);
+  border-bottom: 1px solid var(--border);
+}
+header.site .wrap {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 16px;
+}
+header.site .brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text) !important;
+  text-decoration: none !important;
+  font-weight: 800;
+}
+header.site .brand img {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+header.site .brand small {
+  display: block;
+  margin-top: -2px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+/* Tabs (desktop) */
+header.site .tabs {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+header.site .tabs a {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--card);
+  color: var(--text);
+  text-decoration: none;
+  opacity: 0.9;
+  transition: 0.2s transform, 0.2s opacity;
+}
+header.site .tabs a:hover {
+  opacity: 1;
+  transform: translateY(-1px);
+}
+header.site .tabs a.active {
+  background: color-mix(in oklab, var(--brand) 14%, var(--card));
+  border-color: color-mix(in oklab, var(--brand) 26%, var(--border));
+}
+
+/* Hamburger */
+header.site .hamburger {
+  display: none;
+  border: 1px solid var(--border);
+  background: color-mix(in oklab, var(--card) 88%, transparent);
+  padding: 8px 10px;
+  border-radius: 10px;
+  color: var(--text);
+  cursor: pointer;
+}
+/* Mobile: hiện hamburger, đảm bảo nổi trên sheet-back */
+@media (max-width: 900px) {
+  header.site .tabs {
+    display: none;
+  }
+  header.site .hamburger {
+    display: inline-flex !important;
+    z-index: 1002; /* cao hơn overlay */
+    position: relative;
   }
 }
 
-/* Cải thiện định dạng cho trường datetime-local */
-input[type="datetime-local"] {
-  appearance: none; /* Loại bỏ định dạng mặc định của trình duyệt */
-  -webkit-appearance: none; /* Cho Safari */
-  background: #0b0e12;
-  color: #fff;
-  border: 1px solid #334155;
-  border-radius: 8px;
-  padding: 10px;
+/* Header nổi thấp hơn sheet */
+header.site {
+  z-index: 40;
+}
+
+/* ========================= MOBILE SHEET (SỬA) ========================= */
+.sheet {
+  position: fixed;
+  top: 0; /* phủ cả màn hình, không chừa header */
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100vw; /* phủ full để chặn click xuyên */
+  transform: translateX(100%); /* đẩy toàn khối ra ngoài màn hình */
+  transition: transform 0.25s ease;
+  z-index: 2000; /* cao hơn header */
+  display: flex;
+  pointer-events: none; /* mặc định không bắt click khi đóng */
+  visibility: hidden;
+}
+.sheet.open {
+  transform: translateX(0) !important;
+  pointer-events: auto; /* mở thì bắt click */
+  visibility: visible !important;
+}
+
+/* Panel cố định, luôn ở trên overlay */
+.sheet .sheet-panel {
+  position: fixed; /* tách khỏi stacking của phần dưới */
+  top: 0;
+  right: 0;
+  height: 100vh;
+  width: min(320px, 92vw);
+  background: var(--card);
+  color: var(--text);
+  border-left: 1px solid var(--border);
+  padding: 14px;
+  overflow-y: auto;
+  z-index: 2002; /* cao nhất */
+  pointer-events: auto; /* nhận click */
+}
+
+/* Menu trong panel */
+.sheet .sheet-panel nav {
+  display: grid;
+  gap: 10px;
+}
+.sheet .sheet-panel nav a {
+  display: block; /* block để không chồng chéo vùng click */
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: color-mix(in oklab, var(--card) 92%, transparent);
+  color: var(--text);
+  text-decoration: none;
+}
+.sheet .sheet-panel nav a:hover {
+  filter: brightness(1.08);
+}
+
+/* Overlay nền mờ – nằm dưới panel nhưng trên trang */
+.sheet .sheet-back {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  pointer-events: none; /* khi đóng thì không bắt click */
+  z-index: 2001; /* dưới panel, trên trang */
+}
+.sheet.open .sheet-back {
+  opacity: 1;
+  pointer-events: auto; /* bắt click để đóng menu */
+}
+
+/* Khi mở menu, khóa cuộn body (giữ nguyên nếu đã có) */
+.no-scroll {
+  overflow: hidden;
+  position: fixed;
   width: 100%;
 }
 
-/* Đảm bảo thông báo lỗi nổi bật */
-#error-message {
-  margin-top: 8px;
+/* =========================
+   DASHBOARD GRID, STATS
+   ========================= */
+.grid {
+  display: grid;
+  gap: 16px;
+}
+.grid.stats {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+@media (max-width: 1024px) {
+  .grid.stats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (max-width: 760px) {
+  .grid.stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 480px) {
+  .grid.stats {
+    grid-template-columns: 1fr;
+  }
+}
+.stat {
+  display: grid;
+  gap: 8px;
+}
+.stat .label {
+  color: var(--muted);
+  font-size: 12px;
+}
+.stat .value {
+  font-size: clamp(18px, 3vw, 22px);
+  font-weight: 700;
+}
+.stat .hint {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  font-size: 12.5px;
+  background: color-mix(in oklab, var(--card) 86%, transparent);
+}
+.chip.ok {
+  background: rgba(16, 185, 129, 0.12);
+  border-color: rgba(16, 185, 129, 0.35);
+}
+.chip.warn {
+  background: rgba(245, 158, 11, 0.12);
+  border-color: rgba(245, 158, 11, 0.35);
+}
+
+/* =========================
+   QUICK ACTIONS
+   ========================= */
+.quick {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+@media (max-width: 760px) {
+  .quick {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+.quick a {
+  text-decoration: none;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 12px;
+  color: var(--text);
+  background: color-mix(in oklab, var(--card) 82%, transparent);
+  display: grid;
+  gap: 6px;
+}
+.quick a:hover {
+  border-color: var(--brand);
+}
+.quick .title {
+  font-weight: 600;
+}
+.quick .desc {
+  color: var(--muted);
+  font-size: 12.5px;
+}
+
+/* =========================
+   TABLE
+   ========================= */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+thead th {
+  text-align: left;
+  color: var(--muted);
+  font-weight: 600;
+  padding: 10px 8px;
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+tbody td {
+  padding: 10px 8px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  font-size: 12px;
+}
+.status.NEW {
+  background: rgba(34, 211, 238, 0.08);
+  border-color: rgba(34, 211, 238, 0.35);
+}
+.status.DONE {
+  background: rgba(16, 185, 129, 0.12);
+  border-color: rgba(16, 185, 129, 0.35);
+}
+.status.CANCELLED {
+  background: rgba(239, 68, 68, 0.12);
+  border-color: rgba(239, 68, 68, 0.35);
+}
+
+/* =========================
+   TOAST
+   ========================= */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: env(safe-area-inset-bottom, 12px);
+  transform: translateX(-50%);
+  background: var(--card);
+  border: 1px solid var(--line);
+  color: var(--text);
+  padding: 10px 14px;
+  border-radius: 10px;
+  box-shadow: 0 10px 24px rgba(2, 6, 23, 0.35);
+  font-size: 14px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s, transform 0.2s;
+  z-index: 1100;
+}
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(-4px);
+}
+
+/* =========================
+   SKELETON
+   ========================= */
+.sk {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.06),
+    transparent
+  );
+  background-size: 200% 100%;
+  animation: shine 1.2s infinite;
+  border-radius: 8px;
+  height: 14px;
+  width: 60%;
+}
+@keyframes shine {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+/* Cho các cột trong toolbar có thể co giãn, tránh cắt chữ */
+.toolbar--daily > * {
+  min-width: 0;
+}
+
+/* Khay chips cuộn ngang khi thiếu chỗ */
+.toolbar--daily .toolbar__chips {
+  display: flex;
+  gap: 8px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  padding-bottom: 2px;
+}
+
+/* Nút chip cao bằng hàng input, căn giữa chữ, không bị cắt */
+.chips .chip {
+  display: inline-flex;
+  align-items: center;
+  height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--card) 86%, transparent);
+  color: var(--text);
+  font-size: 13px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+/* Trạng thái đang chọn */
+.chips .chip.active {
+  background: var(--brand);
+  color: #06140a;
+  border-color: transparent;
+  font-weight: 700;
 }

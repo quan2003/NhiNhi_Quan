@@ -8,36 +8,167 @@
     <link rel="stylesheet" href="/css/style.css" />
     <!-- Lucide icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
+
     <style>
+      /* ---------- Nút trạng thái riêng ---------- */
+      .btn.success {
+        border-color: #10b981;
+        color: #10b981;
+        background: transparent;
+      }
+      .btn.success:hover {
+        background: color-mix(in oklab, #10b981 12%, transparent);
+      }
+      .btn.warn {
+        border-color: #f59e0b;
+        color: #f59e0b;
+        background: transparent;
+      }
+      .btn.warn:hover {
+        background: color-mix(in oklab, #f59e0b 12%, transparent);
+      }
+      .btn.danger {
+        border-color: #ef4444;
+        color: #ef4444;
+        background: transparent;
+      }
+      .btn.danger:hover {
+        background: color-mix(in oklab, #ef4444 12%, transparent);
+      }
+
+      /* ===== Pretty modal (Confirm/Alert) ===== */
       .confirm-overlay {
         position: fixed;
         inset: 0;
-        background: rgba(0, 0, 0, 0.55);
+        z-index: 1000;
+        background: color-mix(in oklab, #0b1220 45%, transparent);
+        backdrop-filter: blur(6px);
+        -webkit-backdrop-filter: blur(6px);
         display: flex;
         align-items: center;
         justify-content: center;
-        z-index: 1000;
+        opacity: 0;
+        transform: scale(1.01);
+        transition: opacity 0.18s ease, transform 0.18s ease;
       }
-      .confirm-dialog {
-        background: var(--bg-soft);
-        border: 1px solid var(--border);
-        border-radius: 12px;
-        padding: 20px;
-        max-width: 300px;
-        text-align: center;
-        box-shadow: var(--shadow);
+      .confirm-overlay.show {
+        opacity: 1;
+        transform: none;
       }
-      .confirm-actions {
-        margin-top: 16px;
-        display: flex;
-        justify-content: center;
-        gap: 12px;
-      }
-      .hidden {
+      .confirm-overlay.hidden {
         display: none !important;
       }
 
-      /* ========= Tăng cường input ========= */
+      .confirm-dialog {
+        position: relative;
+        width: min(92vw, 420px);
+        border-radius: 18px;
+        background: linear-gradient(180deg, #0f172a, #0b1220);
+        border: 1px solid color-mix(in oklab, var(--border) 70%, #fff 10%);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45),
+          inset 0 1px 0 rgba(255, 255, 255, 0.06);
+        padding: 22px 20px 16px;
+        animation: modal-pop 0.18s ease-out;
+      }
+      @keyframes modal-pop {
+        from {
+          transform: translateY(6px) scale(0.98);
+          opacity: 0.6;
+        }
+        to {
+          transform: none;
+          opacity: 1;
+        }
+      }
+      .confirm-dialog .confirm-message {
+        color: var(--text);
+        opacity: 0.9;
+        line-height: 1.55;
+        margin: 4px 0 6px;
+        text-align: center;
+      }
+      .confirm-actions {
+        margin-top: 14px;
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+      }
+      .confirm-actions .btn {
+        padding: 10px 14px;
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        background: color-mix(in oklab, #fff 2%, transparent);
+        cursor: pointer;
+        transition: transform 0.06s, background 0.12s, box-shadow 0.12s;
+      }
+      .confirm-actions .btn:active {
+        transform: translateY(1px);
+      }
+      .confirm-actions .btn.primary {
+        border-color: #60a5fa;
+        color: #e5f0ff;
+        background: linear-gradient(180deg, #1e293b, #0f172a);
+        box-shadow: 0 0 0 0 rgba(96, 165, 250, 0.4);
+      }
+      .confirm-actions .btn.primary:hover {
+        box-shadow: 0 0 0 6px rgba(96, 165, 250, 0.12);
+        background: linear-gradient(180deg, #233047, #0f172a);
+      }
+      .confirm-actions .btn.ghost {
+        color: var(--muted);
+        background: transparent;
+      }
+      .confirm-actions .btn.ghost:hover {
+        background: color-mix(in oklab, #fff 4%, transparent);
+      }
+
+      /* ===== Fullscreen loading overlay ===== */
+      .page-loading-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 1100;
+        background: color-mix(in oklab, #0b1220 45%, transparent);
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+        display: grid;
+        place-items: center;
+        opacity: 0;
+        transform: scale(1.01);
+        transition: opacity 0.18s ease, transform 0.18s ease;
+      }
+      .page-loading-overlay.show {
+        opacity: 1;
+        transform: none;
+      }
+      .page-loading-overlay.hidden {
+        display: none !important;
+      }
+      .plo-card {
+        min-width: 180px;
+        padding: 18px 20px;
+        border-radius: 16px;
+        background: linear-gradient(180deg, #111827, #0b1220);
+        border: 1px solid color-mix(in oklab, var(--border) 70%, #fff 10%);
+        box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45),
+          inset 0 1px 0 rgba(255, 255, 255, 0.05);
+        display: grid;
+        gap: 10px;
+        place-items: center;
+      }
+      .plo-spin {
+        width: 26px;
+        height: 26px;
+        border-radius: 999px;
+        border: 3px solid color-mix(in oklab, var(--border) 60%, #fff 0%);
+        border-top-color: #60a5fa;
+        animation: spin 0.9s linear infinite;
+      }
+      .plo-text {
+        font-weight: 600;
+        letter-spacing: 0.2px;
+      }
+
+      /* ---------- Inputs ---------- */
       .field {
         display: grid;
         gap: 6px;
@@ -86,10 +217,7 @@
       .mono {
         font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
       }
-      .helper {
-        font-size: 12px;
-        color: var(--muted);
-      }
+      .helper,
       .counter {
         font-size: 12px;
         color: var(--muted);
@@ -109,7 +237,7 @@
         background: rgba(255, 255, 255, 0.05);
       }
 
-      /* ======== OTP 4 ô ======== */
+      /* ---------- OTP 4 ô ---------- */
       .otp-row {
         display: flex;
         gap: 10px;
@@ -140,7 +268,7 @@
         box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.2);
       }
 
-      /* ======== Stepper/progress (đã làm dày & runner nổi bật) ======== */
+      /* ---------- Stepper/progress ---------- */
       .stepper {
         display: flex;
         gap: 10px;
@@ -161,7 +289,6 @@
         opacity: 1;
         box-shadow: var(--shadow-soft);
       }
-
       .progressbar {
         position: relative;
         width: 100%;
@@ -197,7 +324,6 @@
           background-position: 40px 0, 0 0;
         }
       }
-
       #progressRunner {
         position: absolute;
         top: 50%;
@@ -234,7 +360,7 @@
         }
       }
 
-      /* Bảng & tiện ích cũ giữ nguyên */
+      /* ---------- Misc ---------- */
       .spinner {
         display: inline-block;
         width: 16px;
@@ -267,9 +393,6 @@
       }
       .right {
         text-align: right;
-      }
-      .hidden {
-        display: none !important;
       }
       .muted {
         color: var(--muted);
@@ -323,19 +446,130 @@
         cursor: pointer;
         padding: 4px;
       }
+
+      /* ---------- Danh sách đơn (card) ---------- */
+      a.order-chip {
+        text-decoration: none;
+        color: inherit;
+        display: grid;
+      }
+      .order-list {
+        display: grid;
+        gap: 10px;
+        margin-top: 8px;
+      }
+      .order-chip {
+        --col: var(--border);
+        display: grid;
+        grid-template-columns: 36px 1fr auto;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 12px;
+        border: 1px solid var(--col);
+        border-left-width: 6px;
+        border-radius: 14px;
+        background: var(--bg-soft);
+        box-shadow: var(--shadow-soft, 0 1px 2px rgba(0, 0, 0, 0.15));
+        cursor: pointer;
+        transition: transform 0.06s ease, box-shadow 0.12s ease;
+      }
+      .order-chip:active {
+        transform: scale(0.98);
+      }
+      .order-chip .chip-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        display: grid;
+        place-items: center;
+        border: 1px solid var(--col);
+      }
+      .order-chip .chip-body {
+        min-width: 0;
+      }
+      .order-chip .chip-id {
+        font-weight: 700;
+        letter-spacing: 0.2px;
+      }
+      .order-chip .chip-meta {
+        font-size: 12px;
+        color: var(--muted);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .order-chip .chip-amt {
+        font-weight: 700;
+        text-align: right;
+        white-space: nowrap;
+      }
+      .order-chip.success {
+        --col: #10b981;
+      }
+      .order-chip.warn {
+        --col: #f59e0b;
+      }
+      .order-chip.danger {
+        --col: #ef4444;
+      }
+      .order-chip.outline {
+        --col: var(--border);
+      }
+      @media (max-width: 420px) {
+        .order-chip {
+          grid-template-columns: 32px 1fr auto;
+          padding: 9px 10px;
+        }
+        .order-chip .chip-id {
+          font-size: 13.5px;
+        }
+        .order-chip .chip-meta {
+          font-size: 11.5px;
+        }
+      }
+      #guestActions {
+        overflow-x: auto;
+        padding-bottom: 2px;
+      }
+
+      /* ---------- Responsive desktop: nhiều cột ---------- */
+      @media (min-width: 768px) {
+        .order-list {
+          grid-template-columns: repeat(2, minmax(320px, 1fr));
+          gap: 12px;
+        }
+        .order-chip {
+          padding: 10px 12px;
+          border-radius: 12px;
+          grid-template-columns: 32px 1fr auto;
+        }
+        .order-chip:hover {
+          box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+          transform: translateY(-1px);
+        }
+      }
+      @media (min-width: 1200px) {
+        .order-list {
+          grid-template-columns: repeat(3, minmax(320px, 1fr));
+        }
+      }
+      .container,
+      main.container {
+        max-width: 1100px;
+        margin-left: auto;
+        margin-right: auto;
+      }
     </style>
   </head>
+
   <body>
-    <!-- Header đồng bộ -->
+    <!-- Header -->
     <header>
       <div class="container">
         <div class="brand">
-          <div class="logo">
-            <img src="img/logo.jpg" alt="Nhi Nhi Quán" />
-          </div>
+          <div class="logo"><img src="img/logo.jpg" alt="Nhi Nhi Quán" /></div>
           <h1>Hệ Thống Quay Nướng Gà Vịt Nhi Nhi</h1>
         </div>
-
         <nav class="primary">
           <a href="index.html"><i data-lucide="home"></i> Trang chủ</a>
           <a href="menu.html"><i data-lucide="utensils-crossed"></i> Menu</a>
@@ -343,34 +577,28 @@
             ><i data-lucide="search"></i> Theo dõi đơn</a
           >
         </nav>
-
-        <!-- icon menu -->
         <button id="menuBtn" class="btn outline" aria-label="menu">
           <i data-lucide="menu"></i>
         </button>
-
-        <!-- icon giỏ hàng (luôn hiển thị) -->
         <a href="/checkout.html" class="cart-link" aria-label="Giỏ hàng">
-          <i data-lucide="shopping-cart"></i>
-          <span id="cartBadge" class="cart-badge">0</span>
+          <i data-lucide="shopping-cart"></i
+          ><span id="cartBadge" class="cart-badge">0</span>
         </a>
-
-        <!-- công tắc -->
-        <label class="switch">
-          <input type="checkbox" id="themeSwitch" />
-          <span class="icon"><i data-lucide="sun"></i></span>
-        </label>
+        <label class="switch"
+          ><input type="checkbox" id="themeSwitch" /><span class="icon"
+            ><i data-lucide="sun"></i></span
+        ></label>
       </div>
     </header>
 
     <main class="container">
       <div class="card">
         <form id="lookupForm" class="grid-2" autocomplete="off">
-          <!-- ======== MÃ ĐƠN ======== -->
+          <!-- Mã đơn -->
           <label class="field">
             <div class="row justify-between">
-              <span>Mã đơn (Order ID)</span>
-              <span id="idCounter" class="counter">0/24</span>
+              <span>Mã đơn (Order ID)</span
+              ><span id="idCounter" class="counter">0/24</span>
             </div>
             <div class="input-wrap" id="idWrap">
               <span class="leading" aria-hidden="true"
@@ -403,7 +631,7 @@
             </div>
           </label>
 
-          <!-- ======== 4 SỐ CUỐI SĐT (OTP) ======== -->
+          <!-- 4 số cuối SĐT -->
           <label class="field">
             <span>4 số cuối SĐT</span>
             <div class="otp-row">
@@ -412,7 +640,6 @@
                   class="otp"
                   type="text"
                   inputmode="numeric"
-                  pattern="[0-9]*"
                   maxlength="1"
                   aria-label="Số thứ 1"
                 />
@@ -420,7 +647,6 @@
                   class="otp"
                   type="text"
                   inputmode="numeric"
-                  pattern="[0-9]*"
                   maxlength="1"
                   aria-label="Số thứ 2"
                 />
@@ -428,7 +654,6 @@
                   class="otp"
                   type="text"
                   inputmode="numeric"
-                  pattern="[0-9]*"
                   maxlength="1"
                   aria-label="Số thứ 3"
                 />
@@ -436,7 +661,6 @@
                   class="otp"
                   type="text"
                   inputmode="numeric"
-                  pattern="[0-9]*"
                   maxlength="1"
                   aria-label="Số thứ 4"
                 />
@@ -472,6 +696,7 @@
         </form>
       </div>
 
+      <!-- Kết quả -->
       <section id="resultBox" class="card hidden" style="margin-top: 12px">
         <div class="row justify-between">
           <h2>Kết quả tra cứu</h2>
@@ -543,6 +768,7 @@
           </div>
         </div>
 
+        <!-- Danh sách lựa chọn theo SĐT / nút hủy khách -->
         <div id="guestActions" class="row gap-8" style="margin-top: 8px"></div>
 
         <details style="margin-top: 8px">
@@ -563,18 +789,38 @@
         </details>
       </section>
     </main>
-    <!-- Hộp xác nhận tuỳ chỉnh -->
-    <div id="confirmBox" class="hidden confirm-overlay">
+
+    <!-- Confirm/Alert box -->
+    <div
+      id="confirmBox"
+      class="hidden confirm-overlay"
+      role="dialog"
+      aria-modal="true"
+    >
       <div class="confirm-dialog">
-        <p id="confirmMessage">Bạn có chắc muốn huỷ đơn?</p>
+        <p id="confirmMessage" class="confirm-message">
+          Bạn có chắc muốn huỷ đơn?
+        </p>
         <div class="confirm-actions">
-          <button id="confirmYes" class="btn danger">Đồng ý</button>
-          <button id="confirmNo" class="btn outline">Hủy</button>
+          <button id="confirmYes" class="btn primary">Đồng ý</button>
+          <button id="confirmNo" class="btn ghost">Hủy</button>
         </div>
       </div>
     </div>
 
-    <!-- Footer đồng bộ -->
+    <!-- Page Loading Overlay -->
+    <div
+      id="pageLoading"
+      class="hidden page-loading-overlay"
+      aria-hidden="true"
+    >
+      <div class="plo-card">
+        <div class="plo-spin"></div>
+        <div class="plo-text">Đang tải…</div>
+      </div>
+    </div>
+
+    <!-- Footer -->
     <footer class="site-footer">
       <div class="footer-wrap container">
         <section class="footer-brand">
@@ -627,11 +873,12 @@
           </ul>
           <h5 style="margin-top: 14px">Liên kết nhanh</h5>
           <nav class="quick-links">
-            <a href="/menu.html"><i data-lucide="chef-hat"></i> Xem menu</a>
+            <a href="index.html"><i data-lucide="home"></i> Trang chủ</a>
+            <a href="menu.html"><i data-lucide="utensils-crossed"></i> Menu</a>
             <a href="/checkout.html"
               ><i data-lucide="shopping-cart"></i> Giỏ hàng</a
             >
-            <a href="/track.html"><i data-lucide="search"></i> Theo dõi đơn</a>
+            <a href="track.html"><i data-lucide="search"></i> Theo dõi đơn</a>
           </nav>
         </section>
 
@@ -671,6 +918,8 @@
       initUI();
     </script>
 
+    <!-- Logic tra cứu -->
     <script type="module" src="/js/track.js"></script>
+    <script type="module" src="/js/loading.js"></script>
   </body>
 </html>

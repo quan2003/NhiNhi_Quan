@@ -2,27 +2,311 @@
 <html lang="vi">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
     <title>Bảng điều khiển - Admin</title>
     <link rel="stylesheet" href="/admin/css/admin.css" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/img/logo.jpg" />
   </head>
   <body>
-    <header class="container">
-      <h1>Admin — Nhi Nhi Quán</h1>
-      <nav>
-        <a href="/admin/promotions.html">Khuyến mãi</a>
-        <a href="/admin/products.html">Sản phẩm</a>
-        <a href="/admin/orders.html">Đơn hàng</a>
-        <a href="/admin/reports.html">Báo cáo</a>
-        <a href="#" id="logout">Đăng xuất</a>
-      </nav>
-    </header>
-    <main class="container">
-      <div class="card">
-        <h2>Chào mừng!</h2>
-        <p>Hãy chọn mục quản lý ở thanh điều hướng.</p>
+    <!-- ===== Header ===== -->
+    <header class="site">
+      <div class="wrap container">
+        <a href="/admin/index.html" class="brand">
+          <img src="/img/logo.jpg" alt="Logo" />
+          <div>
+            <div style="font-weight: 800">Admin — Nhi Nhi Quán</div>
+            <small>Quản trị hệ thống</small>
+          </div>
+        </a>
+
+        <!-- Hamburger -->
+        <button
+          class="hamburger"
+          id="btnHamburger"
+          aria-expanded="false"
+          aria-controls="mSheet"
+          aria-label="Mở menu"
+        >
+          <svg
+            width="22"
+            height="18"
+            viewBox="0 0 24 18"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            aria-hidden="true"
+          >
+            <rect y="0" width="24" height="2" rx="1" fill="currentColor" />
+            <rect y="8" width="24" height="2" rx="1" fill="currentColor" />
+            <rect y="16" width="24" height="2" rx="1" fill="currentColor" />
+          </svg>
+        </button>
+
+        <!-- Tabs (desktop) -->
+        <nav class="tabs" role="navigation" aria-label="Admin">
+          <a class="active" href="/admin/index.html">Trang chủ</a>
+          <a href="/admin/promotions.html">Khuyến mãi</a>
+          <a href="/admin/products.html">Sản phẩm</a>
+          <a href="/admin/orders.html">Đơn hàng</a>
+          <a href="/admin/reports.html">Báo cáo</a>
+          <a href="/admin/login.html" id="logout">Đăng xuất</a>
+        </nav>
       </div>
+    </header>
+
+    <!-- Mobile Sheet (đổi thứ tự: panel trước, overlay sau) -->
+    <div id="mSheet" class="sheet" aria-hidden="true">
+      <div class="sheet-panel">
+        <nav>
+          <a href="/admin/index.html">Trang chủ</a>
+          <a href="/admin/promotions.html">Khuyến mãi</a>
+          <a href="/admin/products.html">Sản phẩm</a>
+          <a href="/admin/orders.html">Đơn hàng</a>
+          <a href="/admin/reports.html">Báo cáo</a>
+          <a href="#" id="logout_m">Đăng xuất</a>
+        </nav>
+      </div>
+      <div class="sheet-back" id="mBack"></div>
+    </div>
+
+    <!-- ===== Main ===== -->
+    <main class="container">
+      <!-- Stats -->
+      <section class="grid stats" aria-label="Thống kê nhanh">
+        <div class="card stat">
+          <div class="label">Sản phẩm đang bán</div>
+          <div id="statProducts" class="value">—</div>
+          <div class="hint" id="hintProducts"><span class="sk"></span></div>
+        </div>
+        <div class="card stat">
+          <div class="label">Đơn mới hôm nay</div>
+          <div id="statOrdersToday" class="value">—</div>
+          <div class="hint" id="hintOrdersToday"><span class="sk"></span></div>
+        </div>
+        <div class="card stat">
+          <div class="label">Doanh thu tạm tính hôm nay</div>
+          <div id="statRevenueToday" class="value">—</div>
+          <div class="hint" id="hintRevenueToday"><span class="sk"></span></div>
+        </div>
+        <div class="card stat">
+          <div class="label">Trạng thái thông báo</div>
+          <div id="pushChip" class="chip warn">Đang kiểm tra…</div>
+          <div class="hint">Web Push để báo đơn mới</div>
+        </div>
+      </section>
+
+      <!-- Quick actions -->
+      <section class="card" style="margin-top: 16px">
+        <div class="actions" style="justify-content: space-between">
+          <h2 style="margin: 0">Thao tác nhanh</h2>
+          <button id="btnRefresh" class="btn" type="button">Làm mới</button>
+        </div>
+        <div class="quick" style="margin-top: 10px">
+          <a href="/admin/orders.html">
+            <div class="title">Xem đơn hàng</div>
+            <div class="desc">Theo dõi & cập nhật trạng thái</div>
+          </a>
+          <a href="/admin/products.html">
+            <div class="title">Quản lý sản phẩm</div>
+            <div class="desc">Thêm, sửa, ẩn/hiện</div>
+          </a>
+          <a href="/admin/promotions.html">
+            <div class="title">Khuyến mãi</div>
+            <div class="desc">Bật/tắt & thiết lập % giảm</div>
+          </a>
+        </div>
+      </section>
+
+      <!-- Recent orders -->
+      <section class="card" style="margin-top: 16px">
+        <h2 style="margin: 0 0 10px">Đơn gần đây</h2>
+        <div style="overflow: auto">
+          <table aria-describedby="recentHint">
+            <thead>
+              <tr>
+                <th>Mã đơn</th>
+                <th>Khách hàng</th>
+                <th>Loại</th>
+                <th>TT</th>
+                <th>Tổng</th>
+                <th>Thời gian</th>
+              </tr>
+            </thead>
+            <tbody id="recentOrders">
+              <tr>
+                <td colspan="6" class="muted">Đang tải…</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div id="recentHint" class="muted" style="margin-top: 8px">
+          Hiển thị tối đa 8 đơn mới nhất.
+        </div>
+      </section>
     </main>
-    <script src="/admin/js/admin-common.js"></script>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+    <script src="/admin/js/admin-common.js" defer></script>
+    <script>
+      const toast = document.getElementById("toast");
+      function showToast(msg, ms = 1400) {
+        toast.textContent = msg;
+        toast.classList.add("show");
+        setTimeout(() => toast.classList.remove("show"), ms);
+      }
+      function vnd(n) {
+        try {
+          return (n || 0).toLocaleString("vi-VN") + "₫";
+        } catch {
+          return (n || 0) + "₫";
+        }
+      }
+      function startOfDay(date = new Date()) {
+        const d = new Date(date);
+        d.setHours(0, 0, 0, 0);
+        return d;
+      }
+
+      async function checkPush() {
+        const el = document.getElementById("pushChip");
+        try {
+          const reg = await navigator.serviceWorker?.getRegistration("/sw.js");
+          const sub = await reg?.pushManager.getSubscription();
+          if (sub) {
+            el.classList.replace("warn", "ok");
+            el.textContent = "Đã bật";
+          } else {
+            el.classList.replace("ok", "warn");
+            el.textContent = "Chưa bật";
+          }
+        } catch {
+          el.classList.replace("ok", "warn");
+          el.textContent = "Không khả dụng";
+        }
+      }
+
+      async function loadStatsAndRecent() {
+        const statProducts = document.getElementById("statProducts");
+        const hintProducts = document.getElementById("hintProducts");
+        if (statProducts && hintProducts) {
+          try {
+            const dataP = await (window.__adminFetch
+              ? window.__adminFetch("/api/products")
+              : fetch("/api/products").then((r) => r.json()));
+            const listP = Array.isArray(dataP) ? dataP : dataP?.items || [];
+            const activeCount = listP.filter((p) => p.active !== false).length;
+            statProducts.textContent = activeCount;
+            hintProducts.textContent = `${listP.length} tổng số sản phẩm`;
+          } catch {
+            statProducts.textContent = "—";
+            hintProducts.textContent = "Không tải được";
+          }
+        }
+
+        const statOrdersToday = document.getElementById("statOrdersToday");
+        const hintOrdersToday = document.getElementById("hintOrdersToday");
+        const statRevenueToday = document.getElementById("statRevenueToday");
+        const hintRevenueToday = document.getElementById("hintRevenueToday");
+        if (
+          statOrdersToday &&
+          hintOrdersToday &&
+          statRevenueToday &&
+          hintRevenueToday
+        ) {
+          try {
+            const dataO = await (window.__adminFetch
+              ? window.__adminFetch("/api/orders?page=1&pageSize=100")
+              : fetch("/api/orders?page=1&pageSize=100").then((r) => r.json()));
+            const list = Array.isArray(dataO) ? dataO : dataO?.items || [];
+            const dayStart = startOfDay(new Date());
+            let ordersToday = 0,
+              revenueToday = 0;
+            for (const o of list) {
+              const t = new Date(o.createdAt || o.updatedAt || Date.now());
+              if (t >= dayStart) {
+                ordersToday++;
+                revenueToday += Number(o.total || 0);
+              }
+            }
+            statOrdersToday.textContent = ordersToday;
+            hintOrdersToday.textContent = "Từ 00:00 hôm nay";
+            statRevenueToday.textContent = vnd(revenueToday);
+            hintRevenueToday.textContent = "Tính tất cả đơn";
+          } catch {
+            statOrdersToday.textContent = "—";
+            statRevenueToday.textContent = "—";
+            hintOrdersToday.textContent = "Không tải được";
+            hintRevenueToday.textContent = "Không tải được";
+          }
+        }
+
+        const recentOrders = document.getElementById("recentOrders");
+        if (recentOrders) {
+          try {
+            const data = await (window.__adminFetch
+              ? window.__adminFetch("/api/orders?page=1&pageSize=8")
+              : fetch("/api/orders?page=1&pageSize=8").then((r) => r.json()));
+            const list = Array.isArray(data) ? data : data?.items || [];
+            recentOrders.innerHTML = "";
+            if (!list.length) {
+              recentOrders.innerHTML = `<tr><td colspan="6" class="muted">Chưa có đơn nào.</td></tr>`;
+              return;
+            }
+            for (const o of list) {
+              const tr = document.createElement("tr");
+              tr.innerHTML = `
+                    <td><code>${o.id || ""}</code></td>
+                    <td>${o?.customer?.name || "-"}<br/><span class="muted">${
+                o?.customer?.phone || ""
+              }</span></td>
+                    <td>${
+                      o.type === "DINE_IN"
+                        ? "Tại bàn"
+                        : o.type === "RESERVE"
+                        ? "Đặt trước"
+                        : "Mang đi"
+                    }</td>
+                    <td><span class="status ${o.status || "NEW"}">${
+                o.status || "NEW"
+              }</span></td>
+                    <td>${vnd(o.total || 0)}</td>
+                    <td><span class="muted">${new Date(
+                      o.createdAt || Date.now()
+                    ).toLocaleString("vi-VN")}</span></td>
+                `;
+              recentOrders.appendChild(tr);
+            }
+          } catch {
+            recentOrders.innerHTML = `<tr><td colspan="6" class="muted">Không tải được danh sách đơn.</td></tr>`;
+          }
+        }
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        try {
+          checkPush();
+          loadStatsAndRecent();
+          const timer = setInterval(() => {
+            loadStatsAndRecent().catch((err) =>
+              console.error("Interval error:", err)
+            );
+          }, 60000);
+          window.addEventListener("beforeunload", () => clearInterval(timer));
+
+          document
+            .getElementById("btnRefresh")
+            ?.addEventListener("click", () => {
+              loadStatsAndRecent()
+                .then(() => showToast("Đã làm mới"))
+                .catch((err) => console.error("Refresh error:", err));
+            });
+        } catch (error) {
+          console.error("Error in DOMContentLoaded:", error);
+        }
+      });
+    </script>
   </body>
 </html>

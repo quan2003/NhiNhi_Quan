@@ -2,46 +2,372 @@
 <html lang="vi">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
     <title>Admin Login - Nhi Nhi Quán</title>
     <link rel="stylesheet" href="/admin/css/admin.css" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/img/logo.jpg" />
+
+    <!-- Page-scoped CSS: responsive + dark mode friendly -->
+    <style>
+      :root {
+        --bg: #0b1220;
+        --card: #111827;
+        --text: #e5e7eb;
+        --muted: #9ca3af;
+        --accent: #22d3ee;
+        --accent-strong: #06b6d4;
+        --danger: #ef4444;
+        --ring: rgba(34, 211, 238, 0.35);
+      }
+      @media (prefers-color-scheme: light) {
+        :root {
+          --bg: #f5f7fb;
+          --card: #ffffff;
+          --text: #0f172a;
+          --muted: #6b7280;
+          --accent: #0ea5e9;
+          --accent-strong: #0284c7;
+          --danger: #dc2626;
+          --ring: rgba(14, 165, 233, 0.25);
+        }
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        height: 100%;
+      }
+      body {
+        margin: 0;
+        color: var(--text);
+        background: radial-gradient(
+            1200px 600px at 10% -10%,
+            rgba(34, 211, 238, 0.08),
+            transparent
+          ),
+          radial-gradient(
+            1200px 600px at 110% 110%,
+            rgba(56, 189, 248, 0.08),
+            transparent
+          ),
+          var(--bg);
+        display: grid;
+        place-items: center;
+        font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica,
+          Arial, "Apple Color Emoji", "Segoe UI Emoji";
+        padding: 16px;
+      }
+
+      /* Layout container responsive */
+      .auth-wrap {
+        width: 100%;
+        max-width: 420px;
+      }
+      @media (min-width: 1024px) {
+        .auth-wrap {
+          max-width: 440px;
+        }
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        justify-content: center;
+        margin-bottom: 18px;
+        user-select: none;
+      }
+      .brand img {
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        object-fit: cover;
+      }
+      .brand h1 {
+        margin: 0;
+        font-size: clamp(18px, 2.2vw, 22px);
+        letter-spacing: 0.2px;
+        font-weight: 700;
+      }
+
+      .auth-card {
+        background: var(--card);
+        border: 1px solid rgba(148, 163, 184, 0.12);
+        border-radius: 16px;
+        padding: 20px;
+        box-shadow: 0 10px 25px rgba(2, 6, 23, 0.25),
+          inset 0 1px 0 rgba(255, 255, 255, 0.02);
+      }
+      @media (min-width: 640px) {
+        .auth-card {
+          padding: 24px;
+        }
+      }
+
+      .auth-card h2 {
+        margin: 0 0 14px;
+        font-size: 18px;
+        font-weight: 600;
+        text-align: center;
+      }
+
+      form {
+        display: grid;
+        gap: 14px;
+      }
+      label {
+        display: grid;
+        gap: 8px;
+        font-size: 14px;
+      }
+      .input {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        align-items: center;
+        border: 1px solid rgba(148, 163, 184, 0.22);
+        background: rgba(15, 23, 42, 0.35);
+        border-radius: 12px;
+        overflow: hidden;
+      }
+      .input input {
+        width: 100%;
+        border: none;
+        outline: none;
+        padding: 14px 14px;
+        font-size: 15px;
+        color: var(--text);
+        background: transparent;
+      }
+      .input:focus-within {
+        box-shadow: 0 0 0 4px var(--ring);
+        border-color: var(--accent);
+      }
+      .toggle-btn {
+        border: none;
+        background: transparent;
+        padding: 0 12px;
+        height: 100%;
+        cursor: pointer;
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .toggle-btn:hover {
+        color: var(--text);
+      }
+
+      .btn {
+        width: 100%;
+        border: none;
+        border-radius: 12px;
+        padding: 12px 16px;
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        color: white;
+        background: linear-gradient(
+          180deg,
+          var(--accent),
+          var(--accent-strong)
+        );
+        box-shadow: 0 8px 18px rgba(34, 211, 238, 0.28);
+        transition: transform 0.06s ease, filter 0.15s ease, opacity 0.2s ease;
+      }
+      .btn:hover {
+        filter: brightness(1.04);
+      }
+      .btn:active {
+        transform: translateY(1px);
+      }
+      .btn[disabled] {
+        opacity: 0.6;
+        cursor: not-allowed;
+        box-shadow: none;
+      }
+
+      .row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        margin-top: 6px;
+      }
+      .muted {
+        color: var(--muted);
+        font-size: 12.5px;
+      }
+      code {
+        background: rgba(148, 163, 184, 0.12);
+        border: 1px solid rgba(148, 163, 184, 0.18);
+        padding: 2px 6px;
+        border-radius: 6px;
+      }
+
+      /* Inline feedback */
+      .error {
+        display: none;
+        font-size: 13px;
+        color: #fecaca;
+        background: rgba(239, 68, 68, 0.12);
+        border: 1px solid rgba(239, 68, 68, 0.35);
+        padding: 10px 12px;
+        border-radius: 10px;
+        margin-top: 4px;
+      }
+      .error.show {
+        display: block;
+      }
+
+      /* Tiny toast */
+      .toast {
+        position: fixed;
+        left: 50%;
+        bottom: env(safe-area-inset-bottom, 12px);
+        transform: translateX(-50%);
+        background: var(--card);
+        border: 1px solid rgba(148, 163, 184, 0.2);
+        color: var(--text);
+        padding: 10px 14px;
+        border-radius: 10px;
+        box-shadow: 0 10px 24px rgba(2, 6, 23, 0.35);
+        font-size: 14px;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.2s ease, transform 0.2s ease;
+      }
+      .toast.show {
+        opacity: 1;
+        transform: translateX(-50%) translateY(-4px);
+      }
+    </style>
   </head>
+
   <body>
-    <main class="container small">
-      <h1>Đăng nhập quản trị</h1>
-      <form id="loginForm">
-        <label
-          >Mật khẩu
-          <input type="password" id="password" required />
-        </label>
-        <button class="btn" type="submit">Đăng nhập</button>
-      </form>
-      <p class="muted">Mặc định: <code>admin123</code> (đổi trong file .env)</p>
-    </main>
+    <div class="auth-wrap">
+      <div class="brand">
+        <img src="/img/logo.jpg" alt="Nhi Nhi Quán" />
+        <h1>Nhi Nhi Quán</h1>
+      </div>
+
+      <div class="auth-card" role="region" aria-labelledby="login-title">
+        <h2 id="login-title">Đăng nhập quản trị</h2>
+
+        <form id="loginForm" novalidate>
+          <div>
+            <label for="password">Mật khẩu</label>
+            <div class="input" id="pwWrap">
+              <input
+                type="password"
+                id="password"
+                name="password"
+                inputmode="text"
+                autocomplete="current-password"
+                placeholder="••••••••"
+                required
+                aria-required="true"
+              />
+              <button type="button" class="toggle-btn" id="togglePw">
+                Hiện
+              </button>
+            </div>
+            <div id="error" class="error" role="alert">
+              Sai mật khẩu. Vui lòng thử lại.
+            </div>
+          </div>
+
+          <button class="btn" type="submit" id="submitBtn">Đăng nhập</button>
+
+          <div class="row">
+            <span class="muted"
+              >Mặc định: <code>admin123</code> (đổi trong file .env)</span
+            >
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
     <script>
-      // Không import admin-common ở đây để tránh redirect guard
-      document
-        .getElementById("loginForm")
-        .addEventListener("submit", async (e) => {
-          e.preventDefault();
-          const password = document.getElementById("password").value.trim();
+      const form = document.getElementById("loginForm");
+      const pw = document.getElementById("password");
+      const btn = document.getElementById("submitBtn");
+      const err = document.getElementById("error");
+      const tgl = document.getElementById("togglePw");
+      const toast = document.getElementById("toast");
+
+      function showToast(msg, ms = 1600) {
+        toast.textContent = msg;
+        toast.classList.add("show");
+        setTimeout(() => toast.classList.remove("show"), ms);
+      }
+
+      tgl.addEventListener("click", () => {
+        const isPw = pw.type === "password";
+        pw.type = isPw ? "text" : "password";
+        tgl.textContent = isPw ? "Ẩn" : "Hiện";
+        pw.focus({ preventScroll: true });
+      });
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        err.classList.remove("show");
+
+        const password = pw.value.trim();
+        if (!password) {
+          err.textContent = "Vui lòng nhập mật khẩu.";
+          err.classList.add("show");
+          pw.focus();
+          return;
+        }
+
+        // Disable UI + show loading
+        btn.disabled = true;
+        btn.textContent = "Đang đăng nhập...";
+
+        try {
           const r = await fetch("/api/auth/login", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ password }),
           });
+
           if (!r.ok) {
-            alert("Sai mật khẩu");
+            err.textContent = "Sai mật khẩu. Vui lòng thử lại.";
+            err.classList.add("show");
+            showToast("Đăng nhập thất bại");
             return;
           }
+
           const data = await r.json();
 
           // LƯU token VỚI KEY THỐNG NHẤT 'adminToken'
           localStorage.setItem("adminToken", data.token);
 
-          location.href = "/admin/index.html";
-        });
+          showToast("Đăng nhập thành công");
+          // Nhẹ nhàng chờ 300ms để người dùng kịp thấy toast
+          setTimeout(() => {
+            location.href = "/admin/index.html";
+          }, 300);
+        } catch (e2) {
+          err.textContent = "Không thể kết nối máy chủ. Thử lại sau.";
+          err.classList.add("show");
+          showToast("Lỗi mạng");
+        } finally {
+          btn.disabled = false;
+          btn.textContent = "Đăng nhập";
+        }
+      });
+
+      // Enter trên mobile/desktop mượt mà
+      pw.addEventListener("keydown", (ev) => {
+        if (ev.key === "Enter") {
+          form.requestSubmit?.() || form.submit();
+        }
+      });
     </script>
   </body>
 </html>

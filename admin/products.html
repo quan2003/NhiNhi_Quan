@@ -3,88 +3,571 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Quản lý sản phẩm</title>
+    <title>Quản lý sản phẩm — Admin</title>
     <link rel="stylesheet" href="/admin/css/admin.css" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/img/logo.jpg" />
     <style>
-      .thumb {
-        width: 64px;
-        height: 64px;
-        object-fit: cover;
-        border-radius: 8px;
-        border: 1px solid #1f2937;
+      :root {
+        --bg: #0b1220;
+        --card: #111827;
+        --text: #e5e7eb;
+        --muted: #9ca3af;
+        --brand: #22c55e;
+        --line: rgba(148, 163, 184, 0.18);
+        --accent: #22d3ee;
+        --chip: color-mix(in oklab, var(--card) 86%, transparent);
       }
-      .uploader {
+      @media (prefers-color-scheme: light) {
+        :root {
+          --bg: #f6f8fc;
+          --card: #fff;
+          --text: #0f172a;
+          --muted: #6b7280;
+          --line: rgba(2, 6, 23, 0.12);
+        }
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        color: var(--text);
+        background: radial-gradient(
+            1200px 600px at 10% -10%,
+            rgba(34, 211, 238, 0.08),
+            transparent
+          ),
+          radial-gradient(
+            1200px 600px at 110% 110%,
+            rgba(56, 189, 248, 0.08),
+            transparent
+          ),
+          var(--bg);
+        font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica,
+          Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      }
+      .container {
+        max-width: 1080px;
+        margin: 0 auto;
+        padding: 12px 16px;
+      }
+      header {
+        position: sticky;
+        top: 0;
+        z-index: 50;
+        backdrop-filter: blur(8px);
+        background: color-mix(in oklab, var(--bg) 86%, transparent);
+        border-bottom: 1px solid var(--line);
+      }
+      .topbar {
         display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .brand img {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        object-fit: cover;
+      }
+      .brand h1 {
+        margin: 0;
+        font-size: clamp(16px, 2.2vw, 18px);
+      }
+      nav {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      nav a,
+      nav button.linky {
+        text-decoration: none;
+        color: var(--text);
+        border: 1px solid var(--line);
+        background: color-mix(in oklab, var(--card) 80%, transparent);
+        padding: 8px 12px;
+        border-radius: 10px;
+        font-size: 14px;
+        display: inline-flex;
         align-items: center;
         gap: 8px;
       }
-      .uploader input[type="file"] {
-        display: none;
+      nav a:hover,
+      nav button.linky:hover {
+        border-color: var(--accent);
       }
-      .uploader .file-name {
+      nav button.linky {
+        cursor: pointer;
+      }
+      .hamburger {
+        display: none;
+        border: 1px solid var(--line);
+        background: var(--chip);
+        padding: 8px 10px;
+        border-radius: 10px;
+        cursor: pointer;
+      }
+      .nav-wrap {
+        display: contents;
+      }
+      @media (max-width: 760px) {
+        .nav-wrap {
+          display: none;
+        }
+        .hamburger {
+          display: inline-flex;
+        }
+        .sheet {
+          position: fixed;
+          top: 56px;
+          right: 0;
+          background: var(--card);
+          border-left: 1px solid var(--line);
+          border-bottom: 1px solid var(--line);
+          border-top-left-radius: 12px;
+          padding: 12px;
+          display: none;
+          box-shadow: 0 12px 40px rgba(2, 6, 23, 0.4);
+        }
+        .sheet.open {
+          display: block;
+        }
+        .sheet nav {
+          flex-direction: column;
+          align-items: stretch;
+        }
+      }
+      main {
+        padding: 10px 0 24px;
+      }
+      .muted {
         color: var(--muted);
+      }
+      .controls {
+        display: grid;
+        grid-template-columns: 1.2fr 0.9fr 0.8fr 0.8fr auto auto;
+        gap: 10px;
+        align-items: center;
+      }
+      @media (max-width: 980px) {
+        .controls {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
+      .input,
+      .textarea,
+      select.input {
+        width: 100%;
+        padding: 10px 12px;
+        border-radius: 10px;
+        border: 1px solid #1f2937;
+        background: #0f1012;
+        color: var(--text);
+        outline: none;
+      }
+      .input:focus,
+      .textarea:focus,
+      select.input:focus {
+        border-color: #334155;
+      }
+      .textarea {
+        resize: vertical;
+      }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 10px 14px;
+        border-radius: 10px;
+        border: 1px solid #1f2937;
+        background: #0f1012;
+        color: var(--text);
+        cursor: pointer;
+        font-weight: 600;
+      }
+      .btn-sm {
+        padding: 8px 12px;
+        border-radius: 9px;
+        font-size: 14px;
+      }
+      .btn-xs {
+        padding: 6px 10px;
+        border-radius: 8px;
         font-size: 12px;
+      }
+      .btn.primary {
+        background: var(--brand);
+        color: #06260f;
+        border-color: transparent;
+      }
+      .btn.secondary {
+        background: #14161a;
+      }
+      .btn.danger {
+        background: #2a1212;
+        border-color: #3a1a1a;
+        color: #ffb4b4;
+      }
+      .btn[disabled] {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+      .btn[data-loading="1"]::after {
+        content: "…";
+        margin-left: 4px;
+        opacity: 0.8;
+      }
+      .card {
+        background: var(--card);
+        border: 1px solid #1f2937;
+        border-radius: 14px;
+        padding: 16px;
       }
       .grid-3 {
         display: grid;
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: 12px;
       }
-      @media (max-width: 700px) {
+      @media (max-width: 1024px) {
+        .grid-3 {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+      @media (max-width: 640px) {
         .grid-3 {
           grid-template-columns: 1fr;
         }
       }
+      .uploader {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      .thumb-wrap {
+        position: relative;
+        width: 64px;
+        height: 64px;
+      }
+      .thumb {
+        width: 64px;
+        height: 64px;
+        object-fit: cover;
+        border-radius: 10px;
+        border: 1px solid #1f2937;
+        background: #0f1012;
+        transition: transform 0.15s ease;
+      }
+      .thumb:hover {
+        transform: scale(1.9);
+        z-index: 5;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+      }
+      .uploader-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .file-name {
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .dropzone {
+        border: 1px dashed #334155;
+        border-radius: 12px;
+        padding: 12px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: #0f1115;
+      }
+      .dropzone.dragging {
+        border-color: #22c55e;
+        background: #0e1712;
+      }
+      .table-wrap {
+        overflow: auto;
+      }
+      table.table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 980px;
+      }
+      .table th,
+      .table td {
+        border-bottom: 1px solid #1f2937;
+        padding: 10px;
+        vertical-align: top;
+      }
+      .table thead th {
+        text-align: left;
+        font-size: 13px;
+        color: var(--muted);
+        font-weight: 600;
+        position: sticky;
+        top: 0;
+        background: var(--card);
+        z-index: 1;
+      }
+      .row-item:hover {
+        background: #121419;
+      }
+      .col-desc {
+        max-width: 420px;
+      }
+      textarea.small {
+        width: 100%;
+        min-height: 40px;
+        overflow: hidden;
+      }
+      .num {
+        text-align: right;
+      }
+      .num-hint {
+        font-size: 12px;
+        color: var(--muted);
+        margin-top: 4px;
+        text-align: right;
+      }
+      .switch {
+        position: relative;
+        width: 40px;
+        height: 24px;
+        display: inline-block;
+      }
+      .switch input {
+        display: none;
+      }
+      .switch span {
+        position: absolute;
+        inset: 0;
+        background: #2a2f3a;
+        border-radius: 999px;
+      }
+      .switch span::after {
+        content: "";
+        position: absolute;
+        top: 3px;
+        left: 3px;
+        width: 18px;
+        height: 18px;
+        background: #e5e7eb;
+        border-radius: 999px;
+        transition: transform 0.15s ease;
+      }
+      .switch input:checked + span {
+        background: #16a34a;
+      }
+      .switch input:checked + span::after {
+        transform: translateX(16px);
+      }
+      @media (max-width: 700px) {
+        table.table {
+          min-width: 700px;
+        }
+      }
+      /* Confirm Modal (giống Orders) */
+      .confirm-backdrop {
+        position: fixed;
+        inset: 0;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        background: rgba(2, 6, 23, 0.55);
+        z-index: 10000;
+        backdrop-filter: blur(2px);
+      }
+      .confirm-dialog {
+        width: min(560px, 90vw);
+        background: #0f1115;
+        color: #e5e7eb;
+        border: 1px solid rgba(148, 163, 184, 0.18);
+        border-radius: 14px;
+        padding: 16px;
+        box-shadow: 0 24px 60px rgba(2, 6, 23, 0.6);
+      }
+      .confirm-dialog h3 {
+        margin: 0 0 6px 0;
+        font-size: 18px;
+      }
+      .confirm-dialog p {
+        margin: 0 0 12px 0;
+        color: #9ca3af;
+      }
+      .confirm-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+      }
     </style>
   </head>
   <body>
-    <header class="container">
-      <h1>Sản phẩm</h1>
-      <nav>
-        <a href="/admin/index.html">Trang chủ</a>
-        <a href="/admin/orders.html">Đơn hàng</a>
-        <a href="/admin/reports.html">Báo cáo</a>
-        <a href="#" id="logout">Đăng xuất</a>
-      </nav>
+    <!-- ===== Header ===== -->
+    <header class="site">
+      <div class="wrap container">
+        <a href="/admin/index.html" class="brand">
+          <img src="/img/logo.jpg" alt="Logo" />
+          <div>
+            <div style="font-weight: 800">Admin — Nhi Nhi Quán</div>
+            <small>Quản trị hệ thống</small>
+          </div>
+        </a>
+
+        <!-- Hamburger -->
+        <button
+          class="hamburger"
+          id="btnHamburger"
+          aria-expanded="false"
+          aria-controls="mSheet"
+          aria-label="Mở menu"
+        >
+          <svg
+            width="22"
+            height="18"
+            viewBox="0 0 24 18"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            aria-hidden="true"
+          >
+            <rect y="0" width="24" height="2" rx="1" fill="currentColor" />
+            <rect y="8" width="24" height="2" rx="1" fill="currentColor" />
+            <rect y="16" width="24" height="2" rx="1" fill="currentColor" />
+          </svg>
+        </button>
+
+        <!-- Tabs (desktop) -->
+        <nav class="tabs" role="navigation" aria-label="Admin">
+          <a href="/admin/index.html">Trang chủ</a>
+          <a href="/admin/promotions.html">Khuyến mãi</a>
+          <a class="active" href="/admin/products.html">Sản phẩm</a>
+          <a href="/admin/orders.html">Đơn hàng</a>
+          <a href="/admin/reports.html">Báo cáo</a>
+          <a href="/admin/login.html" id="logout">Đăng xuất</a>
+        </nav>
+      </div>
     </header>
 
+    <!-- Mobile Sheet -->
+    <div id="mSheet" class="sheet" aria-hidden="true">
+      <div class="sheet-back" id="mBack"></div>
+      <div class="sheet-panel">
+        <nav>
+          <a href="/admin/index.html">Trang chủ</a>
+          <a href="/admin/promotions.html">Khuyến mãi</a>
+          <a href="/admin/products.html">Sản phẩm</a>
+          <a href="/admin/orders.html">Đơn hàng</a>
+          <a href="/admin/reports.html">Báo cáo</a>
+          <a href="#" id="logout_m">Đăng xuất</a>
+        </nav>
+      </div>
+    </div>
+
     <main class="container">
-      <!-- TẠO MỚI -->
+      <!-- Controls -->
+      <section class="card" style="margin-bottom: 12px">
+        <div class="controls">
+          <input
+            id="q"
+            class="input"
+            placeholder="Tìm theo tên, danh mục, mô tả…"
+          />
+          <select id="fCat" class="input">
+            <option value="">Tất cả danh mục</option>
+          </select>
+          <select id="fActive" class="input">
+            <option value="">Tất cả trạng thái</option>
+            <option value="true">Đang bán</option>
+            <option value="false">Ẩn</option>
+          </select>
+          <select id="sort" class="input">
+            <option value="updatedAt:desc">Mới cập nhật</option>
+            <option value="name:asc">Tên A → Z</option>
+            <option value="name:desc">Tên Z → A</option>
+            <option value="sell:asc">Giá thấp → cao</option>
+            <option value="sell:desc">Giá cao → thấp</option>
+          </select>
+          <button id="prev" class="btn btn-sm">← Trước</button>
+          <div
+            id="pageInfo"
+            class="muted"
+            style="font-size: 13px; text-align: center"
+          >
+            0–0 / 0
+          </div>
+          <button id="next" class="btn btn-sm">Sau →</button>
+        </div>
+      </section>
+
+      <!-- Create -->
       <section class="card">
         <h2>Thêm sản phẩm</h2>
         <form id="createForm" class="grid-3">
-          <label
-            >Tên
-            <input id="c_name" required />
+          <label> Tên <input id="c_name" class="input" required /> </label>
+          <label>
+            Danh mục
+            <input
+              id="c_category"
+              class="input"
+              placeholder="Gà/Vịt/Combo/Giải khát"
+            />
           </label>
-          <label
-            >Danh mục
-            <input id="c_category" placeholder="Gà/Vịt/Combo/Giải khát" />
+          <label>
+            Giá bán
+            <input
+              id="c_sell"
+              class="input"
+              type="number"
+              min="0"
+              step="1"
+              required
+            />
           </label>
-          <label
-            >Giá bán
-            <input id="c_sell" type="number" required />
+          <label>
+            Giá vốn
+            <input
+              id="c_cost"
+              class="input"
+              type="number"
+              min="0"
+              step="1"
+              required
+            />
           </label>
-          <label
-            >Giá vốn
-            <input id="c_cost" type="number" required />
+          <label>
+            Đơn vị
+            <input
+              id="c_unit"
+              class="input"
+              placeholder="con/nửa con/ly/combo…"
+            />
           </label>
-          <label
-            >Đơn vị
-            <input id="c_unit" placeholder="con/nửa con/ly/combo…" />
-          </label>
-          <label
-            >Kích hoạt
-            <select id="c_active">
+          <label>
+            Kích hoạt
+            <select id="c_active" class="input">
               <option value="true" selected>Có</option>
               <option value="false">Không</option>
             </select>
           </label>
+          <label style="grid-column: 1/-1">
+            Mô tả
+            <textarea
+              id="c_desc"
+              class="textarea small"
+              rows="1"
+              placeholder="Mô tả món (nước chấm/đồ chua/ghi chú)…"
+            ></textarea>
+          </label>
 
-          <!-- ẢNH: chọn file hoặc dán URL -->
           <div style="grid-column: 1/-1">
-            <h3 style="margin: 8px 0">Ảnh sản phẩm</h3>
-            <div class="uploader">
+            <h3 style="margin: 6px 0 10px 0">Ảnh sản phẩm</h3>
+            <div id="c_drop" class="dropzone">
               <img
                 id="c_preview"
                 class="thumb"
@@ -92,48 +575,105 @@
                 alt=""
                 style="display: none"
               />
-              <button class="btn" type="button" id="c_pick">Chọn ảnh</button>
-              <input type="file" id="c_file" accept="image/*" />
-              <button class="btn" type="button" id="c_upload">Tải lên</button>
-              <span class="file-name" id="c_file_name"></span>
+              <div class="uploader-actions">
+                <button class="btn secondary btn-sm" type="button" id="c_pick">
+                  Chọn ảnh
+                </button>
+                <input
+                  type="file"
+                  id="c_file"
+                  accept="image/*"
+                  style="display: none"
+                />
+                <button
+                  class="btn secondary btn-sm"
+                  type="button"
+                  id="c_upload"
+                >
+                  Tải lên
+                </button>
+                <span class="file-name" id="c_file_name"></span>
+              </div>
             </div>
-            <div style="margin-top: 8px">
-              <input
-                id="c_image_url"
-                placeholder="Hoặc dán URL ảnh trực tiếp"
-                style="width: 100%"
-              />
-            </div>
+            <input
+              id="c_image_url"
+              class="input"
+              placeholder="Hoặc dán URL ảnh trực tiếp"
+            />
+            <p class="muted" style="margin: 8px 0 0 0; font-size: 12px">
+              Mẹo: Kéo–thả ảnh vào khung trên để chọn nhanh.
+            </p>
           </div>
 
           <div style="grid-column: 1/-1">
-            <button class="btn" type="submit">Thêm</button>
+            <button class="btn primary" type="submit">Thêm</button>
           </div>
         </form>
       </section>
 
-      <!-- DANH SÁCH -->
+      <!-- List -->
       <section class="card">
         <h2>Danh sách</h2>
-        <table class="table" id="tbl">
-          <thead>
-            <tr>
-              <th>Ảnh</th>
-              <th>Tên</th>
-              <th>Danh mục</th>
-              <th>Giá bán</th>
-              <th>Giá vốn</th>
-              <th>Đơn vị</th>
-              <th>Active</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
+        <div class="table-wrap">
+          <table class="table" id="tbl">
+            <thead>
+              <tr>
+                <th>Ảnh</th>
+                <th>Tên</th>
+                <th>Danh mục</th>
+                <th>Giá bán</th>
+                <th>Giá vốn</th>
+                <th>Đơn vị</th>
+                <th>Mô tả</th>
+                <th>Kích hoạt</th>
+                <th style="width: 160px">Thao tác</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
       </section>
     </main>
 
-    <script src="/admin/js/admin-common.js"></script>
+    <!-- Common JS -->
+    <script src="/admin/js/admin-common.js" defer></script>
+    <!-- <script>
+      // Mobile sheet + logout
+      const sheet = document.getElementById("sheet");
+      document.getElementById("btnHamburger")?.addEventListener("click", () => {
+        const open = sheet.classList.toggle("open");
+        sheet.setAttribute("aria-hidden", String(!open));
+      });
+      document.getElementById("logout")?.addEventListener("click", () => {
+        window.__adminLogout?.();
+        window.toast?.success?.("Đã đăng xuất");
+      });
+      document
+        .getElementById("logout_m")
+        ?.addEventListener("click", () => window.__adminLogout?.());
+    </script> -->
+
+    <!-- Lucide Icons (PHẢI trước products.js) -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Products JS -->
     <script src="/admin/js/products.js"></script>
+
+    <!-- Confirm Modal (giống Orders) -->
+    <div id="confirmBackdrop" class="confirm-backdrop" aria-hidden="true">
+      <div
+        class="confirm-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="confirmTitle"
+      >
+        <h3 id="confirmTitle">Xác nhận</h3>
+        <p id="confirmMsg">Bạn chắc chắn?</p>
+        <div class="confirm-actions">
+          <button id="confirmCancel" class="btn">Huỷ</button>
+          <button id="confirmOk" class="btn primary">Đồng ý</button>
+        </div>
+      </div>
+    </div>
   </body>
 </html>

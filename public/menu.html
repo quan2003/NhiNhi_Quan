@@ -4,55 +4,66 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Menu - Nhi Nhi Quán</title>
+
     <link rel="icon" type="image/png" sizes="16x16" href="/img/logo.jpg" />
+    <!-- Prefetch để vào checkout nhanh hơn -->
+    <link rel="prefetch" href="/checkout.html" as="document" />
+
     <link rel="stylesheet" href="/css/style.css" />
     <script src="https://unpkg.com/lucide@latest"></script>
   </head>
   <body>
+    <!-- ========== HEADER ========== -->
     <header>
       <div class="container">
+        <!-- Brand -->
         <div class="brand">
           <div class="logo">
-            <img src="img/logo.jpg" alt="Nhi Nhi Quán" />
+            <img src="/img/logo.jpg" alt="Nhi Nhi Quán" />
           </div>
           <h1>Hệ Thống Quay Nướng Gà Vịt Nhi Nhi</h1>
         </div>
 
+        <!-- Nav (desktop) -->
         <nav class="primary">
-          <a href="index.html"><i data-lucide="home"></i> Trang chủ</a>
-          <a href="menu.html" class="active"
+          <a href="/index.html"><i data-lucide="home"></i> Trang chủ</a>
+          <a href="/menu.html" class="active"
             ><i data-lucide="utensils-crossed"></i> Menu</a
           >
-          <a href="track.html"><i data-lucide="search"></i> Theo dõi đơn</a>
+          <a href="/track.html"><i data-lucide="search"></i> Theo dõi đơn</a>
         </nav>
 
-        <!-- icon menu -->
+        <!-- Nút mở drawer (mobile) -->
         <button id="menuBtn" class="btn outline" aria-label="menu">
           <i data-lucide="menu"></i>
         </button>
 
-        <!-- icon giỏ hàng (luôn hiển thị) -->
+        <!-- Giỏ hàng luôn hiển thị -->
         <a href="/checkout.html" class="cart-link" aria-label="Giỏ hàng">
           <i data-lucide="shopping-cart"></i>
           <span id="cartBadge" class="cart-badge">0</span>
         </a>
 
-        <!-- công tắc -->
-        <label class="switch">
+        <!-- Công tắc sáng/tối -->
+        <label class="switch" title="Đổi giao diện sáng/tối">
           <input type="checkbox" id="themeSwitch" />
           <span class="icon"><i data-lucide="sun"></i></span>
         </label>
       </div>
+
+      <!-- Drawer -->
       <aside id="drawer" class="drawer" aria-hidden="true">
-        <a href="index.html"><i data-lucide="home"></i> Trang chủ</a>
-        <a href="menu.html"><i data-lucide="utensils-crossed"></i> Xem Menu</a>
-        <a href="track.html"><i data-lucide="search"></i> Theo dõi đơn</a>
+        <a href="/index.html"><i data-lucide="home"></i> Trang chủ</a>
+        <a href="/menu.html"><i data-lucide="utensils-crossed"></i> Xem Menu</a>
+        <a href="/track.html"><i data-lucide="search"></i> Theo dõi đơn</a>
       </aside>
     </header>
 
+    <!-- ========== MAIN ========== -->
     <main class="container">
-      <div class="card row filter-row">
-        <label class="row align-items-center">
+      <!-- Lọc danh mục -->
+      <div class="card row filter-row" style="margin-top: 12px">
+        <label class="row align-items-center" style="width: 100%">
           Lọc theo danh mục:
           <select id="filterCategory" class="filter-select">
             <option value="">Tất cả</option>
@@ -60,10 +71,11 @@
         </label>
       </div>
 
+      <!-- Danh sách món -->
       <div id="menuList" class="grid menu-grid"></div>
     </main>
 
-    <!-- Modal chi tiết món -->
+    <!-- ========== MODAL CHI TIẾT MÓN ========== -->
     <div class="modal" id="itemModal" aria-hidden="true">
       <div
         class="sheet"
@@ -73,13 +85,11 @@
       >
         <button class="close" id="mdClose" aria-label="Đóng">×</button>
 
-        <!-- Cột ảnh -->
         <div class="modal-image">
           <div class="spinner" id="modalSpinner"></div>
           <img id="mdImg" alt="" />
         </div>
 
-        <!-- Cột thông tin -->
         <div class="body">
           <h2 class="h2" id="mdTitle"></h2>
           <div class="meta" id="mdCategory"></div>
@@ -119,18 +129,15 @@
       </div>
     </div>
 
+    <!-- ========== FOOTER ========== -->
     <footer class="site-footer">
       <div class="footer-wrap container">
-        <!-- Cột 1: Logo + Liên hệ -->
+        <!-- Cột 1 -->
         <section class="footer-brand">
           <div class="brandline">
-            <img
-              class="footer-logo"
-              src="/img/logo.jpg"
-              alt="Hệ Thống Quay Nướng Gà Vị Nhi Nhin"
-            />
+            <img class="footer-logo" src="/img/logo.jpg" alt="Nhi Nhi Quán" />
             <div>
-              <h4 class="footer-title">Hệ Thống Quay Nướng Gà Vị Nhi Nhi</h4>
+              <h4 class="footer-title">Hệ Thống Quay Nướng Gà Vịt Nhi Nhi</h4>
               <p class="footer-tag">Gà nướng mắm nhĩ · Vịt quay ngũ vị</p>
             </div>
           </div>
@@ -166,7 +173,7 @@
           </ul>
         </section>
 
-        <!-- Cột 2: Giờ mở cửa / Liên kết nhanh -->
+        <!-- Cột 2 -->
         <section class="footer-hours">
           <h5>Giờ mở cửa</h5>
           <ul class="hours">
@@ -176,6 +183,7 @@
           <h5 style="margin-top: 14px">Liên kết nhanh</h5>
           <nav class="quick-links">
             <a href="/index.html"><i data-lucide="home"></i> Trang chủ</a>
+            <a href="/menu.html"><i data-lucide="utensils-crossed"></i> Menu</a>
             <a href="/checkout.html"
               ><i data-lucide="shopping-cart"></i> Giỏ hàng</a
             >
@@ -183,7 +191,7 @@
           </nav>
         </section>
 
-        <!-- Cột 3: Bản đồ -->
+        <!-- Cột 3 -->
         <section class="map-card" aria-label="Bản đồ">
           <iframe
             src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3843.5859619646344!2d108.49100927828695!3d15.560311046494757!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3169dd004e338171%3A0xa99a1decfeb7cca0!2zSOG7hyBUaOG7kW5nIFF1YXkgTsaw4bubbmcgR8OgIFbhu4t0IE5oaSBOaGk!5e0!3m2!1svi!2sus!4v1757264543675!5m2!1svi!2sus"
@@ -193,7 +201,8 @@
             allowfullscreen=""
             loading="lazy"
             referrerpolicy="no-referrer-when-downgrade"
-          ></iframe>
+          >
+          </iframe>
         </section>
       </div>
 
@@ -202,12 +211,50 @@
       </div>
     </footer>
 
+    <!-- ========== MOBILE CART BAR ========== -->
+    <div id="cartFab" class="cart-fab-mobile hidden" aria-live="polite">
+      <div class="cart-fab-row">
+        <span><b id="mf_count">0</b> Món · <b id="mf_total">0</b></span>
+        <button id="mf_open" class="btn primary sm" type="button">
+          Xem giỏ
+        </button>
+      </div>
+    </div>
+
+    <!-- ========== MOBILE CART BOTTOM SHEET ========== -->
+    <div id="cartSheet" class="cart-sheet" aria-hidden="true">
+      <div class="cart-sheet-header">
+        <b>Giỏ hàng</b>
+        <button id="mf_close" class="btn outline sm" aria-label="Đóng">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+      <div id="mf_items" class="cart-sheet-items"></div>
+      <div class="cart-sheet-total">
+        <div>Tạm tính: <span id="mf_sub">0</span></div>
+        <div>Giảm: <span id="mf_disc">0</span></div>
+        <div class="strong">Tổng cộng: <span id="mf_tot">0</span></div>
+      </div>
+      <div class="cart-sheet-actions">
+        <!-- Quan trọng: có id để JS bắt pointerdown -->
+        <a
+          id="mf_checkout"
+          class="btn primary wide"
+          href="/checkout.html"
+          rel="nofollow"
+        >
+          <i data-lucide="check-circle-2"></i> Đặt hàng
+        </a>
+      </div>
+    </div>
+
+    <!-- ========== SCRIPTS ========== -->
     <script>
       (function () {
         try {
           const y = document.getElementById("y");
           if (y) y.textContent = new Date().getFullYear();
-          if (window.lucide) window.lucide.createIcons();
+          window.lucide && window.lucide.createIcons();
         } catch (e) {}
       })();
     </script>
@@ -217,5 +264,7 @@
       initUI();
     </script>
     <script type="module" src="/js/menu.js"></script>
+    <script type="module" src="/js/cartbar.js"></script>
+    <script type="module" src="/js/loading.js"></script>
   </body>
 </html>

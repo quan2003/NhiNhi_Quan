@@ -134,23 +134,44 @@ export function hideSpinner() {
 
 /* Expose to other scripts without import */
 window.__ui = { toast, showSpinner, hideSpinner };
-import { getCartCount } from "./cart.js";
+// ---- Cart badge: cập nhật realtime trên mọi trang ----
+import * as Cart from "./cart.js"; // dùng wildcard để không vỡ nếu thiếu onCartChange
+
+function applyBadge(n) {
+  const els = [
+    document.getElementById("cartBadge"),
+    document.getElementById("cartBadgeDrawer"),
+  ].filter(Boolean);
+
+  els.forEach((el) => {
+    el.textContent = n;
+    el.style.display = n > 0 ? "inline-block" : "none";
+    // hiệu ứng nảy nhẹ
+    el.classList.remove("pop");
+    void el.offsetWidth; // reset animation
+    el.classList.add("pop");
+  });
+}
 
 function updateCartBadge() {
-  const count = getCartCount();
-  const el1 = document.getElementById("cartBadge");
-  const el2 = document.getElementById("cartBadgeDrawer");
-  if (el1) el1.textContent = count;
-  if (el2) el2.textContent = count;
+  applyBadge(Cart.getCartCount());
 }
 
 // chạy ngay khi load
 updateCartBadge();
 
-// nếu muốn auto cập nhật khi storage thay đổi (đa tab)
+// NGHE mọi thay đổi giỏ hàng cùng tab (cart.js phát sự kiện)
+Cart.onCartChange?.(({ count }) => applyBadge(count));
+// fallback: nghe CustomEvent thủ công nếu không import được onCartChange
+window.addEventListener("cart:change", (e) => {
+  const n = e.detail?.count ?? Cart.getCartCount();
+  applyBadge(n);
+});
+
+// Đa tab / cửa sổ khác
 window.addEventListener("storage", (e) => {
   if (e.key === "cart_v1") updateCartBadge();
 });
 
-// expose cho chỗ khác gọi khi thêm/xoá giỏ hàng
+// expose để nơi khác có thể gọi thủ công nếu cần
 window.__ui.updateCartBadge = updateCartBadge;

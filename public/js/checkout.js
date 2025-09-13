@@ -1,4 +1,4 @@
-// public/js/checkout.js (ESM) — phiên bản bỏ alert + banner thành công ở TRÊN form
+// public/js/checkout.js (ESM) — hiện toast rồi mới chuyển sang trang Theo dõi
 import { vnd, qs, create } from "./utils.js";
 import { apiGet, apiPost } from "./api.js";
 import { getCart, setQty, removeItem, clearCart } from "./cart.js";
@@ -81,7 +81,8 @@ function updateQR(amount) {
 
   img.src = fixed || fallbackUrl;
 }
-// ===== Custom Confirm (Promise-based) =====
+
+/* ===== Custom Confirm (Promise-based) ===== */
 function confirmBox(message = "Bạn có chắc?") {
   return new Promise((resolve) => {
     // backdrop
@@ -150,28 +151,51 @@ function renderCart() {
     const p = products.find((x) => x.id === it.productId);
     if (!p || !box) return;
 
+    const qty = it.qty || 1;
+
+    // item row
     const row = create("div", { class: "row cart-item" });
+
+    // tên món (trái)
     row.appendChild(create("div", { text: p.name, class: "cart-item-name" }));
 
+    // cụm nút (phải)
     const controls = create("div", { class: "row cart-item-controls" });
-    const input = create("input", {
-      type: "number",
-      min: "1",
-      value: String(it.qty || 1),
-      class: "input-field qty-input",
-    });
-    input.addEventListener("change", () => {
-      setQty(it.productId, parseInt(input.value || "1", 10));
+
+    // - btn
+    const btnMinus = create("button", { class: "icon-btn", type: "button" });
+    btnMinus.appendChild(create("i", { "data-lucide": "minus" }));
+    btnMinus.addEventListener("click", () => {
+      setQty(it.productId, Math.max(1, qty - 1));
       renderCart();
     });
 
+    // qty pill
+    const qtyPill = create("span", { class: "qty-pill", text: String(qty) });
+
+    // + btn
+    const btnPlus = create("button", { class: "icon-btn", type: "button" });
+    btnPlus.appendChild(create("i", { "data-lucide": "plus" }));
+    btnPlus.addEventListener("click", () => {
+      setQty(it.productId, qty + 1);
+      renderCart();
+    });
+
+    // giá
     const price = create("span", {
-      text: vnd(p.priceSell * (it.qty || 1)),
+      text: vnd(p.priceSell * qty),
       class: "cart-item-price",
     });
 
-    const rm = create("button", { class: "btn outline danger", text: "Xoá" });
-    rm.addEventListener("click", async () => {
+    // thùng rác (đỏ)
+    const btnRemove = create("button", {
+      class: "icon-btn danger",
+      type: "button",
+      title: "Xoá món",
+      "aria-label": "Xoá món",
+    });
+    btnRemove.appendChild(create("i", { "data-lucide": "trash-2" }));
+    btnRemove.addEventListener("click", async () => {
       const ok = await confirmBox("Bạn có chắc muốn xoá món này?");
       if (!ok) return;
       removeItem(it.productId);
@@ -179,13 +203,12 @@ function renderCart() {
       window.toast?.info?.("Đã xoá 1 món khỏi giỏ.");
     });
 
-    controls.appendChild(input);
-    controls.appendChild(price);
-    controls.appendChild(rm);
+    controls.append(btnMinus, qtyPill, btnPlus, price, btnRemove);
     row.appendChild(controls);
     box.appendChild(row);
   });
 
+  // tổng tiền
   const { subtotal, discount, total } = computeTotals(items);
   const st = qs("#cartSubtotal");
   const dc = qs("#cartDiscount");
@@ -194,13 +217,52 @@ function renderCart() {
   if (dc) dc.textContent = (discount ? "-" : "") + vnd(discount);
   if (tt) tt.textContent = vnd(total);
 
+  // QR
   const pay = document.querySelector("input[name=payment]:checked")?.value;
   const tbox = qs("#transferBox");
   if (tbox) tbox.classList.toggle("hidden", pay !== "TRANSFER");
   if (pay === "TRANSFER") updateQR(total);
+
+  // render icon lucide sau khi DOM thay đổi
+  try {
+    window.lucide?.createIcons();
+  } catch {}
 }
 
-/* ============ Success banner (hiển thị TRÊN form) ============ */
+// Delegate sự kiện click trong cart desktop
+document.addEventListener("click", async (e) => {
+  const btn = e.target.closest("#cartItems .icon-btn[data-act]");
+  if (!btn) return;
+
+  const act = btn.getAttribute("data-act");
+  const root = btn.closest(".cart-item");
+  const id = root?.getAttribute("data-id");
+  if (!id) return;
+
+  switch (act) {
+    case "incr":
+      setQty(id, (getCart().find((x) => x.productId === id)?.qty || 1) + 1);
+      renderCart();
+      break;
+    case "decr":
+      setQty(
+        id,
+        Math.max(1, (getCart().find((x) => x.productId === id)?.qty || 1) - 1)
+      );
+      renderCart();
+      break;
+    case "remove": {
+      const ok = await confirmBox("Bạn có chắc muốn xoá món này?");
+      if (!ok) return;
+      removeItem(id);
+      renderCart();
+      window.toast?.info?.("Đã xoá 1 món khỏi giỏ.");
+      break;
+    }
+  }
+});
+
+/* ============ Success banner (trên form) ============ */
 function showSuccessBanner({ orderId, subtotal, discount, total }, phone) {
   const section = document.querySelector(".checkout-section");
   if (!section) return;
@@ -208,11 +270,13 @@ function showSuccessBanner({ orderId, subtotal, discount, total }, phone) {
   // Nếu đã có banner, gỡ bỏ để tạo mới
   section.querySelector("#successBanner")?.remove();
 
-  const tail = (phone || "").slice(-4);
+  const tail = String(phone || "")
+    .replace(/\D/g, "")
+    .slice(-4);
+  const phoneParam = "****" + tail;
   const link = `/track.html?orderId=${encodeURIComponent(
     orderId
-  )}&phone=${encodeURIComponent(phone || "")}`;
-  const linkMasked = link.replace(phone || "", "****" + tail);
+  )}&phone=${encodeURIComponent(phoneParam)}`;
 
   const banner = document.createElement("div");
   banner.id = "successBanner";
@@ -235,7 +299,7 @@ function showSuccessBanner({ orderId, subtotal, discount, total }, phone) {
     <p style="margin:.25rem 0 .25rem 0"><b>Tổng thanh toán: ${vnd(
       total
     )}</b></p>
-    <p style="margin:0">Theo dõi: <a href="${link}" target="_blank">${linkMasked}</a></p>
+    <p style="margin:0">Theo dõi: <a href="${link}">${link}</a></p>
   `;
 
   section.prepend(banner);
@@ -332,7 +396,7 @@ function bindForm() {
       const tbox = qs("#transferBox");
       if (tbox) tbox.classList.add("hidden");
 
-      // ✅ Hiển thị banner thành công Ở TRÊN form (không dùng #result ở dưới nút nữa)
+      // Hiển thị banner thành công (tham khảo), nhưng sẽ redirect ngay sau khi hiển toast
       showSuccessBanner(
         {
           orderId: r.orderId,
@@ -343,7 +407,7 @@ function bindForm() {
         payload.customer.phone
       );
 
-      // Nếu chọn chuyển khoản thì bật QR lại với đúng tổng
+      // Nếu chọn chuyển khoản thì bật QR lại với đúng tổng (để khách còn xem QR nếu quay lại)
       if (payload.paymentMethod === "TRANSFER") {
         const { total } = computeTotals(items);
         if (tbox) tbox.classList.remove("hidden");
@@ -354,8 +418,26 @@ function bindForm() {
       form.reset();
       switchTypeUI("TAKEAWAY");
 
-      // Toast nhỏ gọn
-      window.toast?.success(`Đơn đã tạo: ${r.orderId}`);
+      // === HIỂN TOAST TRƯỚC, RỒI CHUYỂN TRANG SAU ===
+      const tail = String(payload.customer.phone || "")
+        .replace(/\D/g, "")
+        .slice(-4);
+      const phoneParam = "****" + tail;
+      const url = `/track.html?orderId=${encodeURIComponent(
+        r.orderId
+      )}&phone=${encodeURIComponent(phoneParam)}`;
+
+      // Toast
+      window.toast?.success?.(
+        `Đơn đã tạo: ${r.orderId}. Sẽ chuyển đến trang theo dõi…`
+      );
+
+      // Delay: nếu là chuyển khoản, tăng delay để khách đọc hướng dẫn (1.5–2s)
+      const delay = payload.paymentMethod === "TRANSFER" ? 1500 : 900;
+
+      setTimeout(() => {
+        location.href = url;
+      }, delay);
     } catch (err) {
       window.__ui?.hideSpinner?.();
       window.toast?.error("Lỗi đặt hàng: " + (err?.message || "Không rõ lỗi"));

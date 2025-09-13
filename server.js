@@ -1,4 +1,4 @@
-// server.js
+// server.js — no sample data
 import express from "express";
 import cors from "cors";
 import fs from "fs/promises";
@@ -7,7 +7,7 @@ import { fileURLToPath } from "url";
 import { nanoid } from "nanoid";
 import dotenv from "dotenv";
 import multer from "multer";
-import webpush from "web-push"; // <— Web Push
+import webpush from "web-push";
 
 dotenv.config();
 
@@ -28,27 +28,38 @@ const VAPID_PUBLIC = process.env.VAPID_PUBLIC || "";
 const VAPID_PRIVATE = process.env.VAPID_PRIVATE || "";
 const VAPID_SUBJECT = process.env.VAPID_SUBJECT || "mailto:admin@example.com";
 
-// Cấu hình web-push (nếu có key)
+const PUSH_TTL = Math.max(60, parseInt(process.env.PUSH_TTL || "86400", 10));
+const PUSH_URGENCY = process.env.PUSH_URGENCY || "high";
+const PUSH_TOPIC = process.env.PUSH_TOPIC || "orders";
+
 if (VAPID_PUBLIC && VAPID_PRIVATE) {
   webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC, VAPID_PRIVATE);
-  console.log("Web Push: VAPID configured");
 } else {
-  console.warn("Web Push: VAPID_PUBLIC/PRIVATE not set — push disabled");
+  console.warn("Web Push disabled (missing VAPID keys)");
 }
 
 const DB_FILE = path.join(__dirname, "db.json");
 
-// ===== Static & middleware =====
+/* ============ Static & middleware ============ */
 app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
 app.use("/admin", express.static(path.join(__dirname, "admin")));
+app.set("etag", false);
+app.use((req, res, next) => {
+  if (req.path.startsWith("/api/")) {
+    res.set("Cache-Control", "no-store, no-cache, must-revalidate");
+    res.set("Pragma", "no-cache");
+    res.set("Expires", "0");
+  }
+  next();
+});
 
 const UPLOAD_DIR = path.join(__dirname, "public", "uploads");
 await fs.mkdir(UPLOAD_DIR, { recursive: true }).catch(() => {});
 app.use("/uploads", express.static(UPLOAD_DIR));
 
-// Multer
+/* ============ Multer ============ */
 const storage = multer.diskStorage({
   destination: (_req, _file, cb) => cb(null, UPLOAD_DIR),
   filename: (_req, file, cb) => {
@@ -56,18 +67,15 @@ const storage = multer.diskStorage({
       String(file.originalname || "")
         .split(".")
         .pop() || "jpg";
-    const name =
-      Date.now() +
-      "-" +
-      Math.random().toString(36).slice(2, 8) +
-      "." +
-      ext.toLowerCase();
+    const name = `${Date.now()}-${Math.random()
+      .toString(36)
+      .slice(2, 8)}.${ext.toLowerCase()}`;
     cb(null, name);
   },
 });
 const upload = multer({ storage });
 
-// ===== Helpers =====
+/* ============ Helpers ============ */
 async function readDB() {
   try {
     const raw = await fs.readFile(DB_FILE, "utf-8");
@@ -75,19 +83,14 @@ async function readDB() {
     if (!db.products) db.products = [];
     if (!db.orders) db.orders = [];
     if (!db.settings) db.settings = {};
-    if (!db.settings.promo) {
+    if (!db.settings.promo)
       db.settings.promo = {
         enabled: false,
         percent: 0,
         start: null,
         end: null,
       };
-    }
-    if (!db.settings.push) {
-      db.settings.push = { subscriptions: [] };
-    } else if (!Array.isArray(db.settings.push.subscriptions)) {
-      db.settings.push.subscriptions = [];
-    }
+    if (!db.settings.push) db.settings.push = { subscriptions: [] };
     return db;
   } catch {
     return {
@@ -110,29 +113,27 @@ function isPromoActive(p) {
   if (p.end && now > new Date(p.end)) return false;
   return true;
 }
-function maskPhone(p) {
-  if (!p) return "";
-  const d = String(p).replace(/\D/g, "");
-  return d.length <= 4
-    ? d
-    : "•".repeat(Math.max(0, d.length - 4)) + d.slice(-4);
-}
-function last4(p) {
-  return String(p || "")
-    .replace(/\D/g, "")
-    .slice(-4);
-}
-function dstr(d) {
+const dstr = (d) => {
   const y = d.getFullYear(),
     m = String(d.getMonth() + 1).padStart(2, "0"),
     day = String(d.getDate()).padStart(2, "0");
   return `${y}-${m}-${day}`;
-}
-function sameId(a, b) {
-  return String(a || "").toUpperCase() === String(b || "").toUpperCase();
-} // <— so khớp id KHÔNG phân biệt hoa/thường
+};
+const last4 = (p) =>
+  String(p || "")
+    .replace(/\D/g, "")
+    .slice(-4);
+const maskPhone = (p) => {
+  const d = String(p).replace(/\D/g, "");
+  return d.length <= 4
+    ? d
+    : "•".repeat(Math.max(0, d.length - 4)) + d.slice(-4);
+};
+const sameId = (a, b) =>
+  String(a || "").toUpperCase() === String(b || "").toUpperCase();
+const digits = (x) => String(x || "").replace(/\D/g, "");
 
-// ===== Auth =====
+/* ============ Auth ============ */
 function requireAdmin(req, res, next) {
   const t = req.headers["x-admin-token"];
   if (!t || t !== ADMIN_TOKEN)
@@ -145,21 +146,16 @@ app.post("/api/auth/login", (req, res) => {
   res.status(401).json({ error: "Sai mật khẩu" });
 });
 
-// ===== Upload =====
+/* ============ Upload ============ */
 app.post("/api/upload", requireAdmin, upload.single("file"), (req, res) => {
-  try {
-    if (!req.file) return res.status(400).json({ error: "No file" });
-    res.json({ url: "/uploads/" + req.file.filename });
-  } catch (e) {
-    res.status(500).json({ error: e.message });
-  }
+  if (!req.file) return res.status(400).json({ error: "No file" });
+  res.json({ url: "/uploads/" + req.file.filename });
 });
 
-// ===== Settings =====
-app.get("/api/settings", requireAdmin, async (_req, res) => {
-  const db = await readDB();
-  res.json(db.settings);
-});
+/* ============ Settings & public config ============ */
+app.get("/api/settings", requireAdmin, async (_req, res) =>
+  res.json((await readDB()).settings)
+);
 app.put("/api/settings", requireAdmin, async (req, res) => {
   const db = await readDB();
   const { promo } = req.body || {};
@@ -175,7 +171,6 @@ app.put("/api/settings", requireAdmin, async (req, res) => {
   res.json(db.settings);
 });
 
-// ===== Config (public) =====
 app.get("/api/config", async (_req, res) => {
   const db = await readDB();
   res.json({
@@ -193,15 +188,13 @@ app.get("/api/config", async (_req, res) => {
   });
 });
 
-// ===== Products =====
-app.get("/api/products", async (_req, res) => {
-  const db = await readDB();
-  res.json(db.products.filter((p) => p.active !== false));
-});
-app.get("/api/admin/products", requireAdmin, async (_req, res) => {
-  const db = await readDB();
-  res.json(db.products);
-});
+/* ============ Products (rút gọn) ============ */
+app.get("/api/products", async (_req, res) =>
+  res.json((await readDB()).products.filter((p) => p.active !== false))
+);
+app.get("/api/admin/products", requireAdmin, async (_req, res) =>
+  res.json((await readDB()).products)
+);
 app.get("/api/products/:id", async (req, res) => {
   const db = await readDB();
   const p = db.products.find((x) => x.id === req.params.id);
@@ -218,9 +211,6 @@ app.post("/api/products", requireAdmin, async (req, res) => {
     active = true,
     imageUrl,
     description,
-    nuocCham,
-    doChua,
-    ghiChu,
   } = req.body || {};
   if (!name || priceSell == null || priceCost == null)
     return res.status(400).json({ error: "Thiếu trường bắt buộc" });
@@ -235,9 +225,6 @@ app.post("/api/products", requireAdmin, async (req, res) => {
     active: !!active,
     imageUrl: imageUrl || "",
     description: description || "",
-    nuocCham: nuocCham || "",
-    doChua: doChua || "",
-    ghiChu: ghiChu || "",
     createdAt: new Date().toISOString(),
   };
   db.products.push(p);
@@ -265,13 +252,43 @@ app.delete("/api/products/:id", requireAdmin, async (req, res) => {
   res.json(removed);
 });
 
-// ===== Orders =====
+/* ============ Orders + SSE + Push ============ */
 const AllowedStatus = ["NEW", "IN_PROGRESS", "COMPLETED", "CANCELED"];
 const AllowedOrderTypes = ["TAKEAWAY", "TAKE_AWAY", "DINE_IN", "RESERVE"];
 
-// ---- Web Push helpers ----
+const sseClients = new Set();
+app.get("/api/orders/stream", (req, res) => {
+  const qtoken = req.query.token;
+  if (!qtoken || qtoken !== ADMIN_TOKEN) return res.sendStatus(401);
+  res.writeHead(200, {
+    "Content-Type": "text/event-stream",
+    "Cache-Control": "no-cache",
+    Connection: "keep-alive",
+  });
+  res.write(`event: ping\ndata: ${Date.now()}\n\n`);
+  const client = { res };
+  sseClients.add(client);
+  const keep = setInterval(() => {
+    try {
+      res.write(`event: ping\ndata: ${Date.now()}\n\n`);
+    } catch {}
+  }, 25000);
+  req.on("close", () => {
+    clearInterval(keep);
+    sseClients.delete(client);
+  });
+});
+function sseBroadcast(data) {
+  const payload = `data: ${JSON.stringify(data)}\n\n`;
+  for (const { res } of sseClients) {
+    try {
+      res.write(payload);
+    } catch {}
+  }
+}
+
 async function addPushSubscription(sub) {
-  if (!VAPID_PUBLIC || !VAPID_PRIVATE) return; // disabled
+  if (!VAPID_PUBLIC || !VAPID_PRIVATE) return;
   const db = await readDB();
   const list = db.settings.push.subscriptions || [];
   if (!list.find((x) => x?.endpoint === sub?.endpoint)) {
@@ -282,8 +299,9 @@ async function addPushSubscription(sub) {
 }
 async function removePushSubscription(endpoint) {
   const db = await readDB();
-  const list = db.settings.push.subscriptions || [];
-  db.settings.push.subscriptions = list.filter((x) => x?.endpoint !== endpoint);
+  db.settings.push.subscriptions = (
+    db.settings.push.subscriptions || []
+  ).filter((x) => x?.endpoint !== endpoint);
   await writeDB(db);
 }
 async function sendPushToAll(payload) {
@@ -295,13 +313,15 @@ async function sendPushToAll(payload) {
   await Promise.all(
     list.map(async (sub) => {
       try {
-        await webpush.sendNotification(sub, JSON.stringify(payload));
+        await webpush.sendNotification(sub, JSON.stringify(payload), {
+          TTL: PUSH_TTL,
+          urgency: PUSH_URGENCY,
+          topic: PUSH_TOPIC,
+        });
       } catch (e) {
-        if (e?.statusCode === 404 || e?.statusCode === 410) {
+        if (e?.statusCode === 404 || e?.statusCode === 410)
           dead.push(sub?.endpoint);
-        } else {
-          console.warn("Push error:", e?.statusCode, e?.message);
-        }
+        else console.warn("Push error:", e?.statusCode, e?.message);
       }
     })
   );
@@ -312,26 +332,16 @@ async function sendPushToAll(payload) {
     await writeDB(db);
   }
 }
-
-// ---- Push routes ----
-app.get("/api/push/publicKey", requireAdmin, (_req, res) => {
-  res.json({ publicKey: VAPID_PUBLIC || "" });
-});
+app.get("/api/push/publicKey", requireAdmin, (_req, res) =>
+  res.json({ publicKey: VAPID_PUBLIC || "" })
+);
 app.post("/api/push/subscribe", requireAdmin, async (req, res) => {
-  try {
-    await addPushSubscription(req.body);
-    res.json({ ok: true });
-  } catch (e) {
-    res.status(500).json({ error: e.message });
-  }
+  await addPushSubscription(req.body);
+  res.json({ ok: true });
 });
 app.post("/api/push/unsubscribe", requireAdmin, async (req, res) => {
-  try {
-    await removePushSubscription(req.body?.endpoint);
-    res.json({ ok: true });
-  } catch (e) {
-    res.status(500).json({ error: e.message });
-  }
+  await removePushSubscription(req.body?.endpoint);
+  res.json({ ok: true });
 });
 app.post("/api/push/test", requireAdmin, async (_req, res) => {
   await sendPushToAll({
@@ -345,45 +355,6 @@ app.post("/api/push/test", requireAdmin, async (_req, res) => {
   res.json({ ok: true });
 });
 
-// ==== SSE: stream đơn mới cho trang admin (auth qua query token) ====
-const sseClients = new Set();
-
-app.get("/api/orders/stream", (req, res) => {
-  const qtoken = req.query.token;
-  if (!qtoken || qtoken !== ADMIN_TOKEN) return res.sendStatus(401);
-
-  res.writeHead(200, {
-    "Content-Type": "text/event-stream",
-    "Cache-Control": "no-cache",
-    Connection: "keep-alive",
-  });
-  res.write(`event: ping\ndata: ${Date.now()}\n\n`);
-
-  const client = { res };
-  sseClients.add(client);
-
-  const keep = setInterval(() => {
-    try {
-      res.write(`event: ping\ndata: ${Date.now()}\n\n`);
-    } catch {}
-  }, 25000);
-
-  req.on("close", () => {
-    clearInterval(keep);
-    sseClients.delete(client);
-  });
-});
-
-function sseBroadcast(data) {
-  const payload = `data: ${JSON.stringify(data)}\n\n`;
-  for (const { res } of sseClients) {
-    try {
-      res.write(payload);
-    } catch {}
-  }
-}
-
-// ===== Create Order =====
 app.post("/api/orders", async (req, res) => {
   const { customer, items, paymentMethod, meta } = req.body || {};
   if (
@@ -419,7 +390,7 @@ app.post("/api/orders", async (req, res) => {
   }
 
   const promo = db.settings?.promo || { enabled: false, percent: 0 };
-  const promoActive = promo && promo.enabled && isPromoActive(promo);
+  const promoActive = isPromoActive(promo);
   const discount = promoActive
     ? Math.round((subtotal * (promo.percent || 0)) / 100)
     : 0;
@@ -429,12 +400,14 @@ app.post("/api/orders", async (req, res) => {
   let orderType = (meta?.orderType || "TAKEAWAY")
     .toUpperCase()
     .replace("-", "_");
-  if (!AllowedOrderTypes.includes(orderType))
+  if (!["TAKEAWAY", "TAKE_AWAY", "DINE_IN", "RESERVE"].includes(orderType)) {
     return res.status(400).json({ error: "orderType không hợp lệ" });
-  if (orderType === "RESERVE" && !meta?.scheduleAt)
+  }
+  if (orderType === "RESERVE" && !meta?.scheduleAt) {
     return res
       .status(400)
       .json({ error: "RESERVE cần thời gian đến (scheduleAt)" });
+  }
 
   const order = {
     id: nanoid(12).toUpperCase(),
@@ -465,10 +438,7 @@ app.post("/api/orders", async (req, res) => {
   db.orders.unshift(order);
   await writeDB(db);
 
-  // Realtime cho trang admin
   sseBroadcast({ type: "new_order", order });
-
-  // Gửi push (không chặn phản hồi nếu lỗi)
   (async () => {
     try {
       const totalVnd = (order.total || 0).toLocaleString("vi-VN") + "₫";
@@ -496,19 +466,32 @@ app.post("/api/orders", async (req, res) => {
   });
 });
 
-// ===== Query Orders =====
+// List + search + filter
 app.get("/api/orders", requireAdmin, async (req, res) => {
-  const { status, page = 1, pageSize = 10 } = req.query;
+  const { status, page = 1, pageSize = 10, q = "" } = req.query;
   const db = await readDB();
+
   let list = [...db.orders];
   if (status) {
     const s = String(status).toUpperCase();
     if (AllowedStatus.includes(s)) list = list.filter((o) => o.status === s);
   }
-  const p = Math.max(1, parseInt(page));
-  const ps = Math.max(1, parseInt(pageSize));
+  if (q) {
+    const s = String(q).trim().toLowerCase();
+    list = list.filter(
+      (o) =>
+        o.id.toLowerCase().includes(s) ||
+        (o.customer?.name || "").toLowerCase().includes(s) ||
+        (o.customer?.phone || "").toLowerCase().includes(s)
+    );
+  }
+  list.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+  const p = Math.max(1, parseInt(page, 10));
+  const ps = Math.max(1, parseInt(pageSize, 10));
   const start = (p - 1) * ps;
   const end = start + ps;
+
   res.json({
     page: p,
     pageSize: ps,
@@ -517,7 +500,7 @@ app.get("/api/orders", requireAdmin, async (req, res) => {
   });
 });
 
-// ===== Update/Delete/Tracking/Reports (giữ nguyên) =====
+// Update / Delete / Invoices
 app.put("/api/orders/:id", requireAdmin, async (req, res) => {
   const { status } = req.body || {};
   if (status && !AllowedStatus.includes(status))
@@ -531,147 +514,170 @@ app.put("/api/orders/:id", requireAdmin, async (req, res) => {
     updatedAt: new Date().toISOString(),
   };
   await writeDB(db);
+  sseBroadcast({ type: "order_updated", order: db.orders[idx] });
   res.json(db.orders[idx]);
 });
-
 app.delete("/api/orders/:id", requireAdmin, async (req, res) => {
   const db = await readDB();
   const idx = db.orders.findIndex((o) => sameId(o.id, req.params.id));
   if (idx === -1) return res.status(404).json({ error: "Not found" });
   const removed = db.orders.splice(idx, 1)[0];
   await writeDB(db);
+  sseBroadcast({ type: "order_deleted", orderId: removed.id });
   res.json({ ok: true, removedId: removed.id });
 });
 
-app.get("/api/orders/public/:id", async (req, res) => {
+app.get("/api/orders/invoice/:id", requireAdmin, async (req, res) => {
   const db = await readDB();
   const o = db.orders.find((x) => sameId(x.id, req.params.id));
   if (!o) return res.status(404).json({ error: "Không tìm thấy đơn" });
+  if (o.status !== "COMPLETED")
+    return res.status(403).json({ error: "Đơn chưa hoàn tất" });
   res.json({
     id: o.id,
-    status: o.status,
-    total: o.total,
-    discount: o.discount || 0,
-    subtotal: o.subtotal || o.total,
-    paymentMethod: o.paymentMethod,
     createdAt: o.createdAt,
-    customer: {
-      name: o.customer.name,
-      phoneMasked: maskPhone(o.customer.phone),
-    },
+    status: o.status,
+    paymentMethod: o.paymentMethod,
+    customer: o.customer,
     meta: o.meta || {},
-    itemCount: (o.items || []).reduce((s, i) => s + (i.qty || 0), 0),
+    items: o.items || [],
+    subtotal: o.subtotal ?? 0,
+    discount: o.discount ?? 0,
+    total: o.total ?? 0,
   });
 });
 
-app.get("/api/orders/lookup", async (req, res) => {
-  const { id, phone } = req.query || {};
-  if (!id || !phone) return res.status(400).send("Missing id or phone");
+app.get("/api/orders/invoice-public/:id", async (req, res) => {
+  const tail = String(req.query.phone || "").slice(-4);
+  if (!tail) return res.status(400).json({ error: "Missing phone tail" });
   const db = await readDB();
-  const o = db.orders.find((x) => sameId(x.id, id));
-  if (!o) return res.status(404).send("Order not found");
-  if (last4(o.customer?.phone) !== String(phone).slice(-4))
-    return res.status(403).send("Phone tail mismatch");
+  const o = db.orders.find((x) => sameId(x.id, req.params.id));
+  if (!o) return res.status(404).json({ error: "Không tìm thấy đơn" });
+  if (last4(o.customer?.phone) !== tail)
+    return res.status(403).json({ error: "Phone tail mismatch" });
+  if (o.status !== "COMPLETED")
+    return res.status(403).json({ error: "Đơn chưa hoàn tất" });
   res.json({
     id: o.id,
-    status: o.status,
-    total: o.total,
-    discount: o.discount || 0,
-    subtotal: o.subtotal ?? o.total,
-    paymentMethod: o.paymentMethod,
     createdAt: o.createdAt,
+    status: o.status,
+    paymentMethod: o.paymentMethod,
     customer: {
       name: o.customer?.name || "",
-      phoneMasked: maskPhone(o.customer?.phone || ""),
+      phoneMasked: maskPhone(o.customer?.phone),
     },
     meta: o.meta || {},
     items: o.items || [],
+    subtotal: o.subtotal ?? 0,
+    discount: o.discount ?? 0,
+    total: o.total ?? 0,
   });
 });
 
+/* ===== Lookup & Phone list & Guest cancel ===== */
+
+// GET /api/orders/lookup?id=ORDERID&phone=0523
+app.get("/api/orders/lookup", async (req, res) => {
+  const id = String(req.query.id || "").trim();
+  const tail = last4(req.query.phone || "");
+  if (!id || !tail) {
+    return res.status(400).json({ error: "MISSING_ID_OR_PHONE" });
+  }
+
+  const db = await readDB();
+  const o = db.orders.find((x) => sameId(x.id, id));
+  if (!o) return res.status(404).json({ error: "ORDER_NOT_FOUND" });
+  if (last4(o.customer?.phone) !== tail)
+    return res.status(403).json({ error: "PHONE_TAIL_MISMATCH" });
+
+  res.json({
+    id: o.id,
+    status: o.status,
+    createdAt: o.createdAt,
+    paymentMethod: o.paymentMethod,
+    customer: {
+      name: o.customer?.name || "",
+      phoneMasked: maskPhone(o.customer?.phone),
+    },
+    meta: {
+      orderType: o.meta?.orderType || "TAKEAWAY",
+      tableNumber: o.meta?.tableNumber || "",
+      guests: Number(o.meta?.guests || 0) || 0,
+      scheduleAt: o.meta?.scheduleAt || null,
+      note: o.meta?.note || "",
+    },
+    items: (o.items || []).map((it) => ({
+      name: it.name,
+      qty: it.qty,
+      priceSell: it.priceSell,
+      lineTotal: (it.priceSell || 0) * (it.qty || 0),
+    })),
+    subtotal: o.subtotal ?? 0,
+    discount: o.discount ?? 0,
+    total: o.total ?? 0,
+  });
+});
+
+// GET /api/orders/phone?phone=0523&days=7
+app.get("/api/orders/phone", async (req, res) => {
+  const phoneRaw = String(req.query.phone || "");
+  const days = Math.max(1, parseInt(req.query.days || "7", 10));
+  if (!phoneRaw) return res.status(400).json({ error: "Missing phone" });
+
+  const now = Date.now();
+  const from = now - days * 24 * 3600 * 1000;
+  const tail = last4(phoneRaw);
+
+  const db = await readDB();
+  const items = db.orders
+    .filter((o) => {
+      const t = new Date(o.createdAt).getTime();
+      if (!(t >= from)) return false;
+      const fullMatch =
+        String(o.customer?.phone || "").replace(/\D/g, "") ===
+        String(phoneRaw).replace(/\D/g, "");
+      const tailMatch = last4(o.customer?.phone) === tail;
+      return fullMatch || tailMatch;
+    })
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+    .slice(0, 5)
+    .map((o) => ({
+      id: o.id,
+      createdAt: o.createdAt,
+      total: o.total || 0,
+      status: o.status, // <-- thêm status để tô màu
+      customer: { phoneMasked: maskPhone(o.customer?.phone) },
+      meta: { orderType: o.meta?.orderType || "TAKEAWAY" },
+    }));
+
+  res.json({ items });
+});
+
+// DELETE /api/orders/guest/:id?phone=0523
 app.delete("/api/orders/guest/:id", async (req, res) => {
-  const { id } = req.params;
-  const { phone } = req.query || {};
-  if (!id || !phone) return res.status(400).send("Missing id or phone");
+  const tail = last4(req.query.phone || "");
+  if (!tail) return res.status(400).json({ error: "Missing phone tail" });
+
   const db = await readDB();
-  const idx = db.orders.findIndex((x) => sameId(x.id, id));
-  if (idx === -1) return res.status(404).send("Order not found");
+  const idx = db.orders.findIndex((o) => sameId(o.id, req.params.id));
+  if (idx === -1) return res.status(404).json({ error: "Not found" });
+
   const o = db.orders[idx];
-  if (last4(o.customer?.phone) !== String(phone).slice(-4))
-    return res.status(403).send("Phone tail mismatch");
+  if (last4(o.customer?.phone) !== tail)
+    return res.status(403).json({ error: "Phone tail mismatch" });
   if (o.status !== "NEW")
-    return res.status(409).send("Order cannot be canceled");
-  o.status = "CANCELED";
-  o.updatedAt = new Date().toISOString();
-  db.orders[idx] = o;
+    return res.status(409).json({ error: "Only NEW orders can be canceled" });
+
+  db.orders[idx].status = "CANCELED";
+  db.orders[idx].updatedAt = new Date().toISOString();
   await writeDB(db);
-  res.json({ id: o.id, status: o.status });
+  try {
+    sseBroadcast({ type: "order_updated", order: db.orders[idx] });
+  } catch {}
+  res.json({ ok: true });
 });
 
-app.get("/api/reports/daily", requireAdmin, async (req, res) => {
-  const { from, to } = req.query;
-  const db = await readDB();
-  const map = new Map();
-  db.orders.forEach((o) => {
-    if (o.status === "CANCELED") return;
-    const ds = dstr(new Date(o.createdAt));
-    if (from && ds < from) return;
-    if (to && ds > to) return;
-    const cur = map.get(ds) || { revenue: 0, cost: 0, profit: 0, orders: 0 };
-    cur.revenue += o.total || 0;
-    cur.cost += o.costTotal || 0;
-    cur.profit +=
-      o.profit != null ? o.profit : (o.total || 0) - (o.costTotal || 0);
-    cur.orders += 1;
-    map.set(ds, cur);
-  });
-  const items = Array.from(map.keys())
-    .sort()
-    .map((k) => ({ date: k, ...map.get(k) }));
-  res.json({ items });
-});
-app.get("/api/reports/monthly", requireAdmin, async (req, res) => {
-  const year = parseInt(req.query.year || String(new Date().getFullYear()), 10);
-  const db = await readDB();
-  const sums = Array.from({ length: 12 }, () => ({
-    revenue: 0,
-    cost: 0,
-    profit: 0,
-    orders: 0,
-  }));
-  db.orders.forEach((o) => {
-    const d = new Date(o.createdAt);
-    if (d.getFullYear() !== year) return;
-    if (o.status === "CANCELED") return;
-    const m = d.getMonth();
-    sums[m].revenue += o.total || 0;
-    sums[m].cost += o.costTotal || 0;
-    sums[m].profit +=
-      o.profit != null ? o.profit : (o.total || 0) - (o.costTotal || 0);
-    sums[m].orders += 1;
-  });
-  res.json({ year, items: sums.map((s, i) => ({ month: i + 1, ...s })) });
-});
-app.get("/api/reports/yearly", requireAdmin, async (_req, res) => {
-  const db = await readDB();
-  const byYear = new Map();
-  db.orders.forEach((o) => {
-    if (o.status === "CANCELED") return;
-    const y = new Date(o.createdAt).getFullYear();
-    const cur = byYear.get(y) || { revenue: 0, cost: 0, profit: 0, orders: 0 };
-    cur.revenue += o.total || 0;
-    cur.cost += o.costTotal || 0;
-    cur.profit +=
-      o.profit != null ? o.profit : (o.total || 0) - (o.costTotal || 0);
-    cur.orders += 1;
-    byYear.set(y, cur);
-  });
-  const items = Array.from(byYear.keys())
-    .sort((a, b) => a - b)
-    .map((y) => ({ year: y, ...byYear.get(y) }));
-  res.json({ items });
-});
-
+/* ============ Start ============ */
 app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+  console.log(`Server http://localhost:${PORT}`);
 });

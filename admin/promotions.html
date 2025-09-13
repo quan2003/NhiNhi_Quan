@@ -2,63 +2,463 @@
 <html lang="vi">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Khuyến mãi</title>
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <title>Khuyến mãi — Admin</title>
     <link rel="stylesheet" href="/admin/css/admin.css" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/img/logo.jpg" />
+    <style>
+      :root {
+        --bg: #0b1220;
+        --card: #111827;
+        --text: #e5e7eb;
+        --muted: #9ca3af;
+        --accent: #22d3ee;
+        --accent-strong: #06b6d4;
+        --ring: rgba(34, 211, 238, 0.35);
+        --line: rgba(148, 163, 184, 0.18);
+        --ok: #10b981;
+        --warn: #f59e0b;
+        --danger: #ef4444;
+        --chip: color-mix(in oklab, var(--card) 86%, transparent);
+      }
+      @media (prefers-color-scheme: light) {
+        :root {
+          --bg: #f6f8fc;
+          --card: #ffffff;
+          --text: #0f172a;
+          --muted: #6b7280;
+          --accent: #0ea5e9;
+          --accent-strong: #0284c7;
+          --ring: rgba(14, 165, 233, 0.25);
+          --line: rgba(2, 6, 23, 0.12);
+          --ok: #059669;
+          --warn: #d97706;
+          --danger: #dc2626;
+          --chip: color-mix(in oklab, var(--card) 92%, transparent);
+        }
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        color: var(--text);
+        background: radial-gradient(
+            1200px 600px at 10% -10%,
+            rgba(34, 211, 238, 0.08),
+            transparent
+          ),
+          radial-gradient(
+            1200px 600px at 110% 110%,
+            rgba(56, 189, 248, 0.08),
+            transparent
+          ),
+          var(--bg);
+        font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica,
+          Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      }
+      .container {
+        max-width: 960px;
+        margin: 0 auto;
+        padding: 12px 16px;
+      }
+
+      /* ===== Header (đồng bộ dashboard) ===== */
+      header {
+        position: sticky;
+        top: 0;
+        z-index: 50;
+        backdrop-filter: blur(8px);
+        background: color-mix(in oklab, var(--bg) 86%, transparent);
+        border-bottom: 1px solid var(--line);
+      }
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .brand img {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        object-fit: cover;
+      }
+      .brand h1 {
+        margin: 0;
+        font-size: clamp(16px, 2.2vw, 18px);
+      }
+      nav {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      nav a,
+      nav button.linky {
+        text-decoration: none;
+        color: var(--text);
+        border: 1px solid var(--line);
+        background: color-mix(in oklab, var(--card) 80%, transparent);
+        padding: 8px 12px;
+        border-radius: 10px;
+        font-size: 14px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+      nav a:hover,
+      nav button.linky:hover {
+        border-color: var(--accent);
+      }
+      nav button.linky {
+        cursor: pointer;
+      }
+
+      .hamburger {
+        display: none;
+        border: 1px solid var(--line);
+        background: var(--chip);
+        padding: 8px 10px;
+        border-radius: 10px;
+        cursor: pointer;
+      }
+      .nav-wrap {
+        display: contents;
+      }
+      @media (max-width: 760px) {
+        .nav-wrap {
+          display: none;
+        }
+        .hamburger {
+          display: inline-flex;
+        }
+        .sheet {
+          position: fixed;
+          top: 56px;
+          right: 0;
+          left: auto;
+          background: var(--card);
+          border-left: 1px solid var(--line);
+          border-bottom: 1px solid var(--line);
+          border-top-left-radius: 12px;
+          padding: 12px;
+          display: none;
+          box-shadow: 0 12px 40px rgba(2, 6, 23, 0.4);
+        }
+        .sheet.open {
+          display: block;
+        }
+        .sheet nav {
+          flex-direction: column;
+          align-items: stretch;
+        }
+      }
+
+      main {
+        padding-top: 10px;
+        padding-bottom: 24px;
+      }
+      .card {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 14px;
+        box-shadow: 0 10px 24px rgba(2, 6, 23, 0.35),
+          inset 0 1px 0 rgba(255, 255, 255, 0.02);
+      }
+      h2 {
+        margin: 0 0 10px;
+      }
+
+      /* ===== Form ===== */
+      #promoForm {
+        display: grid;
+        gap: 14px;
+      }
+      .grid-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+      @media (max-width: 760px) {
+        .grid-2 {
+          grid-template-columns: 1fr;
+        }
+      }
+      label {
+        display: grid;
+        gap: 8px;
+        font-size: 14px;
+      }
+      select,
+      input[type="number"],
+      input[type="datetime-local"] {
+        width: 100%;
+        border: 1px solid var(--line);
+        background: rgba(15, 23, 42, 0.35);
+        color: var(--text);
+        padding: 12px;
+        border-radius: 10px;
+        font-size: 15px;
+        outline: none;
+      }
+      @media (prefers-color-scheme: light) {
+        select,
+        input[type="number"],
+        input[type="datetime-local"] {
+          background: #fff;
+        }
+      }
+      .row {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      .btn {
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 10px 14px;
+        background: linear-gradient(
+          180deg,
+          var(--accent),
+          var(--accent-strong)
+        );
+        color: #fff;
+        font-weight: 600;
+        cursor: pointer;
+      }
+      .btn.secondary {
+        background: color-mix(in oklab, var(--card) 86%, transparent);
+        color: var(--text);
+      }
+      .btn[disabled] {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 10px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        font-size: 12.5px;
+        background: var(--chip);
+      }
+      .chip.ok {
+        background: rgba(16, 185, 129, 0.12);
+        border-color: rgba(16, 185, 129, 0.35);
+      }
+      .chip.warn {
+        background: rgba(245, 158, 11, 0.12);
+        border-color: rgba(245, 158, 11, 0.35);
+      }
+      .chip.off {
+        background: rgba(148, 163, 184, 0.1);
+      }
+
+      .preset {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 8px;
+      }
+      .preset button {
+        border: 1px solid var(--line);
+        background: color-mix(in oklab, var(--card) 84%, transparent);
+        color: var(--text);
+        padding: 8px 10px;
+        border-radius: 10px;
+        cursor: pointer;
+      }
+      .note {
+        font-size: 12.5px;
+        color: var(--muted);
+      }
+
+      .toast {
+        position: fixed;
+        left: 50%;
+        bottom: env(safe-area-inset-bottom, 12px);
+        transform: translateX(-50%);
+        background: var(--card);
+        border: 1px solid var(--line);
+        color: var(--text);
+        padding: 10px 14px;
+        border-radius: 10px;
+        box-shadow: 0 10px 24px rgba(2, 6, 23, 0.35);
+        font-size: 14px;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.2s, transform 0.2s;
+        z-index: 60;
+      }
+      .toast.show {
+        opacity: 1;
+        transform: translateX(-50%) translateY(-4px);
+      }
+    </style>
   </head>
   <body>
-    <header class="container">
-      <h1>Chương trình khuyến mãi</h1>
-      <nav>
-        <a href="/admin/index.html">Trang chủ</a>
-        <a href="/admin/products.html">Sản phẩm</a>
-        <a href="/admin/orders.html">Đơn hàng</a>
-        <a href="/admin/reports.html">Báo cáo</a>
-        <a href="#" id="logout">Đăng xuất</a>
-      </nav>
+    <!-- ===== Header ===== -->
+    <header class="site">
+      <div class="wrap container">
+        <a href="/admin/index.html" class="brand">
+          <img src="/img/logo.jpg" alt="Logo" />
+          <div>
+            <div style="font-weight: 800">Admin — Nhi Nhi Quán</div>
+            <small>Quản trị hệ thống</small>
+          </div>
+        </a>
+
+        <!-- Hamburger -->
+        <button
+          class="hamburger"
+          id="btnHamburger"
+          aria-expanded="false"
+          aria-controls="mSheet"
+          aria-label="Mở menu"
+        >
+          <svg
+            width="22"
+            height="18"
+            viewBox="0 0 24 18"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            aria-hidden="true"
+          >
+            <rect y="0" width="24" height="2" rx="1" fill="currentColor" />
+            <rect y="8" width="24" height="2" rx="1" fill="currentColor" />
+            <rect y="16" width="24" height="2" rx="1" fill="currentColor" />
+          </svg>
+        </button>
+
+        <!-- Tabs (desktop) -->
+        <nav class="tabs" role="navigation" aria-label="Admin">
+          <a href="/admin/index.html">Trang chủ</a>
+          <a class="active" href="/admin/promotions.html">Khuyến mãi</a>
+          <a href="/admin/products.html">Sản phẩm</a>
+          <a href="/admin/orders.html">Đơn hàng</a>
+          <a href="/admin/reports.html">Báo cáo</a>
+          <a href="/admin/login.html" id="logout">Đăng xuất</a>
+        </nav>
+      </div>
     </header>
+
+    <!-- Mobile Sheet -->
+    <div id="mSheet" class="sheet" aria-hidden="true">
+      <div class="sheet-back" id="mBack"></div>
+      <div class="sheet-panel">
+        <nav>
+          <a href="/admin/index.html">Trang chủ</a>
+          <a href="/admin/promotions.html">Khuyến mãi</a>
+          <a href="/admin/products.html">Sản phẩm</a>
+          <a href="/admin/orders.html">Đơn hàng</a>
+          <a href="/admin/reports.html">Báo cáo</a>
+          <a href="#" id="logout_m">Đăng xuất</a>
+        </nav>
+      </div>
+    </div>
 
     <main class="container">
       <section class="card">
-        <form id="promoForm" class="grid-2">
-          <label
-            >Bật khuyến mãi
-            <select id="enabled">
-              <option value="false">Tắt</option>
-              <option value="true">Bật</option>
-            </select>
-          </label>
-          <label
-            >Giảm (%)
-            <input
-              id="percent"
-              type="number"
-              min="0"
-              max="100"
-              step="1"
-              placeholder="VD: 10"
-            />
-          </label>
-          <label
-            >Ngày bắt đầu
-            <input id="start" type="datetime-local" />
-          </label>
-          <label
-            >Ngày kết thúc
-            <input id="end" type="datetime-local" />
-          </label>
-          <div style="grid-column: 1/-1">
-            <button class="btn" type="submit">Lưu</button>
+        <div
+          class="row"
+          style="justify-content: space-between; align-items: start"
+        >
+          <h2 style="margin: 0">Cấu hình chương trình</h2>
+          <div id="statusChip" class="chip off">Đang kiểm tra…</div>
+        </div>
+
+        <form id="promoForm" autocomplete="off" novalidate>
+          <div class="grid-2">
+            <label>
+              Bật khuyến mãi
+              <select id="enabled">
+                <option value="false">Tắt</option>
+                <option value="true">Bật</option>
+              </select>
+            </label>
+
+            <label>
+              Phần trăm giảm (%)
+              <input
+                id="percent"
+                type="number"
+                inputmode="numeric"
+                min="0"
+                max="100"
+                step="1"
+                placeholder="0 - 100"
+              />
+              <div class="preset" style="margin-top: 8px">
+                <button type="button" data-p="5">5%</button>
+                <button type="button" data-p="10">10%</button>
+                <button type="button" data-p="15">15%</button>
+                <button type="button" data-p="20">20%</button>
+                <button type="button" data-p="30">30%</button>
+              </div>
+              <div class="note">Giá hiển thị = Giá bán - (Giá bán × %).</div>
+            </label>
+          </div>
+
+          <div class="grid-2">
+            <label>
+              Bắt đầu
+              <input id="start" type="datetime-local" />
+            </label>
+            <label>
+              Kết thúc
+              <input id="end" type="datetime-local" />
+            </label>
+          </div>
+
+          <div
+            class="row"
+            style="justify-content: space-between; margin-top: 8px"
+          >
+            <span id="scheduleNote" class="note"
+              >Khoảng thời gian áp dụng sẽ được tính theo giờ máy chủ.</span
+            >
+            <div class="row">
+              <button type="button" id="clearTime" class="btn secondary">
+                Xoá thời gian
+              </button>
+              <button type="submit" id="saveBtn" class="btn">
+                Lưu cấu hình
+              </button>
+            </div>
           </div>
         </form>
-        <p class="muted">
-          * Thời gian để trống = áp dụng ngay khi bật và không giới hạn đến khi
-          tắt.
-        </p>
       </section>
     </main>
 
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
     <script src="/admin/js/admin-common.js"></script>
-    <script type="module" src="/admin/js/promotions.js"></script>
+    <script src="/admin/js/promotions.js"></script>
+    <!-- <script>
+      // Menu mobile đồng bộ
+      const sheet = document.getElementById("sheet");
+      document.getElementById("btnHamburger")?.addEventListener("click", () => {
+        const open = sheet.classList.toggle("open");
+        sheet.setAttribute("aria-hidden", String(!open));
+      });
+      document
+        .getElementById("logout")
+        ?.addEventListener("click", () => window.__adminLogout?.());
+      document
+        .getElementById("logout_m")
+        ?.addEventListener("click", () => window.__adminLogout?.());
+    </script> -->
   </body>
 </html>

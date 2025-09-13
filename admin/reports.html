@@ -1,48 +1,420 @@
+<!-- /admin/reports.html -->
 <!DOCTYPE html>
 <html lang="vi">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Báo cáo</title>
-    <link rel="stylesheet" href="/admin/css/admin.css" />
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>Báo cáo — Admin</title>
+    <link rel="stylesheet" href="/admin/css/admin.css?v=5" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/img/logo.jpg" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1"></script>
+
+    <style>
+      :root {
+        --header-h: 56px;
+      }
+
+      /* ===== KPI row ===== */
+      .stats-row {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 14px;
+        margin: 8px 0 16px;
+        align-items: stretch;
+      }
+      @media (max-width: 1100px) {
+        .stats-row {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+      @media (max-width: 560px) {
+        .stats-row {
+          grid-template-columns: 1fr;
+        }
+      }
+      .kpi {
+        background: color-mix(in oklab, var(--card) 96%, transparent);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 14px;
+        display: grid;
+        grid-template-rows: auto auto 1fr;
+        gap: 6px;
+        min-height: 110px;
+      }
+      .kpi .label {
+        color: var(--muted);
+        font-size: 12.5px;
+      }
+      .kpi .val {
+        font-size: clamp(18px, 3vw, 22px);
+        font-weight: 800;
+      }
+      .kpi .delta {
+        font-size: 12px;
+        color: var(--muted);
+        align-self: end;
+      }
+
+      /* ===== 2 cột biểu đồ (Desktop cân đối, Mobile gọn) ===== */
+      .cards-grid {
+        display: grid;
+        /* 62% : 38% để khối tháng gọn hơn nhưng vẫn cân */
+        grid-template-columns: 1.62fr 1fr;
+        gap: 16px;
+        align-items: stretch;
+        grid-auto-rows: 1fr; /* 2 card cao bằng nhau */
+      }
+      .cards-grid .daily {
+        grid-column: 1;
+      }
+      .cards-grid .monthly {
+        grid-column: 2;
+      }
+      .cards-grid .yearly {
+        grid-column: 1 / -1;
+      }
+
+      @media (max-width: 1100px) {
+        .cards-grid {
+          grid-template-columns: 1fr;
+          grid-auto-rows: auto;
+        }
+        .cards-grid .daily,
+        .cards-grid .monthly,
+        .cards-grid .yearly {
+          grid-column: 1 / -1;
+        }
+      }
+
+      /* Card dùng flex để phần chart chiếm phần còn lại */
+      .card {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        min-height: 0;
+      }
+      .card h2 {
+        margin: 2px 0 8px;
+        line-height: 1.2;
+      }
+
+      /* ===== Toolbar “Theo ngày” ===== */
+      .toolbar--daily {
+        display: grid;
+        grid-template-columns: auto auto 1fr auto;
+        gap: 12px;
+        align-items: end;
+      }
+      .toolbar--daily .toolbar__from,
+      .toolbar--daily .toolbar__to {
+        min-width: 180px;
+      }
+
+      .toolbar--daily .toolbar__chips {
+        display: flex;
+        gap: 8px;
+        overflow-x: auto; /* cuộn ngang khi hẹp */
+        overflow-y: hidden;
+        padding-bottom: 2px; /* tránh dính mép */
+        scrollbar-width: none; /* Ẩn scrollbar Firefox */
+      }
+      .toolbar--daily .toolbar__chips::-webkit-scrollbar {
+        display: none;
+      } /* Ẩn scrollbar WebKit */
+
+      .toolbar--daily .toolbar__action {
+        height: 40px;
+        min-width: 96px;
+      }
+
+      .chips .chip {
+        white-space: nowrap;
+        padding: 6px 12px;
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        background: color-mix(in oklab, var(--card) 86%, transparent);
+        color: var(--text);
+        cursor: pointer;
+        font-size: 13px;
+      }
+      .chip.active {
+        background: var(--brand);
+        color: #06140a;
+        border-color: transparent;
+        font-weight: 700;
+      }
+
+      @media (max-width: 768px) {
+        .toolbar--daily {
+          grid-template-columns: 1fr;
+        }
+        .toolbar--daily .toolbar__chips {
+          flex-wrap: wrap;
+        }
+      }
+
+      /* ===== Chart containers: chiều cao dùng clamp → đẹp trên mọi màn hình ===== */
+      .chart-wrap {
+        position: relative;
+        /* 260px (min) — 45vw (trung bình) — 400px (max) */
+        height: clamp(260px, 45vw, 400px);
+        min-height: 0;
+      }
+      .monthly .chart-wrap {
+        height: clamp(260px, 38vw, 380px);
+      }
+      .yearly .chart-wrap {
+        height: clamp(280px, 46vw, 420px);
+      }
+
+      .chart-wrap canvas {
+        position: absolute;
+        inset: 0;
+        width: 100% !important;
+        height: 100% !important;
+      }
+
+      /* Loading & Empty */
+      .loading-overlay {
+        position: absolute;
+        inset: 0;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        background: rgba(0, 0, 0, 0.16);
+        backdrop-filter: blur(1px);
+        z-index: 2;
+        font-weight: 700;
+      }
+      .loading-overlay.show {
+        display: flex;
+      }
+      .spinner {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        border: 3px solid rgba(255, 255, 255, 0.25);
+        border-top-color: rgba(255, 255, 255, 0.8);
+        animation: spin 0.9s linear infinite;
+        margin-right: 10px;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      .empty {
+        padding: 14px;
+        border: 1px dashed var(--border);
+        border-radius: 12px;
+        color: var(--muted);
+        text-align: center;
+        font-size: 14px;
+        display: none;
+      }
+      .empty.show {
+        display: block;
+      }
+    </style>
   </head>
+
   <body>
-    <header class="container">
-      <h1>Báo cáo doanh thu & lợi nhuận</h1>
-      <nav>
-        <a href="/admin/index.html">Trang chủ</a>
-        <a href="/admin/products.html">Sản phẩm</a>
-        <a href="/admin/orders.html">Đơn hàng</a>
-        <a href="#" id="logout">Đăng xuất</a>
-      </nav>
+    <!-- ===== Header ===== -->
+    <header class="site">
+      <div class="wrap container">
+        <a href="/admin/index.html" class="brand">
+          <img src="/img/logo.jpg" alt="Logo" />
+          <div>
+            <div style="font-weight: 800">Admin — Nhi Nhi Quán</div>
+            <small>Quản trị hệ thống</small>
+          </div>
+        </a>
+
+        <!-- Hamburger -->
+        <button
+          class="hamburger"
+          id="btnHamburger"
+          aria-expanded="false"
+          aria-controls="mSheet"
+          aria-label="Mở menu"
+        >
+          <svg
+            width="22"
+            height="18"
+            viewBox="0 0 24 18"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            aria-hidden="true"
+          >
+            <rect y="0" width="24" height="2" rx="1" fill="currentColor" />
+            <rect y="8" width="24" height="2" rx="1" fill="currentColor" />
+            <rect y="16" width="24" height="2" rx="1" fill="currentColor" />
+          </svg>
+        </button>
+
+        <!-- Tabs (desktop) -->
+        <nav class="tabs" role="navigation" aria-label="Admin">
+          <a href="/admin/index.html">Trang chủ</a>
+          <a href="/admin/promotions.html">Khuyến mãi</a>
+          <a href="/admin/products.html">Sản phẩm</a>
+          <a href="/admin/orders.html">Đơn hàng</a>
+          <a class="active" href="/admin/reports.html">Báo cáo</a>
+          <a href="/admin/login.html" id="logout">Đăng xuất</a>
+        </nav>
+      </div>
     </header>
+
+    <!-- Mobile Sheet -->
+    <div id="mSheet" class="sheet" aria-hidden="true">
+      <div class="sheet-back" id="mBack"></div>
+      <div class="sheet-panel">
+        <nav>
+          <a href="/admin/index.html">Trang chủ</a>
+          <a href="/admin/promotions.html">Khuyến mãi</a>
+          <a href="/admin/products.html">Sản phẩm</a>
+          <a href="/admin/orders.html">Đơn hàng</a>
+          <a href="/admin/reports.html">Báo cáo</a>
+          <a href="#" id="logout_m">Đăng xuất</a>
+        </nav>
+      </div>
+    </div>
+
     <main class="container">
-      <section class="card">
-        <h2>Theo ngày</h2>
-        <div class="row" style="gap: 12px">
-          <label>Từ ngày <input type="date" id="from" /></label>
-          <label>Đến ngày <input type="date" id="to" /></label>
-          <button class="btn" id="btnDaily" style="flex: 1">Xem</button>
+      <!-- KPI -->
+      <section class="stats-row" id="summaryRow">
+        <div class="kpi">
+          <div class="label">Doanh thu</div>
+          <div class="val" id="kpiRevenue">—</div>
+          <div class="delta" id="kpiRevenueDelta">So với kỳ trước: —</div>
         </div>
-        <canvas id="dailyChart" height="120"></canvas>
+        <div class="kpi">
+          <div class="label">Chi phí</div>
+          <div class="val" id="kpiCost">—</div>
+          <div class="delta" id="kpiCostDelta">So với kỳ trước: —</div>
+        </div>
+        <div class="kpi">
+          <div class="label">Lợi nhuận</div>
+          <div class="val" id="kpiProfit">—</div>
+          <div class="delta" id="kpiProfitDelta">So với kỳ trước: —</div>
+        </div>
+        <div class="kpi">
+          <div class="label">Số đơn</div>
+          <div class="val" id="kpiOrders">—</div>
+          <div class="delta" id="kpiOrdersDelta">So với kỳ trước: —</div>
+        </div>
       </section>
 
-      <section class="card">
-        <h2>Theo tháng</h2>
-        <div class="row" style="gap: 12px">
-          <label>Năm <input type="number" id="year" /></label>
-          <button class="btn" id="btnMonthly" style="flex: 1">Xem</button>
-        </div>
-        <canvas id="monthlyChart" height="120"></canvas>
-      </section>
+      <!-- Charts -->
+      <section class="cards-grid">
+        <!-- Theo ngày -->
+        <section class="card daily">
+          <h2>Theo ngày</h2>
+          <div class="toolbar toolbar--daily">
+            <div class="field input-icon toolbar__from">
+              <label for="from">Từ ngày</label>
+              <input type="date" id="from" />
+            </div>
+            <div class="field input-icon toolbar__to">
+              <label for="to">Đến ngày</label>
+              <input type="date" id="to" />
+            </div>
+            <div
+              class="chips toolbar__chips"
+              id="quickRanges"
+              role="group"
+              aria-label="Chọn nhanh khoảng ngày"
+            >
+              <button
+                type="button"
+                class="chip"
+                data-range="7"
+                aria-pressed="false"
+              >
+                7 ngày
+              </button>
+              <button
+                type="button"
+                class="chip"
+                data-range="30"
+                aria-pressed="false"
+              >
+                30 ngày
+              </button>
+              <button
+                type="button"
+                class="chip"
+                data-range="this-month"
+                aria-pressed="false"
+              >
+                Tháng này
+              </button>
+              <button
+                type="button"
+                class="chip"
+                data-range="prev-month"
+                aria-pressed="false"
+              >
+                Tháng trước
+              </button>
+            </div>
 
-      <section class="card">
-        <h2>Theo năm</h2>
-        <canvas id="yearlyChart" height="120"></canvas>
+            <button class="btn toolbar__action" id="btnDaily">Xem</button>
+          </div>
+
+          <div id="dailyEmpty" class="empty">
+            Không có dữ liệu trong khoảng này.
+          </div>
+          <div class="chart-wrap">
+            <div class="loading-overlay" id="dailyLoading">
+              <div class="spinner"></div>
+              Đang tải…
+            </div>
+            <canvas id="dailyChart"></canvas>
+          </div>
+        </section>
+
+        <!-- Theo tháng -->
+        <section class="card monthly">
+          <h2>Theo tháng</h2>
+          <div class="toolbar">
+            <div class="field" style="min-width: 160px">
+              <label for="year">Năm</label>
+              <input type="number" id="year" />
+            </div>
+            <button class="btn" id="btnMonthly">Xem</button>
+          </div>
+
+          <div id="monthlyEmpty" class="empty">
+            Chưa có dữ liệu của năm này.
+          </div>
+          <div class="chart-wrap">
+            <div class="loading-overlay" id="monthlyLoading">
+              <div class="spinner"></div>
+              Đang tải…
+            </div>
+            <canvas id="monthlyChart"></canvas>
+          </div>
+        </section>
+
+        <!-- Theo năm -->
+        <section class="card yearly">
+          <h2 style="margin: 0">Theo năm</h2>
+          <div id="yearlyEmpty" class="empty">Chưa có dữ liệu theo năm.</div>
+          <div class="chart-wrap">
+            <div class="loading-overlay" id="yearlyLoading">
+              <div class="spinner"></div>
+              Đang tải…
+            </div>
+            <canvas id="yearlyChart"></canvas>
+          </div>
+        </section>
       </section>
     </main>
-    <script src="/admin/js/admin-common.js"></script>
-    <script src="/admin/js/reports.js"></script>
+
+    <!-- Scripts -->
+    <script defer src="/admin/js/admin-common.js?v=5"></script>
+    <script defer src="/admin/js/reports.js?v=5"></script>
   </body>
 </html>
