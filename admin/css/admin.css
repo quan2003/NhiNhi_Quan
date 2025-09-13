@@ -120,7 +120,7 @@ a:hover {
 header.site {
   position: sticky;
   top: 0;
-  z-index: 40;
+  z-index: 100;
   backdrop-filter: blur(12px);
   background: color-mix(in oklab, var(--bg) 78%, transparent);
   border-bottom: 1px solid var(--border);
@@ -191,47 +191,39 @@ header.site .hamburger {
   color: var(--text);
   cursor: pointer;
 }
-/* Mobile: hiện hamburger, đảm bảo nổi trên sheet-back */
 @media (max-width: 900px) {
   header.site .tabs {
     display: none;
   }
   header.site .hamburger {
     display: inline-flex !important;
-    z-index: 1002; /* cao hơn overlay */
+    z-index: 1002;
     position: relative;
   }
 }
 
-/* Header nổi thấp hơn sheet */
-header.site {
-  z-index: 40;
-}
-
-/* ========================= MOBILE SHEET (SỬA) ========================= */
+/* ========================= MOBILE SHEET ========================= */
 .sheet {
   position: fixed;
-  top: 0; /* phủ cả màn hình, không chừa header */
+  top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  width: 100vw; /* phủ full để chặn click xuyên */
-  transform: translateX(100%); /* đẩy toàn khối ra ngoài màn hình */
+  width: 100vw;
+  transform: translateX(100%);
   transition: transform 0.25s ease;
-  z-index: 2000; /* cao hơn header */
+  z-index: 2000;
   display: flex;
-  pointer-events: none; /* mặc định không bắt click khi đóng */
+  pointer-events: none;
   visibility: hidden;
 }
 .sheet.open {
   transform: translateX(0) !important;
-  pointer-events: auto; /* mở thì bắt click */
+  pointer-events: auto;
   visibility: visible !important;
 }
-
-/* Panel cố định, luôn ở trên overlay */
 .sheet .sheet-panel {
-  position: fixed; /* tách khỏi stacking của phần dưới */
+  position: fixed;
   top: 0;
   right: 0;
   height: 100vh;
@@ -241,17 +233,15 @@ header.site {
   border-left: 1px solid var(--border);
   padding: 14px;
   overflow-y: auto;
-  z-index: 2002; /* cao nhất */
-  pointer-events: auto; /* nhận click */
+  z-index: 2002;
+  pointer-events: auto;
 }
-
-/* Menu trong panel */
 .sheet .sheet-panel nav {
   display: grid;
   gap: 10px;
 }
 .sheet .sheet-panel nav a {
-  display: block; /* block để không chồng chéo vùng click */
+  display: block;
   padding: 10px 12px;
   border: 1px solid var(--border);
   border-radius: 12px;
@@ -262,23 +252,19 @@ header.site {
 .sheet .sheet-panel nav a:hover {
   filter: brightness(1.08);
 }
-
-/* Overlay nền mờ – nằm dưới panel nhưng trên trang */
 .sheet .sheet-back {
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.4);
   opacity: 0;
   transition: opacity 0.25s ease;
-  pointer-events: none; /* khi đóng thì không bắt click */
-  z-index: 2001; /* dưới panel, trên trang */
+  pointer-events: none;
+  z-index: 2001;
 }
 .sheet.open .sheet-back {
   opacity: 1;
-  pointer-events: auto; /* bắt click để đóng menu */
+  pointer-events: auto;
 }
-
-/* Khi mở menu, khóa cuộn body (giữ nguyên nếu đã có) */
 .no-scroll {
   overflow: hidden;
   position: fixed;
@@ -424,13 +410,25 @@ tbody td {
 }
 
 /* =========================
-   TOAST
+   TOAST (FIXED)
    ========================= */
-.toast {
+#toastWrap {
   position: fixed;
-  left: 50%;
-  bottom: env(safe-area-inset-bottom, 12px);
-  transform: translateX(-50%);
+  top: 16px;
+  right: 16px;
+  z-index: 5000;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+}
+#toastWrap .toast {
+  position: relative !important;
+  left: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  transform: none !important;
+  margin: 0 !important;
   background: var(--card);
   border: 1px solid var(--line);
   color: var(--text);
@@ -438,14 +436,17 @@ tbody td {
   border-radius: 10px;
   box-shadow: 0 10px 24px rgba(2, 6, 23, 0.35);
   font-size: 14px;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.2s, transform 0.2s;
-  z-index: 1100;
-}
-.toast.show {
   opacity: 1;
-  transform: translateX(-50%) translateY(-4px);
+  pointer-events: auto;
+}
+#toastWrap .toast.success {
+  border-color: rgba(34, 197, 94, 0.4);
+}
+#toastWrap .toast.error {
+  border-color: rgba(239, 68, 68, 0.4);
+}
+#toastWrap .toast.warn {
+  border-color: rgba(245, 158, 11, 0.4);
 }
 
 /* =========================
@@ -472,12 +473,9 @@ tbody td {
     background-position: -200% 0;
   }
 }
-/* Cho các cột trong toolbar có thể co giãn, tránh cắt chữ */
 .toolbar--daily > * {
   min-width: 0;
 }
-
-/* Khay chips cuộn ngang khi thiếu chỗ */
 .toolbar--daily .toolbar__chips {
   display: flex;
   gap: 8px;
@@ -486,8 +484,6 @@ tbody td {
   scrollbar-width: thin;
   padding-bottom: 2px;
 }
-
-/* Nút chip cao bằng hàng input, căn giữa chữ, không bị cắt */
 .chips .chip {
   display: inline-flex;
   align-items: center;
@@ -501,11 +497,562 @@ tbody td {
   white-space: nowrap;
   cursor: pointer;
 }
-
-/* Trạng thái đang chọn */
 .chips .chip.active {
   background: var(--brand);
   color: #06140a;
   border-color: transparent;
   font-weight: 700;
 }
+/* ===== Stacking order ===== */
+header.site {
+  z-index: 100;
+}
+.sheet {
+  z-index: 2000;
+}
+.modal-backdrop {
+  z-index: 3000;
+}
+
+/* ===== Toast góc phải trên ===== */
+#toastWrap {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 5000;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+}
+#toastWrap .toast {
+  position: relative !important;
+  left: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  transform: none !important;
+  margin: 0 !important;
+  opacity: 1;
+  pointer-events: auto;
+  background: var(--card);
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 14px;
+  box-shadow: 0 10px 24px rgba(2, 6, 23, 0.35);
+  font-size: 14px;
+}
+#toastWrap .toast.success {
+  border-color: rgba(34, 197, 94, 0.4);
+}
+#toastWrap .toast.error {
+  border-color: rgba(239, 68, 68, 0.4);
+}
+#toastWrap .toast.warn {
+  border-color: rgba(245, 158, 11, 0.4);
+}
+
+/* ===== Drawer header sticky (không mất nút) ===== */
+.drawer .panel-header {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: var(--card);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 0 10px;
+  margin: 0 0 12px;
+  border-bottom: 1px solid var(--border);
+}
+.drawer .panel-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+/* ===== Select trạng thái ===== */
+.table select.st {
+  background: var(--card);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 8px;
+  font-size: 13px;
+  cursor: pointer;
+}
+.table select.st:focus {
+  outline: none;
+  border-color: var(--brand);
+  box-shadow: 0 0 0 2px color-mix(in oklab, var(--brand) 35%, transparent);
+}
+.table select.st option[value="NEW"] {
+  color: #38bdf8;
+}
+.table select.st option[value="IN_PROGRESS"] {
+  color: #fbbf24;
+}
+.table select.st option[value="COMPLETED"] {
+  color: #22c55e;
+}
+.table select.st option[value="CANCELED"] {
+  color: #ef4444;
+}
+/* ===== Stacking order ===== */
+header.site {
+  z-index: 100;
+}
+.sheet {
+  z-index: 2000;
+}
+.modal-backdrop {
+  z-index: 3000;
+}
+
+/* ===== Toast góc phải trên (GLOBAL) ===== */
+#toastWrap {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 5000;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+}
+#toastWrap .toast {
+  position: relative !important;
+  left: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  transform: none !important;
+  margin: 0 !important;
+  opacity: 1;
+  pointer-events: auto;
+  background: var(--card);
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 14px;
+  box-shadow: 0 10px 24px rgba(2, 6, 23, 0.35);
+  font-size: 14px;
+}
+#toastWrap .toast.success {
+  border-color: rgba(34, 197, 94, 0.4);
+}
+#toastWrap .toast.error {
+  border-color: rgba(239, 68, 68, 0.4);
+}
+#toastWrap .toast.warn {
+  border-color: rgba(245, 158, 11, 0.4);
+}
+
+/* ===== Badge đa màu (giữ như ban đầu) ===== */
+.badge.info {
+  color: #93c5fd;
+  border-color: #1d4ed8;
+  background: rgba(29, 78, 216, 0.15);
+}
+.badge.warn {
+  color: #fcd34d;
+  border-color: #b45309;
+  background: rgba(180, 83, 9, 0.15);
+}
+.badge.success {
+  color: #86efac;
+  border-color: #15803d;
+  background: rgba(21, 128, 61, 0.15);
+}
+.badge.danger {
+  color: #fecaca;
+  border-color: #b91c1c;
+  background: rgba(185, 28, 28, 0.15);
+}
+.badge.gray {
+  color: #cbd5e1;
+  border-color: #334155;
+  background: rgba(51, 65, 85, 0.35);
+}
+
+/* ===== Drawer header sticky (không mất nút) ===== */
+.drawer .panel-header {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: var(--card);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 0 10px;
+  margin: 0 0 12px;
+  border-bottom: 1px solid var(--border);
+}
+.drawer .panel-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+/* ===== Select trạng thái ===== */
+.table select.st {
+  background: var(--card);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 8px;
+  font-size: 13px;
+  cursor: pointer;
+}
+.table select.st:focus {
+  outline: none;
+  border-color: var(--brand);
+  box-shadow: 0 0 0 2px color-mix(in oklab, var(--brand) 35%, transparent);
+}
+/* ===== Tăng cỡ chữ cho dropdown Trạng thái ===== */
+.table select.st {
+  font-size: 15px; /* tăng từ 13 -> 15 (hoặc 16 nếu thích to hơn) */
+  line-height: 1.4;
+  height: 36px; /* control cao hơn cho dễ bấm */
+  padding: 6px 28px 6px 10px;
+}
+
+/* option sẽ kế thừa size từ select; để chắc ăn vẫn set trực tiếp */
+.table select.st option {
+  font-size: 15px;
+}
+
+/* iOS/Safari: tránh auto-zoom khi <16px */
+@supports (-webkit-touch-callout: none) {
+  .table select.st,
+  .table select.st option {
+    font-size: 16px;
+  }
+}
+/* ===== Custom Select (thay cho <select> .st) ===== */
+.stx {
+  position: relative;
+  display: inline-block;
+  min-width: 150px;
+}
+.stx-hidden {
+  position: absolute;
+  inset: 0;
+  width: 0;
+  height: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.stx-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  background: var(--card);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 8px 10px;
+  font-size: 16px;
+  cursor: pointer;
+  box-shadow: none;
+}
+.stx-btn:focus {
+  outline: none;
+  border-color: var(--brand);
+  box-shadow: 0 0 0 2px color-mix(in oklab, var(--brand) 35%, transparent);
+}
+.stx-caret {
+  margin-left: 8px;
+  opacity: 0.8;
+}
+
+.stx-menu {
+  position: absolute;
+  z-index: 3001; /* cao hơn table */
+  top: calc(100% + 6px);
+  left: 0;
+  min-width: 100%;
+  background: var(--card);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 6px;
+  display: none;
+  max-height: 260px;
+  overflow: auto;
+  box-shadow: 0 10px 24px rgba(2, 6, 23, 0.35);
+}
+.stx.open .stx-menu {
+  display: block;
+}
+
+.stx-opt {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+}
+.stx-opt:hover {
+  background: rgba(148, 163, 184, 0.08);
+}
+.stx-opt.active {
+  outline: 1px dashed var(--line);
+}
+
+.stx-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+}
+
+.stx-new .stx-dot {
+  background: #38bdf8;
+}
+.stx-prog .stx-dot {
+  background: #fbbf24;
+}
+.stx-done .stx-dot {
+  background: #22c55e;
+}
+.stx-cancel .stx-dot {
+  background: #ef4444;
+}
+/* ===== Modal backdrop (ẩn mặc định) ===== */
+.modal-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 3000;
+  background: rgba(0, 0, 0, 0.45);
+  align-items: center;
+  justify-content: center;
+}
+.modal-backdrop .modal {
+  width: min(520px, 92vw);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px;
+  box-shadow: var(--shadow);
+}
+
+/* ===== Khi mở modal: toast chuyển vào giữa màn hình ===== */
+body.modal-open #toastWrap {
+  top: 50% !important;
+  right: auto !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  align-items: center;
+}
+
+/* ===== Drawer header sticky (để không mất nút) ===== */
+.drawer .panel-header {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: var(--card);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 0 10px;
+  margin: 0 0 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+/* ===== Select Trạng thái: chữ to + menu option rõ ràng ===== */
+.table select.st {
+  -webkit-appearance: none;
+  appearance: none;
+  background: var(--card);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 15px; /* chữ to */
+  line-height: 1.4;
+  height: 38px;
+  padding: 6px 30px 6px 10px;
+  cursor: pointer;
+}
+.table select.st:focus {
+  outline: none;
+  border-color: var(--brand);
+  box-shadow: 0 0 0 2px color-mix(in oklab, var(--brand) 35%, transparent);
+}
+/* ép option cũng to (nhiều trình duyệt sẽ tôn trọng) */
+.table select.st option {
+  font-size: 15px;
+}
+/* iOS/Safari tránh auto-zoom */
+@supports (-webkit-touch-callout: none) {
+  .table select.st,
+  .table select.st option {
+    font-size: 16px;
+  }
+}
+/* Nút cơ bản: tông tối, không xanh */
+.btn {
+  display: inline-block;
+  background: #0c1328; /* trước đây là var(--brand) => làm mọi nút xanh */
+  color: var(--text);
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  font-weight: 700;
+  cursor: pointer;
+  transition: filter 0.2s, transform 0.1s;
+}
+.btn:hover {
+  filter: brightness(1.08);
+  transform: translateY(-2px);
+}
+.btn:active {
+  transform: translateY(0);
+}
+
+/* Nút xanh brand: CHỈ dùng cho hành động “chính” (Tạo đơn, Bật thông báo…) */
+.btn.brand {
+  background: var(--brand);
+  color: #06140a;
+  border-color: transparent;
+}
+.btn.brand:hover {
+  filter: brightness(1.05);
+}
+
+/* Nút đường viền (trong bảng: Chi tiết, Sửa) */
+.btn.ghost {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+/* Nút nguy hiểm (Xoá) */
+.btn.danger {
+  background: rgba(239, 68, 68, 0.12);
+  color: #fecaca;
+  border: 1px solid rgba(239, 68, 68, 0.5);
+}
+/* Stacking order toàn cục */
+header.site {
+  z-index: 100;
+}
+.sheet {
+  z-index: 2000;
+}
+
+.modal-backdrop {
+  z-index: 3500;
+}
+.drawer {
+  z-index: 3000 !important;
+}
+/* Căn giữa & nới rộng cột SL + cột đơn giá trong form */
+.form-items td {
+  vertical-align: middle;
+}
+.form-items .f_qty {
+  width: 72px; /* rộng hơn */
+  min-width: 72px;
+  text-align: center;
+  font-size: 14px; /* nhỏ lại một chút để không bị “đội” */
+  height: 36px;
+  padding: 6px 8px;
+}
+.form-items .f_price {
+  width: 96px;
+  min-width: 110px;
+  text-align: right;
+  font-size: 14px;
+  height: 36px;
+  padding: 6px 8px;
+}
+/* Select sản phẩm đừng quá chật */
+/* Chọn món: cao 36px, đồng bộ với các input cùng hàng */
+.form-items .f_prod,
+.form-items select.f_prod {
+  height: 36px;
+  min-height: 36px;
+  padding: 6px 10px;
+  line-height: 1.4;
+  font-size: 14px;
+
+  /* giữ style giống input */
+  background: var(--card);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+
+  /* đồng nhất giữa trình duyệt */
+  -webkit-appearance: none;
+  appearance: none;
+  box-sizing: border-box;
+}
+
+/* (đã có) canh giữa dọc các ô trong hàng */
+.form-items td {
+  vertical-align: middle;
+}
+
+/* Ẩn spinner number cho trải nghiệm gọn hơn (tuỳ thích) */
+.form-items input[type="number"]::-webkit-outer-spin-button,
+.form-items input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.form-items input[type="number"] {
+  -moz-appearance: textfield;
+}
+.items {
+  margin-top: 8px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow-x: auto; /* cho phép kéo ngang khi panel hẹp */
+  overflow-y: hidden; /* chỉ ẩn theo trục dọc */
+}
+
+/* Bảng món trong form tạo/sửa */
+.items.form-items table {
+  width: 100%;
+  table-layout: fixed; /* cột ổn định, không co giật */
+  min-width: 620px; /* đủ chỗ cho 5 cột, có thanh cuộn nếu panel hẹp */
+}
+
+.items.form-items th,
+.items.form-items td {
+  white-space: nowrap; /* không xuống dòng bể layout */
+}
+
+/* Đặt chiều rộng hợp lý cho từng cột */
+.form-items th:nth-child(1),
+.form-items td:nth-child(1) {
+  width: 55%;
+} /* Sản phẩm */
+.form-items th:nth-child(2),
+.form-items td:nth-child(2) {
+  width: 100px; /* khớp với <th style="width:100px"> */
+  text-align: right;
+}
+
+.form-items th:nth-child(3),
+.form-items td:nth-child(3) {
+  width: 80px;
+  text-align: center;
+} /* SL */
+.form-items th:nth-child(4),
+.form-items td:nth-child(4) {
+  width: 120px;
+  text-align: right;
+} /* Thành tiền */
+.form-items th:nth-child(5),
+.form-items td:nth-child(5) {
+  width: 60px;
+  text-align: center;
+} /* ✕ */

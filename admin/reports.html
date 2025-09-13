@@ -10,6 +10,272 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1"></script>
 
     <style>
+      /* ===== Daily toolbar: đặt chips xuống hàng riêng, căn ô ngày + nút Xem ===== */
+      .card.daily .toolbar--daily {
+        display: grid;
+        grid-template-columns: minmax(220px, 1fr) minmax(220px, 1fr) auto;
+        grid-template-areas:
+          "from to action"
+          "chips chips chips";
+        gap: 12px;
+        align-items: end;
+      }
+      .card.daily .toolbar--daily .toolbar__from {
+        grid-area: from;
+      }
+      .card.daily .toolbar--daily .toolbar__to {
+        grid-area: to;
+      }
+      .card.daily .toolbar--daily #quickRanges {
+        grid-area: chips;
+      }
+      .card.daily .toolbar--daily .toolbar__action {
+        grid-area: action;
+        height: 40px;
+        min-width: 96px;
+        border-radius: 10px;
+      }
+
+      /* Input ngày đồng bộ chiều cao */
+      .card.daily .toolbar--daily input[type="date"] {
+        height: 40px;
+        padding: 0 12px;
+        border: 1px solid var(--border);
+        background: color-mix(in oklab, var(--card) 92%, transparent);
+        border-radius: 10px;
+        color: var(--text);
+      }
+
+      /* Chips wrap đẹp, giãn cách đều */
+      .card.daily .toolbar--daily .toolbar__chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 2px;
+        overflow-x: auto;
+        scrollbar-width: none;
+      }
+      .card.daily .toolbar--daily .toolbar__chips::-webkit-scrollbar {
+        display: none;
+      }
+      .card.daily .toolbar--daily .chip {
+        height: 36px;
+        min-width: 72px;
+        padding: 0 14px;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        background: color-mix(in oklab, var(--card) 88%, transparent);
+        font-size: 13px;
+        line-height: 1;
+        white-space: nowrap;
+      }
+      .card.daily .toolbar--daily .chip.active {
+        background: var(--brand);
+        color: #06140a;
+        font-weight: 700;
+        border-color: transparent;
+      }
+
+      /* Responsive */
+      @media (max-width: 900px) {
+        .card.daily .toolbar--daily {
+          grid-template-columns: 1fr auto;
+          grid-template-areas:
+            "from action"
+            "to action"
+            "chips chips";
+        }
+      }
+      @media (max-width: 640px) {
+        .card.daily .toolbar--daily {
+          grid-template-columns: 1fr;
+          grid-template-areas:
+            "from"
+            "to"
+            "action"
+            "chips";
+        }
+        .card.daily .toolbar--daily .toolbar__action {
+          width: 100%;
+        }
+      }
+
+      /* ===== Monthly toolbar: label trên, input số cao 40px, nút Xem đồng bộ ===== */
+      .card.monthly .toolbar {
+        display: flex;
+        gap: 12px;
+        align-items: end;
+        flex-wrap: wrap;
+        margin-bottom: 4px;
+      }
+      .card.monthly .toolbar .field {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        min-width: 160px;
+      }
+      .card.monthly .toolbar .field label {
+        font-size: 13px;
+        color: var(--muted);
+      }
+      .card.monthly .toolbar input[type="number"] {
+        height: 40px;
+        width: 120px;
+        padding: 0 12px;
+        border: 1px solid var(--border);
+        background: color-mix(in oklab, var(--card) 92%, transparent);
+        border-radius: 10px;
+        color: var(--text);
+      }
+      .card.monthly .toolbar .btn {
+        height: 40px;
+        border-radius: 10px;
+      }
+
+      /* === Daily toolbar polish === */
+      .toolbar--daily {
+        display: grid;
+        grid-template-columns: auto auto 1fr auto;
+        gap: 10px 12px;
+        align-items: center;
+      }
+
+      .toolbar--daily .field {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        align-items: center;
+        gap: 8px;
+        min-width: 260px; /* có label + input nhìn đỡ chật */
+      }
+
+      .toolbar--daily .field label {
+        font-size: 13px;
+        color: var(--muted);
+        white-space: nowrap;
+      } /* Cho dãy nút 7 ngày, 30 ngày... xuống hàng riêng */
+      .toolbar--daily {
+        display: grid;
+        grid-template-columns: 1fr auto; /* input + nút Xem */
+        gap: 12px;
+        align-items: end;
+      }
+
+      .toolbar--daily .fields {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+
+      .toolbar--daily .toolbar__chips {
+        grid-column: 1 / -1; /* chiếm full width hàng mới */
+        margin-top: 6px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .toolbar--daily .chip {
+        min-width: 72px;
+        height: 36px;
+        border-radius: 999px;
+        font-size: 13px;
+      }
+      .toolbar--daily .chip.active {
+        background: var(--brand);
+        color: #06140a;
+        font-weight: 600;
+      }
+
+      .toolbar--daily .field input[type="date"] {
+        height: 40px;
+        padding: 0 12px;
+        border: 1px solid var(--border);
+        background: color-mix(in oklab, var(--card) 92%, transparent);
+        border-radius: 10px;
+        color: var(--text);
+      }
+
+      /* Chips = segmented control */
+      .toolbar__chips {
+        display: inline-flex;
+        gap: 8px;
+        align-items: center;
+        overflow-x: auto;
+        overflow-y: hidden;
+        padding: 2px 0;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+      }
+      .toolbar__chips::-webkit-scrollbar {
+        display: none;
+      }
+
+      .toolbar__chips .chip {
+        height: 40px;
+        padding: 0 14px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        background: color-mix(in oklab, var(--card) 88%, transparent);
+        color: var(--text);
+        font-size: 13px;
+        line-height: 1;
+        transition: background 0.15s ease, border-color 0.15s ease,
+          transform 0.05s ease;
+        white-space: nowrap;
+      }
+      .toolbar__chips .chip:hover {
+        background: color-mix(in oklab, var(--card) 80%, transparent);
+      }
+      .toolbar__chips .chip:active {
+        transform: translateY(1px);
+      }
+
+      .toolbar__chips .chip.active {
+        background: var(--brand);
+        color: #06140a;
+        border-color: transparent;
+        font-weight: 700;
+        box-shadow: 0 0 0 2px color-mix(in oklab, var(--brand) 35%, transparent);
+      }
+
+      /* Nút Xem cùng chiều cao */
+      .toolbar--daily .toolbar__action {
+        height: 40px;
+        min-width: 96px;
+        border-radius: 10px;
+      }
+
+      /* Responsive: xếp 2 hàng đẹp trên tablet; 1 cột trên mobile */
+      @media (max-width: 1024px) {
+        .toolbar--daily {
+          grid-template-columns: 1fr 1fr;
+        }
+        .toolbar--daily .toolbar__chips {
+          grid-column: 1 / -1;
+        }
+        .toolbar--daily .toolbar__action {
+          justify-self: end;
+        }
+      }
+      @media (max-width: 640px) {
+        .toolbar--daily {
+          grid-template-columns: 1fr;
+        }
+        .toolbar--daily .field {
+          min-width: 0;
+          grid-template-columns: 1fr;
+        }
+        .toolbar--daily .field label {
+          margin-bottom: 4px;
+        }
+        .toolbar--daily .toolbar__action {
+          width: 100%;
+        }
+      }
+
       :root {
         --header-h: 56px;
       }

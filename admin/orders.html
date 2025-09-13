@@ -5,19 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Quản lý đơn hàng — Admin</title>
     <link rel="icon" type="image/png" sizes="16x16" href="/img/logo.jpg" />
-    <link rel="stylesheet" href="/admin/css/admin.css?v=2" />
+    <link rel="stylesheet" href="/admin/css/admin.css?v=3" />
 
-    <!-- Styles RIÊNG cho trang Đơn hàng (không đụng tới header/nav) -->
     <style>
       :root {
         --header-h: 56px;
       }
-
       .orders-page {
         padding: 10px 0 48px;
       }
 
-      /* Toolbar né header sticky */
+      /* Toolbar */
       .toolbar {
         position: sticky;
         top: calc(var(--header-h) + env(safe-area-inset-top, 0px));
@@ -34,9 +32,8 @@
         gap: 12px;
         align-items: center;
       }
-      .toolbar .row label {
-        color: var(--muted);
-        font-size: 14px;
+      .toolbar .spacer {
+        flex: 1;
       }
       .toolbar select,
       .toolbar input {
@@ -45,13 +42,21 @@
         border: 1px solid var(--border);
         border-radius: 10px;
         padding: 8px 10px;
-        outline: none;
       }
-      .toolbar .spacer {
-        flex: 1;
+      .btn.ghost {
+        background: transparent;
+        border: 1px solid var(--border);
+      }
+      .btn.primary {
+        background: var(--brand);
+        color: #06140a;
+        border: none;
+      }
+      .btn.primary:hover {
+        filter: brightness(1.05);
       }
 
-      /* Table */
+      /* Table wrapper */
       .table {
         width: 100%;
         border-collapse: collapse;
@@ -80,7 +85,137 @@
       .table tbody tr:hover {
         background: rgba(148, 163, 184, 0.06);
       }
+      .cell-actions {
+        display: flex;
+        gap: 8px;
+        margin-top: 8px;
+      }
 
+      .pagination {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        justify-content: center;
+        margin-top: 14px;
+      }
+      #pageInfo {
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      /* Drawer */
+      .drawer {
+        position: fixed;
+        inset: 0 0 0 auto;
+        width: min(520px, 96vw);
+        transform: translateX(100%);
+        transition: transform 0.25s ease;
+        z-index: 3000;
+        display: flex;
+      }
+      .drawer.open {
+        transform: translateX(0);
+      }
+      .drawer .back {
+        position: absolute;
+        inset: 0;
+        right: auto;
+        width: 100vw;
+        background: rgba(0, 0, 0, 0.45);
+        z-index: 0;
+      }
+      .drawer .panel {
+        margin-left: auto;
+        height: 100%;
+        width: 100%;
+        max-width: min(520px, 96vw);
+        background: var(--card);
+        border-left: 1px solid var(--border);
+        padding: 16px;
+        overflow: auto;
+        position: relative;
+        z-index: 1;
+      }
+      .panel-header {
+        position: sticky;
+        top: 0;
+        z-index: 5;
+        background: var(--card);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        padding: 6px 0 10px;
+        margin: 0 0 12px;
+        border-bottom: 1px solid var(--border);
+      }
+      .panel-header h3 {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 700;
+      }
+
+      .dl {
+        display: grid;
+        grid-template-columns: 120px 1fr;
+        gap: 8px 12px;
+      }
+      .dl .dt {
+        color: var(--muted);
+      }
+
+      /* ========== QUAN TRỌNG: khối .items cho phép cuộn ngang ========== */
+      .items {
+        margin-top: 8px;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        overflow-x: auto; /* FIX: hiện thanh cuộn ngang khi hẹp */
+        overflow-y: hidden; /* chỉ ẩn theo trục dọc */
+      }
+      .items table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      .items th,
+      .items td {
+        padding: 8px 10px;
+        border-bottom: 1px solid var(--border);
+        font-size: 14px;
+      }
+
+      .total-box {
+        margin-top: 12px;
+        padding: 10px;
+        border: 1px dashed var(--border);
+        border-radius: 10px;
+      }
+
+      /* Form grid */
+      .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+      .form-grid .full {
+        grid-column: 1 / -1;
+      }
+      .input,
+      .select {
+        width: 100%;
+        background: var(--card);
+        color: var(--text);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 8px 10px;
+        font-size: 14px;
+      }
+      .form-items thead th {
+        background: #0c1328;
+      }
+      .form-items input,
+      .form-items select {
+        width: 100%;
+      }
       .muted {
         color: var(--muted);
         font-size: 12px;
@@ -121,48 +256,234 @@
         background: rgba(51, 65, 85, 0.35);
       }
 
-      .btn {
-        padding: 8px 10px;
-        border-radius: 10px;
-        border: 1px solid var(--border);
-        background: #0c1328;
-        color: var(--text);
-        font-size: 13px;
-        cursor: pointer;
-      }
-      .btn:hover {
-        filter: brightness(1.1);
-      }
-      .btn.ghost {
-        background: transparent;
-      }
-      .btn.danger {
-        border-color: rgba(239, 68, 68, 0.4);
-        background: rgba(239, 68, 68, 0.08);
-        color: #fecaca;
-      }
-      .btn[disabled] {
-        opacity: 0.6;
-        cursor: not-allowed;
-      }
-      .cell-actions {
-        display: flex;
-        gap: 8px;
-        margin-top: 8px;
-      }
-
-      .pagination {
-        display: flex;
-        gap: 10px;
+      /* Center confirm + toast */
+      #confirmBackdrop {
+        position: fixed;
+        inset: 0;
+        display: none;
         align-items: center;
         justify-content: center;
-        margin-top: 14px;
+        z-index: 3500;
+        background: rgba(0, 0, 0, 0.45);
       }
-      #pageInfo {
-        color: var(--muted);
-        font-size: 13px;
+      #confirmBackdrop .modal {
+        width: min(520px, 92vw);
+        background: var(--card);
+        color: var(--text);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 18px;
+        box-shadow: 0 20px 48px rgba(0, 0, 0, 0.35);
+      }
+      #confirmBackdrop .actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        margin-top: 12px;
       }
 
+      #centerToast {
+        position: fixed;
+        inset: 0;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 3200;
+      }
+      #centerToast .card {
+        background: var(--card);
+        border: 1px solid var(--line);
+        color: var(--text);
+        padding: 12px 16px;
+        border-radius: 12px;
+        box-shadow: 0 20px 40px rgba(2, 6, 23, 0.5);
+        font-weight: 600;
+      }
+
+      /* Kích thước input trong bảng form */
+      .form-items .f_price {
+        width: 80px; /* nhỏ nữa */
+        min-width: 80px;
+        text-align: right;
+        height: 36px;
+        padding: 6px 6px; /* bớt padding để đỡ chật */
+        font-size: 13px; /* số vẫn rõ nhưng gọn hơn */
+      }
+      .items.form-items table {
+        min-width: 100% !important;
+        table-layout: auto; /* cho phép co mềm hơn */
+      }
+
+      /* Ẩn cột "Thành tiền" khi hẹp để dành chỗ cho nút xoá */
+      .form-items th:nth-child(4),
+      .form-items td:nth-child(4) {
+        display: none !important;
+      }
+
+      /* Thu nhỏ các cột cố định */
+      .form-items th:nth-child(2),
+      .form-items td:nth-child(2) {
+        /* Đơn giá */
+        width: 90px !important;
+        text-align: right;
+      }
+      .form-items .f_price {
+        width: 90px !important;
+        min-width: 90px !important;
+        padding: 6px 8px;
+        font-size: 14px;
+      }
+
+      .form-items th:nth-child(3),
+      .form-items td:nth-child(3) {
+        /* SL */
+        width: 64px !important;
+        text-align: center;
+      }
+      .form-items .f_qty {
+        width: 56px !important;
+        min-width: 56px !important;
+        padding: 6px 6px;
+        font-size: 14px;
+      }
+
+      .form-items th:nth-child(5),
+      .form-items td:nth-child(5) {
+        /* nút X */
+        width: 44px !important;
+        text-align: center;
+      }
+      .form-items .f_remove {
+        padding: 4px 6px; /* nút gọn hơn một chút */
+      }
+
+      /* Ô chọn món co lại nhẹ để đồng bộ hàng */
+      .form-items .f_prod {
+        min-width: 200px !important;
+        height: 36px;
+        padding: 6px 10px;
+      }
+      .form-items .f_qty {
+        width: 72px;
+        min-width: 72px;
+        text-align: center;
+      }
+      .form-items .f_remove {
+        padding: 6px 10px;
+      }
+
+      /* Bảng form: đảm bảo đủ chỗ cho 5 cột, có thể cuộn ngang */
+      .items.form-items table {
+        width: 100%;
+        table-layout: fixed;
+        min-width: 620px;
+      }
+      .items.form-items th,
+      .items.form-items td {
+        white-space: nowrap;
+      }
+      .form-items th:nth-child(1),
+      .form-items td:nth-child(1) {
+        width: 55%;
+      }
+      .form-items th:nth-child(2),
+      .form-items td:nth-child(2) {
+        width: 100px;
+        text-align: right;
+      }
+      .form-items th:nth-child(3),
+      .form-items td:nth-child(3) {
+        width: 80px;
+        text-align: center;
+      }
+      .form-items th:nth-child(4),
+      .form-items td:nth-child(4) {
+        width: 120px;
+        text-align: right;
+      }
+      .form-items th:nth-child(5),
+      .form-items td:nth-child(5) {
+        width: 60px;
+        text-align: center;
+      }
+      /* ===== MOBILE FIX cho bảng món: không cần kéo ngang, luôn thấy nút X ===== */
+      @media (max-width: 600px) {
+        /* Bỏ min-width 620 và cho table co mềm */
+        .items.form-items table {
+          width: 100%;
+          min-width: 0 !important;
+          table-layout: auto !important;
+        }
+
+        /* Ẩn header bảng (hàng dưới sẽ tự chú giải), hàng = grid 4 cột nhỏ gọn */
+        .items.form-items thead {
+          display: none !important;
+        }
+
+        .items.form-items tbody tr {
+          display: grid;
+          grid-template-columns: 1fr auto auto auto; /* [SP] [Đơn giá][SL][X] */
+          gap: 8px;
+          align-items: center;
+          border-bottom: 1px solid var(--border);
+          padding: 8px 10px;
+        }
+        .items.form-items tbody td {
+          display: block;
+          border: 0;
+          padding: 0;
+          white-space: normal; /* cho phép xuống dòng placeholder */
+        }
+
+        /* Sản phẩm (và ghi chú) chiếm full hàng trên */
+        .items.form-items tbody td:nth-child(1) {
+          grid-column: 1 / -1;
+        }
+
+        /* Ẩn "Thành tiền" để dành chỗ; tổng vẫn hiển thị ở box dưới */
+        .items.form-items tbody td:nth-child(4) {
+          display: none !important;
+        }
+
+        /* Vị trí 3 ô bên phải */
+        .items.form-items tbody td:nth-child(2) {
+          justify-self: end;
+        } /* Đơn giá */
+        .items.form-items tbody td:nth-child(3) {
+          justify-self: center;
+        } /* SL */
+        .items.form-items tbody td:nth-child(5) {
+          justify-self: end;
+        } /* Xóa */
+
+        /* Kích thước control nhỏ gọn trên mobile */
+        .form-items .f_prod {
+          min-width: 0 !important;
+          height: 36px;
+          padding: 6px 10px;
+        }
+        .form-items .f_price {
+          width: 84px !important;
+          min-width: 0 !important;
+          text-align: right;
+          height: 36px;
+          padding: 6px 6px;
+          font-size: 13px;
+        }
+        .form-items .f_qty {
+          width: 56px !important;
+          min-width: 0 !important;
+          text-align: center;
+          height: 36px;
+          padding: 6px 6px;
+          font-size: 13px;
+        }
+        .form-items .f_remove {
+          padding: 0 8px !important;
+        }
+      }
+
+      /* Mobile: hàng thành card */
       @media (max-width: 900px) {
         .table thead {
           display: none;
@@ -198,119 +519,10 @@
           padding: 0 12px 12px;
         }
       }
-
-      /* Toast */
-      .toast-wrap {
-        position: fixed;
-        top: 16px;
-        right: 16px;
-        z-index: 50;
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-      }
-      .toast {
-        min-width: 240px;
-        max-width: 320px;
-        padding: 10px 12px;
-        border-radius: 12px;
-        border: 1px solid var(--border);
-        background: #0c1328;
-        color: var(--text);
-        font-size: 13px;
-        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
-        display: flex;
-        gap: 10px;
-        animation: slideIn 0.22s ease;
-      }
-      .toast.success {
-        border-color: rgba(34, 197, 94, 0.4);
-      }
-      .toast.error {
-        border-color: rgba(239, 68, 68, 0.4);
-      }
-      .toast.warn {
-        border-color: rgba(245, 158, 11, 0.4);
-      }
-      @keyframes slideIn {
-        from {
-          transform: translateY(-8px);
-          opacity: 0;
-        }
-        to {
-          transform: translateY(0);
-          opacity: 1;
-        }
-      }
-
-      /* Drawer */
-      .drawer {
-        position: fixed;
-        inset: 0 0 0 auto;
-        width: min(520px, 96vw);
-        transform: translateX(100%);
-        transition: transform 0.25s ease;
-        z-index: 70;
-        display: flex;
-      }
-      .drawer.open {
-        transform: translateX(0);
-      }
-      .drawer .back {
-        position: absolute;
-        inset: 0;
-        right: auto;
-        width: 100vw;
-        background: rgba(0, 0, 0, 0.45);
-        z-index: 0;
-      }
-      .drawer .panel {
-        margin-left: auto;
-        height: 100%;
-        width: 100%;
-        max-width: min(520px, 96vw);
-        background: var(--card);
-        border-left: 1px solid var(--border);
-        padding: 16px;
-        overflow: auto;
-        position: relative;
-        z-index: 1;
-        pointer-events: auto;
-      }
-      .dl {
-        display: grid;
-        grid-template-columns: 120px 1fr;
-        gap: 8px 12px;
-      }
-      .dl .dt {
-        color: var(--muted);
-      }
-      .items {
-        margin-top: 8px;
-        border: 1px solid var(--border);
-        border-radius: 10px;
-        overflow: hidden;
-      }
-      .items table {
-        width: 100%;
-        border-collapse: collapse;
-      }
-      .items th,
-      .items td {
-        padding: 8px 10px;
-        border-bottom: 1px solid var(--border);
-        font-size: 14px;
-      }
-      .total-box {
-        margin-top: 12px;
-        padding: 10px;
-        border: 1px dashed var(--border);
-        border-radius: 10px;
-      }
     </style>
   </head>
   <body>
-    <!-- ===== Header ===== -->
+    <!-- HEADER -->
     <header class="site">
       <div class="wrap container">
         <a href="/admin/index.html" class="brand">
@@ -321,7 +533,6 @@
           </div>
         </a>
 
-        <!-- Hamburger -->
         <button
           class="hamburger"
           id="btnHamburger"
@@ -343,7 +554,6 @@
           </svg>
         </button>
 
-        <!-- Tabs (desktop) -->
         <nav class="tabs" role="navigation" aria-label="Admin">
           <a href="/admin/index.html">Trang chủ</a>
           <a href="/admin/promotions.html">Khuyến mãi</a>
@@ -371,6 +581,7 @@
     </div>
 
     <main class="container orders-page">
+      <!-- TOOLBAR -->
       <div class="toolbar">
         <div class="row">
           <label
@@ -390,9 +601,12 @@
             >Tìm nhanh
             <input id="q" type="search" placeholder="Mã / SĐT / Tên" />
           </label>
+
+          <button id="btnCreate" class="btn brand">➕ Tạo đơn</button>
         </div>
       </div>
 
+      <!-- TABLE -->
       <section class="card" style="padding: 0">
         <table class="table" id="tbl">
           <thead>
@@ -418,9 +632,11 @@
       </div>
     </main>
 
-    <div class="toast-wrap" id="toastWrap"></div>
+    <!-- Toasts -->
+    <div id="toastWrap"></div>
+    <div id="centerToast"><div class="card" id="centerToastMsg"></div></div>
 
-    <!-- Modal xác nhận -->
+    <!-- Confirm -->
     <div
       class="modal-backdrop"
       id="confirmBackdrop"
@@ -437,28 +653,19 @@
       </div>
     </div>
 
-    <!-- Drawer chi tiết + hoá đơn -->
+    <!-- Drawer chi tiết -->
     <div class="drawer" id="detailDrawer" aria-hidden="true">
       <div class="back" id="detailBack"></div>
       <div class="panel">
-        <div
-          style="
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 8px;
-          "
-        >
-          <h3 style="margin: 0">Chi tiết đơn <code id="d_id"></code></h3>
+        <div class="panel-header">
+          <h3>Chi tiết đơn <code id="d_id"></code></h3>
           <div style="display: flex; gap: 8px">
-            <button class="btn" id="d_invoice" title="Chỉ xem khi Hoàn tất">
-              Xem hoá đơn
-            </button>
+            <button class="btn" id="d_invoice">Xem hoá đơn</button>
             <button class="btn ghost" id="d_close">Đóng</button>
           </div>
         </div>
 
-        <div class="dl" style="margin-top: 10px">
+        <div class="dl">
           <div class="dt">Khách</div>
           <div id="d_customer"></div>
           <div class="dt">Liên hệ</div>
@@ -498,7 +705,90 @@
       </div>
     </div>
 
-    <script defer src="/admin/js/admin-common.js?v=2"></script>
-    <script defer src="/admin/js/orders.js?v=2"></script>
+    <!-- Drawer FORM: Tạo / Sửa -->
+    <div class="drawer" id="formDrawer" aria-hidden="true">
+      <div class="back" id="formBack"></div>
+      <div class="panel">
+        <div class="panel-header">
+          <h3 id="formTitle">Tạo đơn</h3>
+          <div style="display: flex; gap: 8px">
+            <button class="btn brand" id="formSave">Lưu</button>
+            <button class="btn ghost" id="formClose">Đóng</button>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <input id="f_name" class="input" placeholder="Tên khách" />
+          <input id="f_phone" class="input" placeholder="SĐT (+84…)" />
+          <input id="f_address" class="input full" placeholder="Địa chỉ" />
+
+          <label class="full"
+            >Loại đơn
+            <select id="f_type" class="select">
+              <option value="TAKE_AWAY">Mang đi</option>
+              <option value="DINE_IN">Tại bàn</option>
+              <option value="RESERVE">Đặt trước</option>
+            </select>
+          </label>
+
+          <input id="f_table" class="input" placeholder="Bàn (nếu có)" />
+          <input
+            id="f_guests"
+            class="input"
+            type="number"
+            min="0"
+            placeholder="Số khách"
+          />
+
+          <label class="full"
+            >Lịch (nếu đặt trước)
+            <input id="f_schedule" class="input" type="datetime-local" />
+          </label>
+
+          <label class="full"
+            >Thanh toán
+            <select id="f_payment" class="select">
+              <option value="COD">COD</option>
+              <option value="TRANSFER">Chuyển khoản</option>
+            </select>
+          </label>
+
+          <textarea
+            id="f_note"
+            class="input full"
+            rows="2"
+            placeholder="Ghi chú"
+          ></textarea>
+        </div>
+
+        <div class="items form-items" style="margin-top: 12px">
+          <table>
+            <thead>
+              <tr>
+                <th style="text-align: left; width: 55%">Sản phẩm</th>
+                <th style="width: 100px">Đơn giá</th>
+                <th style="width: 80px">SL</th>
+                <th style="width: 120px">Thành tiền</th>
+                <th style="width: 60px"></th>
+              </tr>
+            </thead>
+            <tbody id="f_rows"></tbody>
+          </table>
+        </div>
+
+        <div style="display: flex; gap: 8px; margin-top: 8px">
+          <button id="f_addRow" class="btn ghost">+ Thêm món</button>
+        </div>
+
+        <div class="total-box">
+          <div>Tạm tính: <b id="f_sub">0₫</b></div>
+          <div>Giảm: <b id="f_disc">0₫</b></div>
+          <div>Tổng: <b id="f_total" style="font-size: 18px">0₫</b></div>
+        </div>
+      </div>
+    </div>
+
+    <script defer src="/admin/js/admin-common.js?v=3"></script>
+    <script defer src="/admin/js/orders.js?v=3"></script>
   </body>
 </html>

@@ -182,8 +182,44 @@
   ],
   "orders": [
     {
+      "id": "V9CBN1OPAQCR",
+      "status": "NEW",
+      "customer": {
+        "name": "Bàn 1",
+        "phone": "",
+        "address": ""
+      },
+      "paymentMethod": "COD",
+      "items": [
+        {
+          "productId": "CB-GNHO-6BB",
+          "name": "Combo tiết kiệm 1",
+          "priceSell": 179000,
+          "priceCost": 135000,
+          "qty": 1
+        }
+      ],
+      "subtotal": 179000,
+      "discount": 0,
+      "total": 179000,
+      "costTotal": 135000,
+      "profit": 44000,
+      "promoSnapshot": {
+        "active": false,
+        "percent": 100
+      },
+      "meta": {
+        "orderType": "DINE_IN",
+        "tableNumber": "1",
+        "guests": 0,
+        "scheduleAt": null,
+        "note": ""
+      },
+      "createdAt": "2025-09-13T14:41:06.276Z"
+    },
+    {
       "id": "GG6N2CXKIBRT",
-      "status": "IN_PROGRESS",
+      "status": "NEW",
       "customer": {
         "name": "Russel Tromp",
         "phone": "+84336440523",
@@ -216,7 +252,7 @@
         "note": ""
       },
       "createdAt": "2025-09-13T11:37:34.616Z",
-      "updatedAt": "2025-09-13T11:38:24.294Z"
+      "updatedAt": "2025-09-13T13:01:44.319Z"
     },
     {
       "id": "PHZTNFNDMD_Q",
@@ -261,43 +297,6 @@
       },
       "createdAt": "2025-09-12T12:43:42.233Z",
       "updatedAt": "2025-09-12T13:00:53.466Z"
-    },
-    {
-      "id": "RIDULXEQKBTY",
-      "status": "CANCELED",
-      "customer": {
-        "name": "Russel Tromp",
-        "phone": "+84336440523",
-        "address": "Thon A Dong, Thon A Dong"
-      },
-      "paymentMethod": "COD",
-      "items": [
-        {
-          "productId": "GA-NHO",
-          "name": "Gà nướng mắm nhĩ nhỏ (nguyên con)",
-          "priceSell": 159000,
-          "priceCost": 115000,
-          "qty": 1
-        }
-      ],
-      "subtotal": 159000,
-      "discount": 159000,
-      "total": 0,
-      "costTotal": 115000,
-      "profit": -115000,
-      "promoSnapshot": {
-        "active": true,
-        "percent": 100
-      },
-      "meta": {
-        "orderType": "TAKEAWAY",
-        "tableNumber": "",
-        "guests": 0,
-        "scheduleAt": null,
-        "note": ""
-      },
-      "createdAt": "2025-09-11T15:01:05.368Z",
-      "updatedAt": "2025-09-12T12:39:50.449Z"
     },
     {
       "id": "70WMNHSKM0AU",
@@ -658,11 +657,11 @@
     "push": {
       "subscriptions": [
         {
-          "endpoint": "https://fcm.googleapis.com/fcm/send/cPT2ozjEvXc:APA91bFSqxwQ23V2xp3N7TZopm8oM7OZyhJeLDq5CJ-ffHLjg9gApNxYa535XiRMsEEA1rZL6tD7vhoTD2uCiLsUUH7Uj3BQEF5aKjYNaOjfPteE_OPbm-1zhc0kNFbnu4T5D4xYOavj",
+          "endpoint": "https://fcm.googleapis.com/fcm/send/dK-B_o3Kpnk:APA91bEqiTO8pJad8Dnpr1uMo7fr0eAsmU-MhPNEZtExdDHRATeQtKGeOl6PQkQmumkF_c69lxzBM9s2DrMPQVTWhZKtvbMoSIhD047olz-6oPEhVkZKu23AIykvHNlzeiqYngFMoCr-",
           "expirationTime": null,
           "keys": {
-            "p256dh": "BKrNRtXsXmAHJhxsDmzvFTJ_jHQO4w4JkIqTrgMe9G3xla0G3sFVVNKMRi5AWFlAQpLfW3lbDjB6zOVHTw0wDHQ",
-            "auth": "YWKyDVVLHiCz4wzgphlOWQ"
+            "p256dh": "BLExLO7_QZMSL1S3QFnD6bjMIm5GffDbWDZVIYU1hVwA_UO1Rn2EY2DmGuDR70LSprdGZd8nU2RpkK9KWAwtCKg",
+            "auth": "bj7soYlrwt_NO1pT8uMsRA"
           }
         }
       ]
