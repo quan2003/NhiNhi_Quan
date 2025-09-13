@@ -1,12 +1,20 @@
 import { qs, create, vnd } from "./utils.js";
 import { apiGet } from "./api.js";
-import { addToCart, getCartCount } from "./cart.js";
+import { addToCart, getCartCount, onCartChange } from "./cart.js";
 
 const listEl = qs("#menuList");
 const filterEl = qs("#filterCategory");
-const cartCountEl = document.getElementById("cartCount");
+const cartBadge = document.getElementById("cartBadge");
 
-// ===== Modal refs =====
+function updateCartBadge() {
+  if (!cartBadge) return;
+  const n = getCartCount();
+  cartBadge.textContent = n;
+  cartBadge.style.display = n > 0 ? "inline-block" : "none";
+}
+onCartChange(() => updateCartBadge());
+
+/* ===== Modal refs ===== */
 const modal = qs("#itemModal");
 const mdClose = qs("#mdClose");
 const mdImg = qs("#mdImg");
@@ -28,7 +36,13 @@ const mdNuocCham = qs("#mdNuocCham");
 const mdDoChua = qs("#mdDoChua");
 const mdNote = qs("#mdNote");
 
+/* focus memory for a11y */
+let lastFocusEl = null;
+const pageRoot = document.querySelector("main") || document.body;
+
+/* ===== Skeleton ===== */
 function renderSkeleton(n = 6) {
+  if (!listEl) return;
   listEl.innerHTML = "";
   for (let i = 0; i < n; i++) {
     const sk = document.createElement("div");
@@ -43,6 +57,7 @@ function renderSkeleton(n = 6) {
 }
 
 function setCategories(categories) {
+  if (!filterEl) return;
   filterEl.innerHTML = '<option value="">Tất cả</option>';
   Array.from(categories)
     .sort((a, b) => a.localeCompare(b))
@@ -52,7 +67,7 @@ function setCategories(categories) {
     });
 }
 
-// ====== Card with image + click to open modal ======
+/* ===== Card ===== */
 function productCard(p) {
   const card = create("div", {
     class: "menu-card",
@@ -65,59 +80,50 @@ function productCard(p) {
     attrs: { src: imgSrc, alt: p.name || "", loading: "lazy" },
   });
   thumb.appendChild(img);
-
   if (p.category) {
-    const badge = create("span", {
-      class: "badge",
-      text: String(p.category),
-    });
+    const badge = create("span", { class: "badge", text: String(p.category) });
     thumb.appendChild(badge);
   }
   card.appendChild(thumb);
 
   const content = create("div", { class: "content" });
-  content.appendChild(create("h3", { text: p.name }));
-  if (p.brief)
-    content.appendChild(create("div", { class: "brief", text: p.brief }));
-  else if (p.description)
-    content.appendChild(
-      create("div", {
-        class: "brief",
-        text: String(p.description).slice(0, 96),
-      })
-    );
+  const h3 = create("h3", { text: p.name });
+  h3.style.cursor = "pointer";
+  h3.addEventListener("click", () => openModal(p));
+  content.appendChild(h3);
 
   const foot = create("div", { class: "foot" });
   foot.appendChild(
     create("div", { class: "price", text: vnd(p.priceSell ?? p.price ?? 0) })
   );
+
   const orderBtn = create("button", {
     class: "btn primary",
-    html: '<i data-lucide="shopping-bag"></i> Đặt món',
+    html: '<i data-lucide="plus-circle"></i> Đặt món',
   });
   orderBtn.addEventListener("click", (ev) => {
     ev.stopPropagation();
     openModal(p);
   });
+
   foot.appendChild(orderBtn);
   content.appendChild(foot);
-
   card.appendChild(content);
-  card.addEventListener("click", () => openModal(p));
 
+  card.addEventListener("click", () => openModal(p));
   return card;
 }
 
 let ALL = [];
 let BY_ID = new Map();
 
+/* ===== Load menu ===== */
 async function load() {
+  if (!listEl) return;
   renderSkeleton();
   try {
     const ts = Date.now();
     const data = await apiGet(`/api/products?ts=${ts}`);
-    console.log("[menu] /api/products:", data);
-
     ALL = (data || []).map((x) => ({
       id:
         x.id ??
@@ -139,7 +145,8 @@ async function load() {
     BY_ID = new Map(ALL.map((p) => [p.id, p]));
 
     if (!ALL.length) {
-      listEl.innerHTML = `<div class="card">Chưa có sản phẩm nào đang mở bán. Hãy kiểm tra mục "Kích hoạt" trong Admin & bấm Lưu.</div>`;
+      listEl.innerHTML =
+        '<div class="card">Chưa có sản phẩm nào đang mở bán. Hãy kiểm tra mục "Kích hoạt" trong Admin & bấm Lưu.</div>';
       return;
     }
 
@@ -150,14 +157,135 @@ async function load() {
     console.error(e);
     listEl.innerHTML = `<div class="card">Lỗi tải menu: ${e.message}</div>`;
   }
-  if (window.lucide) window.lucide.createIcons();
+  window.lucide?.createIcons?.();
 }
 
 function render(items) {
+  if (!listEl) return;
   listEl.innerHTML = "";
   items.forEach((p) => listEl.appendChild(productCard(p)));
-  if (window.lucide) window.lucide.createIcons();
+  window.lucide?.createIcons?.();
 }
+
+/* ===== Modal ===== */
+function openModal(p) {
+  lastFocusEl =
+    document.activeElement instanceof HTMLElement
+      ? document.activeElement
+      : null;
+
+  mdSpinner?.classList.remove("hidden");
+  mdImg?.classList.add("loading");
+
+  let imgSrc =
+    p.imageUrl?.trim?.() ||
+    p.image?.trim?.() ||
+    p.thumbnail?.trim?.() ||
+    "/img/placeholder.png";
+  if (
+    imgSrc &&
+    !String(imgSrc).startsWith("http") &&
+    !String(imgSrc).startsWith("/") &&
+    !String(imgSrc).startsWith("./") &&
+    !String(imgSrc).startsWith("../")
+  ) {
+    imgSrc = "/img/" + imgSrc;
+  }
+
+  const pre = new Image();
+  pre.src = imgSrc;
+  pre.onload = () => {
+    mdSpinner?.classList.add("hidden");
+    mdImg?.classList.remove("loading");
+    if (mdImg) {
+      mdImg.src = imgSrc;
+      mdImg.alt = p.name || "";
+    }
+  };
+  pre.onerror = () => {
+    mdSpinner?.classList.add("hidden");
+    mdImg?.classList.remove("loading");
+    if (mdImg) {
+      mdImg.src = "/img/placeholder.png";
+      mdImg.alt = p.name || "";
+    }
+  };
+
+  if (mdTitle) mdTitle.textContent = p.name || "";
+  if (mdCategory) mdCategory.textContent = p.category || "";
+  if (mdDesc)
+    mdDesc.textContent = p.description || "Chưa có mô tả chi tiết cho món này.";
+  if (mdPrice) mdPrice.textContent = vnd(p.priceSell ?? 0);
+
+  let qty = 1;
+  if (mdQtyDisplay) mdQtyDisplay.textContent = qty;
+
+  const nuoc = p.nuocCham || "";
+  const chua = p.doChua || "";
+  const note = p.ghiChu || "";
+
+  if (mdNuocChamRow) mdNuocChamRow.style.display = nuoc ? "" : "none";
+  if (mdDoChuaRow) mdDoChuaRow.style.display = chua ? "" : "none";
+  if (mdNoteRow) mdNoteRow.style.display = note ? "" : "none";
+  if (mdNuocCham) mdNuocCham.textContent = nuoc;
+  if (mdDoChua) mdDoChua.textContent = chua;
+  if (mdNote) mdNote.textContent = note;
+  if (mdMore) mdMore.style.display = nuoc || chua || note ? "" : "none";
+
+  if (mdQtyDec)
+    mdQtyDec.onclick = () => {
+      if (qty > 1) {
+        qty--;
+        if (mdQtyDisplay) mdQtyDisplay.textContent = qty;
+      }
+    };
+  if (mdQtyInc)
+    mdQtyInc.onclick = () => {
+      qty++;
+      if (mdQtyDisplay) mdQtyDisplay.textContent = qty;
+    };
+  if (mdAddToCartBtn)
+    mdAddToCartBtn.onclick = () => {
+      addToCart(p.id, qty);
+      updateCartBadge();
+      closeModal();
+      window.__ui?.toast?.("Đã thêm vào giỏ", "ok");
+    };
+
+  modal?.classList.add("open");
+  modal?.setAttribute("aria-hidden", "false");
+
+  pageRoot?.setAttribute?.("inert", "");
+  (mdClose || modal)?.focus?.();
+
+  window.lucide?.createIcons?.();
+}
+
+function closeModal() {
+  const active = document.activeElement;
+  if (active && modal?.contains(active)) {
+    active.blur();
+  }
+
+  modal?.classList.remove("open");
+  modal?.setAttribute("aria-hidden", "true");
+  mdSpinner?.classList.add("hidden");
+  mdImg?.classList.remove("loading");
+
+  pageRoot?.removeAttribute?.("inert");
+
+  requestAnimationFrame(() => {
+    try {
+      lastFocusEl?.focus?.();
+    } catch {}
+    lastFocusEl = null;
+  });
+}
+
+mdClose?.addEventListener("click", closeModal);
+modal?.addEventListener("click", (e) => {
+  if (e.target === modal) closeModal();
+});
 
 filterEl?.addEventListener("change", () => {
   const v = filterEl.value;
@@ -165,108 +293,7 @@ filterEl?.addEventListener("change", () => {
   else render(ALL.filter((p) => (p.category || "") === v));
 });
 
-// ===== Modal logic =====
-function openModal(p) {
-  mdSpinner.classList.remove("hidden");
-  mdImg.classList.add("loading");
-
-  let imgSrc =
-    p.imageUrl && p.imageUrl.trim()
-      ? p.imageUrl
-      : p.image && p.image.trim()
-      ? p.image
-      : p.thumbnail && p.thumbnail.trim()
-      ? p.thumbnail
-      : "/img/placeholder.png";
-
-  if (
-    imgSrc &&
-    !imgSrc.startsWith("http") &&
-    !imgSrc.startsWith("/") &&
-    !imgSrc.startsWith("./") &&
-    !imgSrc.startsWith("../")
-  ) {
-    imgSrc = "/img/" + imgSrc;
-  }
-
-  const img = new Image();
-  img.src = imgSrc;
-  img.onload = () => {
-    mdSpinner.classList.add("hidden");
-    mdImg.classList.remove("loading");
-    mdImg.src = imgSrc;
-    mdImg.alt = p.name || "";
-  };
-  img.onerror = () => {
-    mdSpinner.classList.add("hidden");
-    mdImg.classList.remove("loading");
-    mdImg.src = "/img/placeholder.png";
-    mdImg.alt = p.name || "";
-  };
-
-  mdImg.style.background = "none";
-
-  mdTitle.textContent = p.name || "";
-  mdCategory.textContent = p.category || "";
-  mdDesc.textContent = p.description || "Chưa có mô tả chi tiết cho món này.";
-  mdPrice.textContent = vnd(p.priceSell ?? 0);
-  let qty = 1;
-  mdQtyDisplay.textContent = qty;
-
-  const nuoc = p.nuocCham || "";
-  const chua = p.doChua || "";
-  const note = p.ghiChu || "";
-
-  mdNuocChamRow.style.display = nuoc ? "" : "none";
-  mdDoChuaRow.style.display = chua ? "" : "none";
-  mdNoteRow.style.display = note ? "" : "none";
-  mdNuocCham.textContent = nuoc;
-  mdDoChua.textContent = chua;
-  mdNote.textContent = note;
-
-  mdMore.style.display = nuoc || chua || note ? "" : "none";
-
-  mdQtyDec.onclick = () => {
-    if (qty > 1) {
-      qty--;
-      mdQtyDisplay.textContent = qty;
-    }
-  };
-  mdQtyInc.onclick = () => {
-    qty++;
-    mdQtyDisplay.textContent = qty;
-  };
-
-  mdAddToCartBtn.onclick = () => {
-    mdAddToCartBtn.style.animation = "shake 0.3s ease";
-    setTimeout(() => {
-      mdAddToCartBtn.style.animation = "";
-    }, 300);
-    addToCart(p.id, qty);
-    if (cartCountEl) cartCountEl.textContent = String(getCartCount());
-    closeModal();
-    window.__ui?.toast?.("Đã thêm vào giỏ", "ok");
-  };
-
-  modal.classList.add("open");
-  modal.setAttribute("aria-hidden", "false");
-  if (window.lucide) window.lucide.createIcons();
-}
-
-function closeModal() {
-  modal.classList.remove("open");
-  modal.setAttribute("aria-hidden", "true");
-  mdSpinner.classList.add("hidden");
-  mdImg.classList.remove("loading");
-}
-
-mdClose?.addEventListener("click", closeModal);
-modal?.addEventListener("click", (e) => {
-  if (e.target === modal) closeModal();
+document.addEventListener("DOMContentLoaded", () => {
+  if (listEl) load();
+  updateCartBadge();
 });
-document.addEventListener("keydown", (e) => {
-  if (e.key === "Escape" && modal.classList.contains("open")) closeModal();
-});
-
-document.addEventListener("DOMContentLoaded", load);
-// ========== Checkout page logic ==========

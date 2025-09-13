@@ -1,144 +1,444 @@
-(async function () {
-  const btnDaily = document.getElementById("btnDaily");
-  const btnMonthly = document.getElementById("btnMonthly");
-  const year = document.getElementById("year");
-  year.value = new Date().getFullYear();
+// /admin/js/reports.js
+// Chart.js v4, dùng __adminFetch (đã set x-admin-token) từ admin-common.js
 
+(() => {
+  const $ = (id) => document.getElementById(id);
+
+  // ---- Utils số học (QUAN TRỌNG: ép số về Number) ----
+  const num = (v) => {
+    const n = Number(v);
+    return Number.isFinite(n) ? n : 0;
+  };
+  const vnd = (n) => num(n).toLocaleString("vi-VN") + "₫";
+  const hasItems = (a) => Array.isArray(a) && a.length > 0;
+  const showLoading = (el, on) => el && el.classList.toggle("show", !!on);
+  const showEmpty = (el, on) => el && el.classList.toggle("show", !!on);
+
+  // Elements
+  const btnDaily = $("btnDaily");
+  const btnMonthly = $("btnMonthly");
+  const year = $("year");
+  const quickRanges = $("quickRanges");
+
+  const dailyLoading = $("dailyLoading");
+  const monthlyLoading = $("monthlyLoading");
+  const yearlyLoading = $("yearlyLoading");
+
+  const dailyEmpty = $("dailyEmpty");
+  const monthlyEmpty = $("monthlyEmpty");
+  const yearlyEmpty = $("yearlyEmpty");
+
+  // KPI
+  const kpiRevenue = $("kpiRevenue");
+  const kpiCost = $("kpiCost");
+  const kpiProfit = $("kpiProfit");
+  const kpiOrders = $("kpiOrders");
+  const kpiRevenueDelta = $("kpiRevenueDelta");
+  const kpiCostDelta = $("kpiCostDelta");
+  const kpiProfitDelta = $("kpiProfitDelta");
+  const kpiOrdersDelta = $("kpiOrdersDelta");
+
+  // Dates helpers
+  const pad = (n) => String(n).padStart(2, "0");
+  const fmt = (d) =>
+    `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  function rangeOf(key) {
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = now.getMonth();
+    if (key === "7") {
+      const f = new Date(now);
+      f.setDate(now.getDate() - 6);
+      return { from: fmt(f), to: fmt(now) };
+    }
+    if (key === "30") {
+      const f = new Date(now);
+      f.setDate(now.getDate() - 29);
+      return { from: fmt(f), to: fmt(now) };
+    }
+    if (key === "this-month") {
+      return { from: fmt(new Date(y, m, 1)), to: fmt(new Date(y, m + 1, 0)) };
+    }
+    if (key === "prev-month") {
+      return { from: fmt(new Date(y, m - 1, 1)), to: fmt(new Date(y, m, 0)) };
+    }
+    return {};
+  }
+  function prevPeriodOf({ from, to }) {
+    const f = new Date(from + "T00:00:00Z");
+    const t = new Date(to + "T00:00:00Z");
+    const days = Math.max(1, Math.round((t - f) / 86400000) + 1);
+    const pTo = new Date(f);
+    pTo.setDate(f.getDate() - 1);
+    const pFrom = new Date(pTo);
+    pFrom.setDate(pTo.getDate() - (days - 1));
+    return { from: fmt(pFrom), to: fmt(pTo) };
+  }
+
+  // Chart instances
   let dailyChart, monthlyChart, yearlyChart;
 
-  function moneyAxis(label) {
-    return {
-      type: "linear",
-      position: label === "left" ? "left" : "right",
-      ticks: { callback: (v) => v.toLocaleString("vi-VN") + "₫" },
-      grid: label === "right" ? { drawOnChartArea: false } : undefined,
-    };
+  // Chart defaults
+  Chart.defaults.color = "#e5e7eb";
+  Chart.defaults.plugins.legend.position = "bottom";
+  Chart.defaults.maintainAspectRatio = false;
+
+  const COLORS = {
+    revenue: "#22c55e",
+    cost: "#ef4444",
+    profit: "#f59e0b",
+    orders: "#60a5fa",
+  };
+
+  const moneyAxis = (pos) => ({
+    type: "linear",
+    position: pos,
+    ticks: { callback: (v) => v.toLocaleString("vi-VN") + "₫" },
+    grid: { drawOnChartArea: pos === "left" },
+  });
+  const countAxis = (pos) => ({
+    type: "linear",
+    position: pos,
+    ticks: { stepSize: 1, precision: 0 },
+    grid: { drawOnChartArea: false },
+  });
+
+  // ===== KPI helpers (DÙNG num() MỌI CHỖ) =====
+  function sumDaily(items) {
+    return (items || []).reduce(
+      (acc, x) => {
+        const r = num(x.revenue);
+        const c = num(x.cost);
+        const p = Number.isFinite(Number(x.profit)) ? num(x.profit) : r - c;
+        acc.revenue += r;
+        acc.cost += c;
+        acc.profit += p;
+        acc.orders += num(x.orders);
+        return acc;
+      },
+      { revenue: 0, cost: 0, profit: 0, orders: 0 }
+    );
+  }
+  function pctDelta(cur, prev) {
+    cur = num(cur);
+    prev = num(prev);
+    if (prev === 0) return cur === 0 ? "0%" : "+100%";
+    const d = ((cur - prev) / prev) * 100;
+    const sign = d > 0 ? "+" : "";
+    return `${sign}${Math.round(d)}%`;
+  }
+  function updateKPI(curItems, prevItems) {
+    const cur = sumDaily(curItems);
+    const prev = sumDaily(prevItems);
+
+    kpiRevenue.textContent = vnd(cur.revenue);
+    kpiCost.textContent = vnd(cur.cost);
+    kpiProfit.textContent = vnd(cur.profit);
+    kpiOrders.textContent = num(cur.orders).toLocaleString("vi-VN");
+
+    kpiRevenueDelta.textContent =
+      "So với kỳ trước: " + pctDelta(cur.revenue, prev.revenue);
+    kpiCostDelta.textContent =
+      "So với kỳ trước: " + pctDelta(cur.cost, prev.cost);
+    kpiProfitDelta.textContent =
+      "So với kỳ trước: " + pctDelta(cur.profit, prev.profit);
+    kpiOrdersDelta.textContent =
+      "So với kỳ trước: " + pctDelta(cur.orders, prev.orders);
   }
 
-  // Daily (line) — có 2 trục Y: tiền & số đơn
+  // ===== Renders (ÉP SỐ CHO DATASETS) =====
   function renderDaily(data) {
-    const labels = data.items.map((x) => x.date);
-    const revenue = data.items.map((x) => x.revenue);
-    const profit = data.items.map((x) => x.profit);
-    const cost = data.items.map((x) => x.cost);
-    const orders = data.items.map((x) => x.orders);
-
-    if (dailyChart) dailyChart.destroy();
-    dailyChart = new Chart(document.getElementById("dailyChart"), {
+    const it = data?.items || [];
+    showEmpty(dailyEmpty, !hasItems(it));
+    if (!hasItems(it)) {
+      dailyChart?.destroy();
+      return;
+    }
+    dailyChart?.destroy();
+    dailyChart = new Chart($("dailyChart"), {
       type: "line",
       data: {
-        labels,
+        labels: it.map((x) => x.date),
         datasets: [
-          { label: "Doanh thu", data: revenue, yAxisID: "yMoney" },
-          { label: "Chi phí", data: cost, yAxisID: "yMoney" },
-          { label: "Lợi nhuận", data: profit, yAxisID: "yMoney" },
-          { label: "Số đơn", data: orders, yAxisID: "yCount" },
+          {
+            label: "Doanh thu",
+            data: it.map((x) => num(x.revenue)),
+            borderColor: COLORS.revenue,
+            yAxisID: "yMoney",
+            fill: false,
+            tension: 0.35,
+            pointRadius: 3,
+            pointHoverRadius: 6,
+          },
+          {
+            label: "Chi phí",
+            data: it.map((x) => num(x.cost)),
+            borderColor: COLORS.cost,
+            yAxisID: "yMoney",
+            fill: false,
+            tension: 0.35,
+            pointRadius: 3,
+            pointHoverRadius: 6,
+          },
+          {
+            label: "Lợi nhuận",
+            data: it.map((x) =>
+              Number.isFinite(Number(x.profit))
+                ? num(x.profit)
+                : num(x.revenue) - num(x.cost)
+            ),
+            borderColor: COLORS.profit,
+            yAxisID: "yMoney",
+            fill: false,
+            tension: 0.35,
+            pointRadius: 3,
+            pointHoverRadius: 6,
+          },
+          {
+            label: "Số đơn",
+            data: it.map((x) => num(x.orders)),
+            borderColor: COLORS.orders,
+            yAxisID: "yCount",
+            fill: false,
+            tension: 0.25,
+            pointRadius: 3,
+            pointHoverRadius: 6,
+          },
         ],
       },
       options: {
-        responsive: true,
-        scales: {
-          yMoney: moneyAxis("left"),
-          yCount: {
-            type: "linear",
-            position: "right",
-            grid: { drawOnChartArea: false },
+        interaction: { mode: "index", intersect: false },
+        plugins: {
+          tooltip: {
+            backgroundColor: "rgba(0,0,0,.8)",
+            callbacks: {
+              label: (ctx) =>
+                `${ctx.dataset.label}: ${
+                  ctx.dataset.yAxisID === "yMoney"
+                    ? vnd(ctx.parsed.y)
+                    : ctx.parsed.y
+                }`,
+            },
           },
         },
+        scales: { yMoney: moneyAxis("left"), yCount: countAxis("right") },
+        animation: { duration: 750, easing: "easeOutQuart" },
       },
     });
   }
 
-  // Monthly (bar + line số đơn)
   function renderMonthly(data) {
-    const labels = data.items.map((x) => "T" + x.month);
-    const revenue = data.items.map((x) => x.revenue);
-    const cost = data.items.map((x) => x.cost);
-    const profit = data.items.map((x) => x.profit);
-    const orders = data.items.map((x) => x.orders);
-
-    if (monthlyChart) monthlyChart.destroy();
-    monthlyChart = new Chart(document.getElementById("monthlyChart"), {
+    const it = data?.items || [];
+    showEmpty(monthlyEmpty, !hasItems(it));
+    if (!hasItems(it)) {
+      monthlyChart?.destroy();
+      return;
+    }
+    monthlyChart?.destroy();
+    monthlyChart = new Chart($("monthlyChart"), {
       type: "bar",
       data: {
-        labels,
+        labels: it.map((x) => "T" + x.month),
         datasets: [
-          { label: "Doanh thu", data: revenue, yAxisID: "yMoney" },
-          { label: "Chi phí", data: cost, yAxisID: "yMoney" },
-          { label: "Lợi nhuận", data: profit, yAxisID: "yMoney" },
-          { label: "Số đơn", data: orders, type: "line", yAxisID: "yCount" },
+          {
+            label: "Doanh thu",
+            data: it.map((x) => num(x.revenue)),
+            backgroundColor: COLORS.revenue,
+            yAxisID: "yMoney",
+          },
+          {
+            label: "Chi phí",
+            data: it.map((x) => num(x.cost)),
+            backgroundColor: COLORS.cost,
+            yAxisID: "yMoney",
+          },
+          {
+            label: "Lợi nhuận",
+            data: it.map((x) => num(x.profit)),
+            backgroundColor: COLORS.profit,
+            yAxisID: "yMoney",
+          },
+          {
+            label: "Số đơn",
+            data: it.map((x) => num(x.orders)),
+            type: "line",
+            borderColor: COLORS.orders,
+            yAxisID: "yCount",
+            tension: 0.25,
+            pointRadius: 3,
+            pointHoverRadius: 6,
+            fill: false,
+          },
         ],
       },
       options: {
-        responsive: true,
-        scales: {
-          yMoney: moneyAxis("left"),
-          yCount: {
-            type: "linear",
-            position: "right",
-            grid: { drawOnChartArea: false },
-          },
-        },
+        scales: { yMoney: moneyAxis("left"), yCount: countAxis("right") },
+        animation: { duration: 750, easing: "easeOutQuart" },
       },
     });
   }
 
-  // Yearly (bar + line số đơn)
   function renderYearly(data) {
-    const labels = data.items.map((x) => String(x.year));
-    const revenue = data.items.map((x) => x.revenue);
-    const profit = data.items.map((x) => x.profit);
-    const orders = data.items.map((x) => x.orders);
-
-    if (yearlyChart) yearlyChart.destroy();
-    yearlyChart = new Chart(document.getElementById("yearlyChart"), {
+    const it = data?.items || [];
+    showEmpty(yearlyEmpty, !hasItems(it));
+    if (!hasItems(it)) {
+      yearlyChart?.destroy();
+      return;
+    }
+    yearlyChart?.destroy();
+    yearlyChart = new Chart($("yearlyChart"), {
       type: "bar",
       data: {
-        labels,
+        labels: it.map((x) => String(x.year)),
         datasets: [
-          { label: "Doanh thu", data: revenue, yAxisID: "yMoney" },
-          { label: "Lợi nhuận", data: profit, yAxisID: "yMoney" },
-          { label: "Số đơn", data: orders, type: "line", yAxisID: "yCount" },
+          {
+            label: "Doanh thu",
+            data: it.map((x) => num(x.revenue)),
+            backgroundColor: COLORS.revenue,
+            yAxisID: "yMoney",
+          },
+          {
+            label: "Lợi nhuận",
+            data: it.map((x) => num(x.profit)),
+            backgroundColor: COLORS.profit,
+            yAxisID: "yMoney",
+          },
+          {
+            label: "Số đơn",
+            data: it.map((x) => num(x.orders)),
+            type: "line",
+            borderColor: COLORS.orders,
+            yAxisID: "yCount",
+            tension: 0.25,
+            pointRadius: 3,
+            pointHoverRadius: 6,
+            fill: false,
+          },
         ],
       },
       options: {
-        responsive: true,
-        scales: {
-          yMoney: moneyAxis("left"),
-          yCount: {
-            type: "linear",
-            position: "right",
-            grid: { drawOnChartArea: false },
-          },
-        },
+        scales: { yMoney: moneyAxis("left"), yCount: countAxis("right") },
+        animation: { duration: 750, easing: "easeOutQuart" },
       },
     });
   }
 
-  // Nút xem theo ngày
-  btnDaily.addEventListener("click", async () => {
-    const from = document.getElementById("from").value;
-    const to = document.getElementById("to").value;
-    const q = new URLSearchParams();
-    if (from) q.set("from", from);
-    if (to) q.set("to", to);
-    const data = await window.__adminFetch(
-      "/api/reports/daily?" + q.toString()
-    );
-    renderDaily(data);
-  });
+  // ===== Fetchers =====
+  async function fetchDaily(range) {
+    const q = new URLSearchParams(range).toString();
+    showLoading(dailyLoading, true);
+    try {
+      return await window.__adminFetch(`/api/reports/daily?${q}`);
+    } finally {
+      showLoading(dailyLoading, false);
+    }
+  }
+  async function fetchMonthly(y) {
+    showLoading(monthlyLoading, true);
+    try {
+      return await window.__adminFetch(
+        `/api/reports/monthly?year=${encodeURIComponent(y)}`
+      );
+    } finally {
+      showLoading(monthlyLoading, false);
+    }
+  }
+  async function fetchYearly() {
+    showLoading(yearlyLoading, true);
+    try {
+      return await window.__adminFetch(`/api/reports/yearly`);
+    } finally {
+      showLoading(yearlyLoading, false);
+    }
+  }
 
-  // Nút xem theo tháng
-  btnMonthly.addEventListener("click", async () => {
-    const data = await window.__adminFetch(
-      "/api/reports/monthly?year=" + encodeURIComponent(year.value)
-    );
-    renderMonthly(data);
-  });
+  // ===== Actions =====
+  function setActiveChip(el) {
+    document
+      .querySelectorAll("#quickRanges .chip")
+      .forEach((c) => c.classList.remove("active"));
+    el?.classList.add("active");
+  }
 
-  // Tải biểu đồ theo năm ngay khi mở trang
-  (async () => {
-    const data = await window.__adminFetch("/api/reports/yearly");
-    renderYearly(data);
+  // default date inputs = 7 ngày
+  (function setDefaultDates() {
+    const r = rangeOf("7");
+    $("from").value = r.from;
+    $("to").value = r.to;
+    setActiveChip(document.querySelector('#quickRanges .chip[data-range="7"]'));
   })();
+
+  // năm mặc định
+  year.value = new Date().getFullYear();
+
+  // load init (daily+monthly+yearly) + KPI
+  (async () => {
+    try {
+      const r = { from: $("from").value, to: $("to").value };
+      const prevR = prevPeriodOf(r);
+      const [d, prevD, m, y] = await Promise.all([
+        fetchDaily(r),
+        fetchDaily(prevR),
+        fetchMonthly(year.value),
+        fetchYearly(),
+      ]);
+      renderDaily(d);
+      updateKPI(d.items, prevD.items);
+      renderMonthly(m);
+      renderYearly(y);
+    } catch (e) {
+      console.error("Init reports error:", e);
+      showEmpty(dailyEmpty, true);
+      showEmpty(monthlyEmpty, true);
+      showEmpty(yearlyEmpty, true);
+    }
+  })();
+
+  // Theo ngày: nút Xem
+  btnDaily.addEventListener("click", async () => {
+    const r = { from: $("from").value, to: $("to").value };
+    const prevR = prevPeriodOf(r);
+    try {
+      const [d, prevD] = await Promise.all([fetchDaily(r), fetchDaily(prevR)]);
+      renderDaily(d);
+      updateKPI(d.items, prevD.items);
+    } catch (e) {
+      console.error("Daily error:", e);
+      showEmpty(dailyEmpty, true);
+    }
+  });
+
+  // Theo ngày: chips nhanh (1 listener duy nhất)
+  quickRanges?.addEventListener("click", async (e) => {
+    const b = e.target.closest(".chip");
+    if (!b) return;
+    setActiveChip(b);
+    const r = rangeOf(b.dataset.range);
+    $("from").value = r.from || "";
+    $("to").value = r.to || "";
+    const prevR = prevPeriodOf(r);
+    try {
+      const [d, prevD] = await Promise.all([fetchDaily(r), fetchDaily(prevR)]);
+      renderDaily(d);
+      updateKPI(d.items, prevD.items);
+      if (!hasItems(d?.items) && window.showToast) {
+        showToast("Không có dữ liệu trong khoảng thời gian này.");
+      }
+    } catch (err) {
+      console.error("Daily quick-range error:", err);
+      showEmpty(dailyEmpty, true);
+      if (window.showToast) showToast("Lỗi khi tải dữ liệu báo cáo theo ngày.");
+    }
+  });
+
+  // Theo tháng
+  btnMonthly.addEventListener("click", async () => {
+    try {
+      const m = await fetchMonthly(year.value);
+      renderMonthly(m);
+    } catch (e) {
+      console.error("Monthly error:", e);
+      showEmpty(monthlyEmpty, true);
+    }
+  });
 })();

@@ -4,6 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Nhi Nhi Quán - Gà nướng mắm nhĩ & Vịt quay ngũ vị</title>
+    <link rel="icon" type="image/png" sizes="16x16" href="/img/logo.jpg" />
     <link rel="stylesheet" href="/css/style.css" />
     <script src="https://unpkg.com/lucide@latest"></script>
   </head>
@@ -11,37 +12,45 @@
     <header>
       <div class="container">
         <div class="brand">
-          <div class="logo"></div>
-          <h1>Nhi Nhi Quán</h1>
+          <div class="logo">
+            <img src="img/logo.jpg" alt="Nhi Nhi Quán" />
+          </div>
+          <h1>Hệ Thống Quay Nướng Gà Vịt Nhi Nhi</h1>
         </div>
+
         <nav class="primary">
-          <a href="/" class="active"><i data-lucide="home"></i> Trang chủ</a>
-          <a href="/menu.html"
-            ><i data-lucide="utensils-crossed"></i> Xem Menu</a
+          <a href="index.html" class="active"
+            ><i data-lucide="home"></i> Trang chủ</a
           >
-          <a href="/checkout.html"
-            ><i data-lucide="shopping-cart"></i> Giỏ hàng</a
-          >
-          <a href="/track.html"><i data-lucide="search"></i> Theo dõi đơn</a>
+          <a href="menu.html"><i data-lucide="utensils-crossed"></i> Menu</a>
+          <a href="track.html"><i data-lucide="search"></i> Theo dõi đơn</a>
         </nav>
+
+        <!-- icon menu -->
         <button id="menuBtn" class="btn outline" aria-label="menu">
           <i data-lucide="menu"></i>
         </button>
-        <label class="switch" title="Đổi giao diện">
-          <input type="checkbox" id="themeSwitch" /><span>Light</span>
+
+        <!-- icon giỏ hàng (luôn hiển thị) -->
+        <a href="/checkout.html" class="cart-link" aria-label="Giỏ hàng">
+          <i data-lucide="shopping-cart"></i>
+          <span id="cartBadge" class="cart-badge">0</span>
+        </a>
+
+        <!-- công tắc -->
+        <label class="switch">
+          <input type="checkbox" id="themeSwitch" />
+          <span class="icon"><i data-lucide="sun"></i></span>
         </label>
       </div>
-      <aside id="drawer" class="drawer">
-        <a href="/"><i data-lucide="home"></i> Trang chủ</a>
-        <a href="/menu.html"><i data-lucide="utensils-crossed"></i> Xem Menu</a>
-        <a href="/checkout.html"
-          ><i data-lucide="shopping-cart"></i> Giỏ hàng</a
-        >
-        <a href="/track.html"><i data-lucide="search"></i> Theo dõi đơn</a>
+      <aside id="drawer" class="drawer" aria-hidden="true">
+        <a href="index.html"><i data-lucide="home"></i> Trang chủ</a>
+        <a href="menu.html"><i data-lucide="utensils-crossed"></i> Xem Menu</a>
+        <a href="track.html"><i data-lucide="search"></i> Theo dõi đơn</a>
       </aside>
     </header>
 
-    <main class="container">
+    <!-- <main class="container">
       <section class="hero">
         <span class="pill ok">Mở cửa hôm nay · Giao nhanh</span>
         <h2>Đậm vị Việt: Gà nướng mắm nhĩ &amp; Vịt quay ngũ vị</h2>
@@ -67,24 +76,259 @@
           <p>Combo tiết kiệm cho cả nhà.</p>
         </div>
       </section>
+    </main> -->
+    <main class="container">
+      <section class="hero on-dark">
+        <div class="hero-content">
+          <span class="pill ok">Mở cửa hôm nay · Giao nhanh</span>
+          <h2>Gà nướng mắm nhĩ <br />Vịt quay ngũ vị</h2>
+          <p class="muted">Chuẩn vị, giòn bì, giao nóng tận nơi.</p>
+
+          <div class="cta-row">
+            <a
+              class="btn btn-menu"
+              href="/menu.html"
+              aria-label="Xem menu món ăn"
+            >
+              <i data-lucide="chef-hat"></i> Xem Menu
+            </a>
+            <a
+              class="btn outline btn-ghost"
+              href="/menu.html#combo"
+              aria-label="Xem combo ưu đãi"
+            >
+              <i data-lucide="sparkles"></i> Ưu đãi hôm nay
+            </a>
+          </div>
+
+          <p class="sub-note">Đặt online nhanh trong 10s</p>
+        </div>
+
+        <div class="hero-image slider">
+          <div class="slide active">
+            <img src="/img/demo.png" alt="Gà nướng mắm nhĩ" />
+          </div>
+          <div class="slide">
+            <img src="/img/demo2.png" alt="Vịt quay ngũ vị" />
+          </div>
+          <div class="slide">
+            <img src="/img/demo3.png" alt="Combo đặc biệt" />
+          </div>
+        </div>
+      </section>
+      <!-- ==== Băng rôn ===== -->
+      <!-- Promo Banner (image) -->
+      <div
+        id="promoBar"
+        class="promo-bar"
+        role="region"
+        aria-label="Khuyến mãi"
+      >
+        <div class="promo-wrap">
+          <a class="promo-img-link" href="/menu.html" aria-label="Xem ưu đãi">
+            <img
+              src="/img/bang_ron.png"
+              alt="Khai trương 30/09–01/10: Giảm 10% tổng bill hoặc tặng 2 lon nước"
+              loading="lazy"
+              decoding="async"
+              fetchpriority="low"
+              style="
+                width: 100%;
+                height: auto;
+                display: block;
+                border-radius: 12px;
+              "
+            />
+          </a>
+        </div>
+      </div>
+      <!-- ==== End Băng rôn ===== -->
+      <!-- <section class="banner-carousel" aria-label="Banner ưu đãi">
+        <button class="bc-nav bc-prev" aria-label="Trước">‹</button>
+
+        <div class="bc-viewport">
+          <ul class="bc-track">
+            <li class="bc-card">
+              <img src="/img/Banner.png" alt="Ưu đãi 1" />
+            </li>
+            <li class="bc-card">
+              <img src="/img/Banner.png" alt="Ưu đãi 2" />
+            </li>
+            <li class="bc-card">
+              <img src="/img/Banner.png" alt="Ưu đãi 3" />
+            </li>
+            <li class="bc-card">
+              <img src="/img/Banner.png" alt="Ưu đãi 4" />
+            </li>
+          </ul>
+        </div>
+
+        <button class="bc-nav bc-next" aria-label="Sau">›</button>
+      </section> -->
+      <!-- ==== Flash sale ===== -->
+      <section
+        id="flashSale"
+        class="flash-sale"
+        data-deadline="2025-09-30T23:59:59+07:00"
+      >
+        <h3 class="flash-title">
+          <i data-lucide="zap"></i>
+          <span>Flash Sale</span>
+          <a href="/menu.html" class="flash-link" aria-label="Xem ưu đãi">
+            <i data-lucide="arrow-right"></i>
+          </a>
+        </h3>
+
+        <div class="flash-counter" role="timer" aria-live="polite">
+          <div class="tile" data-unit="Ngày"><span id="fsDay">00</span></div>
+          <span class="colon">:</span>
+          <div class="tile" data-unit="Giờ"><span id="fsHour">00</span></div>
+          <span class="colon">:</span>
+          <div class="tile" data-unit="Phút"><span id="fsMin">00</span></div>
+          <span class="colon">:</span>
+          <div class="tile" data-unit="Giây"><span id="fsSec">00</span></div>
+        </div>
+      </section>
+
+      <!-- ==== End Flash Sale ===== -->
+      <section class="flash-products">
+        <h3 class="section-title">
+          <i data-lucide="flame"></i> Món hot trong Flash Sale
+        </h3>
+        <div class="grid">
+          <!-- Card 1 -->
+          <div class="menu-card">
+            <div class="thumb">
+              <img
+                src="/img/demo.png"
+                alt="Gà nướng mắm nhĩ"
+                width="800"
+                height="600"
+                loading="lazy"
+                decoding="async"
+              />
+              <span class="badge sale"><i data-lucide="percent"></i> -10%</span>
+            </div>
+            <div class="content">
+              <h3>Gà nướng mắm nhĩ</h3>
+              <div class="price-row">
+                <del class="price-old">159.000₫</del>
+                <span class="price">143.100₫</span>
+              </div>
+              <div class="foot">
+                <a href="/menu.html" class="btn small">Đặt ngay</a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 2 -->
+          <div class="menu-card">
+            <div class="thumb">
+              <img
+                src="/img/demo2.png"
+                alt="Vịt quay ngũ vị"
+                width="800"
+                height="600"
+                loading="lazy"
+                decoding="async"
+              />
+              <span class="badge sale"><i data-lucide="percent"></i> -10%</span>
+            </div>
+            <div class="content">
+              <h3>Vịt quay ngũ vị</h3>
+              <div class="price-row">
+                <del class="price-old">219.000₫</del>
+                <span class="price">197.000₫</span>
+              </div>
+              <div class="foot">
+                <a href="/menu.html" class="btn small">Đặt ngay</a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 3 -->
+          <div class="menu-card">
+            <div class="thumb">
+              <img
+                src="/img/pepsi.png"
+                alt="Combo 2 lon Pepsi"
+                width="800"
+                height="600"
+                loading="lazy"
+                decoding="async"
+              />
+              <span class="badge sale"><i data-lucide="percent"></i> Free</span>
+            </div>
+            <div class="content">
+              <h3>Combo 2 lon Pepsi</h3>
+              <div class="price-row">
+                <span class="price">0₫</span>
+              </div>
+              <div class="foot">
+                <a href="/menu.html" class="btn small">Đặt ngay</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="about-us">
+        <h3 class="section-title"><i data-lucide="info"></i> Về chúng tôi</h3>
+        <div class="features">
+          <div class="card">
+            <div class="f-head">
+              <span class="f-ic"><i data-lucide="store"></i></span>
+              <h3>Thương hiệu địa phương</h3>
+            </div>
+            <p>Tự hào mang hương vị quê hương Tam Kỳ đến bàn ăn của bạn.</p>
+          </div>
+
+          <div class="card">
+            <div class="f-head">
+              <span class="f-ic"><i data-lucide="users"></i></span>
+              <h3>Đội ngũ tận tâm</h3>
+            </div>
+            <p>
+              Đầu bếp và nhân viên luôn đặt chất lượng phục vụ lên hàng đầu.
+            </p>
+          </div>
+
+          <div class="card">
+            <div class="f-head">
+              <span class="f-ic"><i data-lucide="heart"></i></span>
+              <h3>Khách hàng tin tưởng</h3>
+            </div>
+            <p>Hàng ngàn đơn hàng mỗi tháng, được khách hàng đánh giá cao.</p>
+          </div>
+        </div>
+      </section>
     </main>
 
     <footer class="site-footer">
-      <div class="wrap">
-        <section>
+      <div class="footer-wrap container">
+        <!-- Cột 1: Logo + Liên hệ -->
+        <section class="footer-brand">
           <div class="brandline">
-            <span class="dot"></span>
-            <h4 style="margin: 0">Nhi Nhi Quán</h4>
+            <img
+              class="footer-logo"
+              src="/img/logo.jpg"
+              alt="Hệ Thống Quay Nướng Gà Vị Nhi Nhi"
+            />
+            <div>
+              <h4 class="footer-title">Hệ Thống Quay Nướng Gà Vị Nhi Nhi</h4>
+              <p class="footer-tag">Gà nướng mắm nhĩ · Vịt quay ngũ vị</p>
+            </div>
           </div>
-          <div class="contact-list" style="margin-top: 10px">
-            <div class="contact-item">
+
+          <ul class="contact-list">
+            <li class="contact-item">
               <i data-lucide="phone"></i>
               <div>
                 <div>Liên hệ đặt món</div>
                 <a href="tel:0906919019"><b>0906.919.019</b></a>
               </div>
-            </div>
-            <div class="contact-item">
+            </li>
+            <li class="contact-item">
               <i data-lucide="map-pin"></i>
               <div>
                 <div>Địa chỉ</div>
@@ -93,34 +337,58 @@
                   target="_blank"
                   rel="noopener"
                 >
-                  63 Tôn Đức Thắng, Tam Kỳ, Quảng Nam
+                  <b
+                    >63 Tôn Đức Thắng, Phường An Sơn, Tam Kỳ, Quảng Nam, Việt
+                    Nam</b
+                  >
                 </a>
               </div>
-            </div>
-            <div class="contact-item">
+            </li>
+            <li class="contact-item">
               <i data-lucide="clock-3"></i>
-              <div>Mở cửa hàng ngày · Giao nhanh nội thành</div>
-            </div>
-          </div>
+              <div>Mở cửa hằng ngày · Giao nhanh nội thành</div>
+            </li>
+          </ul>
         </section>
 
+        <!-- Cột 2: Giờ mở cửa / Liên kết nhanh -->
+        <section class="footer-hours">
+          <h5>Giờ mở cửa</h5>
+          <ul class="hours">
+            <li>Thứ 2 – Chủ nhật: <b>10:00 – 21:00</b></li>
+          </ul>
+
+          <h5 style="margin-top: 14px">Liên kết nhanh</h5>
+          <nav class="quick-links">
+            <a href="index.html"><i data-lucide="home"></i> Trang chủ</a>
+            <a href="menu.html"><i data-lucide="utensils-crossed"></i> Menu</a>
+            <a href="/checkout.html"
+              ><i data-lucide="shopping-cart"></i> Giỏ hàng</a
+            >
+            <a href="track.html"><i data-lucide="search"></i> Theo dõi đơn</a>
+          </nav>
+        </section>
+
+        <!-- Cột 3: Bản đồ -->
         <section class="map-card" aria-label="Bản đồ">
-          <!-- Map nhúng, không cần API key -->
           <iframe
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3843.5859619646344!2d108.49100927828695!3d15.560311046494757!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3169dd004e338171%3A0xa99a1decfeb7cca0!2zSOG7hyBUaOG7kW5nIFF1YXkgTsaw4bubbmcgR8OgIFbhu4t0IE5oaSBOaGk!5e0!3m2!1svi!2sus!4v1757264543675!5m2!1svi!2sus"
+            width="600"
+            height="450"
+            style="border: 0"
+            allowfullscreen=""
             loading="lazy"
             referrerpolicy="no-referrer-when-downgrade"
-            src="https://www.google.com/maps?q=63+T%C3%B4n+%C4%90%E1%BB%A9c+Th%E1%BA%AFng,+Tam+K%E1%BB%B3,+Qu%E1%BA%A3ng+Nam&output=embed"
-          >
-          </iframe>
+          ></iframe>
         </section>
       </div>
 
       <div class="footer-bar">
-        © <span id="y"></span> Nhi Nhi Quán · Made with ❤️
+        © <span id="y"></span> Nhi Nhi · Made with luuquancoder
       </div>
     </footer>
+
     <script>
-      // set năm hiện tại + re-render icon Lucide cho footer
       (function () {
         try {
           const y = document.getElementById("y");
@@ -131,10 +399,144 @@
     </script>
 
     <script type="module">
-      import { initUI } from "/js/ui.js";
+      import { initUI } from "./js/ui.js";
       initUI();
     </script>
-    <script src="/js/utils.js"></script>
-    <script src="/js/cart.js"></script>
+
+    <!-- Giữ lại TH script thường CHỈ khi time.js không phải module -->
+    <script src="/js/time.js"></script>
+
+    <!-- <script src="/js/ban_ron.js"></script> -->
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const root = document.querySelector(".hero-image");
+        if (!root) return;
+
+        const slides = [...root.querySelectorAll(".slide")];
+        if (slides.length < 2) return;
+
+        let current = 0;
+        slides[current].classList.add("active");
+
+        const show = (i) => {
+          slides.forEach((s, idx) => {
+            s.classList.toggle("active", idx === i);
+          });
+        };
+
+        setInterval(() => {
+          current = (current + 1) % slides.length;
+          show(current);
+        }, 3000);
+      });
+    </script>
+    <script>
+      (() => {
+        const root = document.querySelector(".banner-carousel");
+        if (!root) return;
+
+        const viewport = root.querySelector(".bc-viewport");
+        const track = root.querySelector(".bc-track");
+        const cards = [...track.children];
+        const prevBtn = root.querySelector(".bc-prev");
+        const nextBtn = root.querySelector(".bc-next");
+
+        const gap = parseFloat(getComputedStyle(track).gap) || 0;
+
+        function step(dir = 1) {
+          if (!cards.length) return;
+          const cardW = cards[0].getBoundingClientRect().width + gap;
+          viewport.scrollBy({ left: dir * cardW, behavior: "smooth" });
+        }
+
+        prevBtn.addEventListener("click", () => step(-1));
+        nextBtn.addEventListener("click", () => step(1));
+
+        // Auto-play
+        let t = setInterval(() => step(1), 4000);
+        root.addEventListener("mouseenter", () => {
+          clearInterval(t);
+        });
+        root.addEventListener("mouseleave", () => {
+          t = setInterval(() => step(1), 4000);
+        });
+
+        // Drag/Swipe (desktop & mobile)
+        let startX = 0,
+          startLeft = 0,
+          dragging = false;
+        const onDown = (e) => {
+          dragging = true;
+          startX = e.touches ? e.touches[0].clientX : e.clientX;
+          startLeft = viewport.scrollLeft;
+        };
+        const onMove = (e) => {
+          if (!dragging) return;
+          const x = e.touches ? e.touches[0].clientX : e.clientX;
+          viewport.scrollLeft = startLeft - (x - startX);
+        };
+        const onUp = () => {
+          dragging = false;
+        };
+
+        viewport.addEventListener("mousedown", onDown);
+        viewport.addEventListener("mousemove", onMove);
+        window.addEventListener("mouseup", onUp);
+        viewport.addEventListener("touchstart", onDown, { passive: true });
+        viewport.addEventListener("touchmove", onMove, { passive: true });
+        viewport.addEventListener("touchend", onUp);
+      })();
+    </script>
+    <script>
+      (function () {
+        const box = document.getElementById("flashSale");
+        if (!box) return;
+
+        const elDay = document.getElementById("fsDay");
+        const elH = document.getElementById("fsHour");
+        const elM = document.getElementById("fsMin");
+        const elS = document.getElementById("fsSec");
+
+        const deadlineStr = box.dataset.deadline;
+        const deadline = new Date(deadlineStr);
+        if (isNaN(+deadline)) {
+          box.style.display = "none";
+          return;
+        }
+
+        const pad2 = (n) => String(Math.max(0, n | 0)).padStart(2, "0");
+
+        function tick() {
+          const now = new Date();
+          let ms = deadline - now;
+
+          if (ms <= 0) {
+            elDay && (elDay.textContent = "00");
+            elH && (elH.textContent = "00");
+            elM && (elM.textContent = "00");
+            elS && (elS.textContent = "00");
+            box.style.display = "none"; // hết hạn thì ẩn
+            clearInterval(tmr);
+            return;
+          }
+
+          const totalSec = Math.floor(ms / 1000);
+          const days = Math.floor(totalSec / 86400);
+          const hours = Math.floor((totalSec % 86400) / 3600);
+          const mins = Math.floor((totalSec % 3600) / 60);
+          const secs = totalSec % 60;
+
+          if (elDay) elDay.textContent = String(days).padStart(2, "0");
+          if (elH) elH.textContent = pad2(hours);
+          if (elM) elM.textContent = pad2(mins);
+          if (elS) elS.textContent = pad2(secs);
+        }
+
+        tick(); // cập nhật ngay
+        const tmr = setInterval(tick, 1000);
+      })();
+    </script>
+    <script type="module" src="/js/loading.js"></script>
   </body>
 </html>

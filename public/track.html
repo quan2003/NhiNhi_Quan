@@ -4,128 +4,846 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Tra cứu đơn hàng - Nhi Nhi Quán</title>
+    <link rel="icon" type="image/png" sizes="16x16" href="/img/logo.jpg" />
     <link rel="stylesheet" href="/css/style.css" />
     <!-- Lucide icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+      /* ---------- Nút trạng thái riêng ---------- */
+      .btn.success {
+        border-color: #10b981;
+        color: #10b981;
+        background: transparent;
+      }
+      .btn.success:hover {
+        background: color-mix(in oklab, #10b981 12%, transparent);
+      }
+      .btn.warn {
+        border-color: #f59e0b;
+        color: #f59e0b;
+        background: transparent;
+      }
+      .btn.warn:hover {
+        background: color-mix(in oklab, #f59e0b 12%, transparent);
+      }
+      .btn.danger {
+        border-color: #ef4444;
+        color: #ef4444;
+        background: transparent;
+      }
+      .btn.danger:hover {
+        background: color-mix(in oklab, #ef4444 12%, transparent);
+      }
+
+      /* ===== Pretty modal (Confirm/Alert) ===== */
+      .confirm-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 1000;
+        background: color-mix(in oklab, #0b1220 45%, transparent);
+        backdrop-filter: blur(6px);
+        -webkit-backdrop-filter: blur(6px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transform: scale(1.01);
+        transition: opacity 0.18s ease, transform 0.18s ease;
+      }
+      .confirm-overlay.show {
+        opacity: 1;
+        transform: none;
+      }
+      .confirm-overlay.hidden {
+        display: none !important;
+      }
+
+      .confirm-dialog {
+        position: relative;
+        width: min(92vw, 420px);
+        border-radius: 18px;
+        background: linear-gradient(180deg, #0f172a, #0b1220);
+        border: 1px solid color-mix(in oklab, var(--border) 70%, #fff 10%);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45),
+          inset 0 1px 0 rgba(255, 255, 255, 0.06);
+        padding: 22px 20px 16px;
+        animation: modal-pop 0.18s ease-out;
+      }
+      @keyframes modal-pop {
+        from {
+          transform: translateY(6px) scale(0.98);
+          opacity: 0.6;
+        }
+        to {
+          transform: none;
+          opacity: 1;
+        }
+      }
+      .confirm-dialog .confirm-message {
+        color: var(--text);
+        opacity: 0.9;
+        line-height: 1.55;
+        margin: 4px 0 6px;
+        text-align: center;
+      }
+      .confirm-actions {
+        margin-top: 14px;
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+      }
+      .confirm-actions .btn {
+        padding: 10px 14px;
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        background: color-mix(in oklab, #fff 2%, transparent);
+        cursor: pointer;
+        transition: transform 0.06s, background 0.12s, box-shadow 0.12s;
+      }
+      .confirm-actions .btn:active {
+        transform: translateY(1px);
+      }
+      .confirm-actions .btn.primary {
+        border-color: #60a5fa;
+        color: #e5f0ff;
+        background: linear-gradient(180deg, #1e293b, #0f172a);
+        box-shadow: 0 0 0 0 rgba(96, 165, 250, 0.4);
+      }
+      .confirm-actions .btn.primary:hover {
+        box-shadow: 0 0 0 6px rgba(96, 165, 250, 0.12);
+        background: linear-gradient(180deg, #233047, #0f172a);
+      }
+      .confirm-actions .btn.ghost {
+        color: var(--muted);
+        background: transparent;
+      }
+      .confirm-actions .btn.ghost:hover {
+        background: color-mix(in oklab, #fff 4%, transparent);
+      }
+
+      /* ===== Fullscreen loading overlay ===== */
+      .page-loading-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 1100;
+        background: color-mix(in oklab, #0b1220 45%, transparent);
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+        display: grid;
+        place-items: center;
+        opacity: 0;
+        transform: scale(1.01);
+        transition: opacity 0.18s ease, transform 0.18s ease;
+      }
+      .page-loading-overlay.show {
+        opacity: 1;
+        transform: none;
+      }
+      .page-loading-overlay.hidden {
+        display: none !important;
+      }
+      .plo-card {
+        min-width: 180px;
+        padding: 18px 20px;
+        border-radius: 16px;
+        background: linear-gradient(180deg, #111827, #0b1220);
+        border: 1px solid color-mix(in oklab, var(--border) 70%, #fff 10%);
+        box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45),
+          inset 0 1px 0 rgba(255, 255, 255, 0.05);
+        display: grid;
+        gap: 10px;
+        place-items: center;
+      }
+      .plo-spin {
+        width: 26px;
+        height: 26px;
+        border-radius: 999px;
+        border: 3px solid color-mix(in oklab, var(--border) 60%, #fff 0%);
+        border-top-color: #60a5fa;
+        animation: spin 0.9s linear infinite;
+      }
+      .plo-text {
+        font-weight: 600;
+        letter-spacing: 0.2px;
+      }
+
+      /* ---------- Inputs ---------- */
+      .field {
+        display: grid;
+        gap: 6px;
+      }
+      .input-wrap {
+        position: relative;
+        display: flex;
+        align-items: center;
+        background: var(--bg-soft);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 10px 12px;
+        transition: var(--transition);
+      }
+      .input-wrap:focus-within {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(56, 161, 105, 0.25);
+      }
+      .input-wrap.error {
+        border-color: var(--danger);
+        box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.2);
+      }
+      .input-wrap .leading,
+      .input-wrap .trailing {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0.9;
+      }
+      .input-wrap .leading {
+        margin-right: 8px;
+      }
+      .input-wrap .trailing {
+        margin-left: 8px;
+        gap: 6px;
+      }
+      .input-wrap input[type="text"] {
+        flex: 1;
+        background: transparent;
+        border: 0;
+        outline: 0;
+        color: var(--text);
+        font-size: 16px;
+        letter-spacing: 0.2px;
+      }
+      .mono {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      }
+      .helper,
+      .counter {
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .clear-btn,
+      .paste-btn {
+        border: 1px solid var(--border);
+        background: transparent;
+        color: var(--text);
+        padding: 4px 8px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 12px;
+      }
+      .clear-btn:hover,
+      .paste-btn:hover {
+        background: rgba(255, 255, 255, 0.05);
+      }
+
+      /* ---------- OTP 4 ô ---------- */
+      .otp-row {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+      }
+      .otp-boxes {
+        display: flex;
+        gap: 8px;
+      }
+      .otp {
+        width: 46px;
+        height: 48px;
+        text-align: center;
+        font-size: 20px;
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        background: var(--bg-soft);
+        color: var(--text);
+        outline: none;
+        transition: var(--transition);
+      }
+      .otp:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(56, 161, 105, 0.25);
+      }
+      .otp.error {
+        border-color: var(--danger);
+        box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.2);
+      }
+
+      /* ---------- Stepper/progress ---------- */
+      .stepper {
+        display: flex;
+        gap: 10px;
+        margin: 10px 0 2px;
+      }
+      .step {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        border-radius: 999px;
+        background: var(--bg-soft);
+        border: 1px solid var(--border);
+        opacity: 0.6;
+        transition: 0.25s ease;
+      }
+      .step.done {
+        opacity: 1;
+        box-shadow: var(--shadow-soft);
+      }
+      .progressbar {
+        position: relative;
+        width: 100%;
+        height: 30px;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        border-radius: 999px;
+        overflow: hidden;
+        box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.4);
+      }
+      .progressbar > span#progressFill {
+        position: absolute;
+        inset: 0 auto 0 0;
+        width: 0%;
+        background: linear-gradient(90deg, var(--accent) 0%, #7cc3ff 100%);
+        box-shadow: inset 0 0 8px rgba(255, 255, 255, 0.35);
+        transition: width 0.35s ease;
+      }
+      .progressbar.moving #progressFill {
+        background-image: repeating-linear-gradient(
+            45deg,
+            rgba(255, 255, 255, 0.35) 0 10px,
+            rgba(255, 255, 255, 0) 10px 20px
+          ),
+          linear-gradient(90deg, var(--accent) 0%, #7cc3ff 100%);
+        animation: stripes 1s linear infinite;
+      }
+      @keyframes stripes {
+        from {
+          background-position: 0 0, 0 0;
+        }
+        to {
+          background-position: 40px 0, 0 0;
+        }
+      }
+      #progressRunner {
+        position: absolute;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        width: 44px;
+        height: 34px;
+        border-radius: 999px;
+        background: #0f172a;
+        border: 2px solid var(--accent);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+        transition: left 0.35s ease, background 0.2s ease,
+          border-color 0.2s ease;
+        z-index: 2;
+      }
+      #progressRunner svg {
+        width: 22px;
+        height: 22px;
+        stroke-width: 2.4;
+        color: #fff;
+      }
+      #progressRunner.moving {
+        animation: bob 1.2s ease-in-out infinite;
+      }
+      @keyframes bob {
+        0%,
+        100% {
+          transform: translate(-50%, -50%) scale(1);
+        }
+        50% {
+          transform: translate(-50%, -56%) scale(1.03);
+        }
+      }
+
+      /* ---------- Misc ---------- */
+      .spinner {
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        border-radius: 999px;
+        border: 2px solid var(--border);
+        border-top-color: var(--accent);
+        animation: spin 0.9s linear infinite;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      .table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 8px;
+        font-size: 14px;
+      }
+      .table th,
+      .table td {
+        padding: 8px;
+        border-bottom: 1px solid var(--border);
+        text-align: left;
+      }
+      .table th {
+        color: var(--muted);
+        font-weight: 600;
+      }
+      .right {
+        text-align: right;
+      }
+      .muted {
+        color: var(--muted);
+      }
+      .row {
+        display: flex;
+        align-items: center;
+      }
+      .gap-8 {
+        gap: 8px;
+      }
+      .gap-12 {
+        gap: 12px;
+      }
+      .gap-16 {
+        gap: 16px;
+      }
+      .justify-between {
+        justify-content: space-between;
+      }
+      .inline {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 10px;
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        font-size: 12px;
+        background: var(--bg-soft);
+      }
+      .badge.success {
+        border-color: #2f855a;
+      }
+      .badge.warn {
+        border-color: #d69e2e;
+      }
+      .badge.info {
+        border-color: #4299e1;
+      }
+      .mini {
+        font-size: 12px;
+      }
+      .copy-btn {
+        border: none;
+        background: transparent;
+        cursor: pointer;
+        padding: 4px;
+      }
+
+      /* ---------- Danh sách đơn (card) ---------- */
+      a.order-chip {
+        text-decoration: none;
+        color: inherit;
+        display: grid;
+      }
+      .order-list {
+        display: grid;
+        gap: 10px;
+        margin-top: 8px;
+      }
+      .order-chip {
+        --col: var(--border);
+        display: grid;
+        grid-template-columns: 36px 1fr auto;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 12px;
+        border: 1px solid var(--col);
+        border-left-width: 6px;
+        border-radius: 14px;
+        background: var(--bg-soft);
+        box-shadow: var(--shadow-soft, 0 1px 2px rgba(0, 0, 0, 0.15));
+        cursor: pointer;
+        transition: transform 0.06s ease, box-shadow 0.12s ease;
+      }
+      .order-chip:active {
+        transform: scale(0.98);
+      }
+      .order-chip .chip-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        display: grid;
+        place-items: center;
+        border: 1px solid var(--col);
+      }
+      .order-chip .chip-body {
+        min-width: 0;
+      }
+      .order-chip .chip-id {
+        font-weight: 700;
+        letter-spacing: 0.2px;
+      }
+      .order-chip .chip-meta {
+        font-size: 12px;
+        color: var(--muted);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .order-chip .chip-amt {
+        font-weight: 700;
+        text-align: right;
+        white-space: nowrap;
+      }
+      .order-chip.success {
+        --col: #10b981;
+      }
+      .order-chip.warn {
+        --col: #f59e0b;
+      }
+      .order-chip.danger {
+        --col: #ef4444;
+      }
+      .order-chip.outline {
+        --col: var(--border);
+      }
+      @media (max-width: 420px) {
+        .order-chip {
+          grid-template-columns: 32px 1fr auto;
+          padding: 9px 10px;
+        }
+        .order-chip .chip-id {
+          font-size: 13.5px;
+        }
+        .order-chip .chip-meta {
+          font-size: 11.5px;
+        }
+      }
+      #guestActions {
+        overflow-x: auto;
+        padding-bottom: 2px;
+      }
+
+      /* ---------- Responsive desktop: nhiều cột ---------- */
+      @media (min-width: 768px) {
+        .order-list {
+          grid-template-columns: repeat(2, minmax(320px, 1fr));
+          gap: 12px;
+        }
+        .order-chip {
+          padding: 10px 12px;
+          border-radius: 12px;
+          grid-template-columns: 32px 1fr auto;
+        }
+        .order-chip:hover {
+          box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+          transform: translateY(-1px);
+        }
+      }
+      @media (min-width: 1200px) {
+        .order-list {
+          grid-template-columns: repeat(3, minmax(320px, 1fr));
+        }
+      }
+      .container,
+      main.container {
+        max-width: 1100px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+    </style>
   </head>
+
   <body>
-    <!-- Header đồng bộ -->
+    <!-- Header -->
     <header>
       <div class="container">
         <div class="brand">
-          <div class="logo"></div>
-          <h1>Tra cứu đơn hàng</h1>
+          <div class="logo"><img src="img/logo.jpg" alt="Nhi Nhi Quán" /></div>
+          <h1>Hệ Thống Quay Nướng Gà Vịt Nhi Nhi</h1>
         </div>
         <nav class="primary">
-          <a href="/"><i data-lucide="home"></i> Trang chủ</a>
-          <a href="/menu.html"><i data-lucide="utensils-crossed"></i> Menu</a>
-          <a href="/checkout.html"
-            ><i data-lucide="shopping-cart"></i> Giỏ hàng</a
-          >
-          <a href="/track.html" class="active"
+          <a href="index.html"><i data-lucide="home"></i> Trang chủ</a>
+          <a href="menu.html"><i data-lucide="utensils-crossed"></i> Menu</a>
+          <a href="track.html" class="active"
             ><i data-lucide="search"></i> Theo dõi đơn</a
           >
         </nav>
         <button id="menuBtn" class="btn outline" aria-label="menu">
           <i data-lucide="menu"></i>
         </button>
-        <label class="switch" title="Đổi giao diện">
-          <input type="checkbox" id="themeSwitch" /><span>Light</span>
-        </label>
+        <a href="/checkout.html" class="cart-link" aria-label="Giỏ hàng">
+          <i data-lucide="shopping-cart"></i
+          ><span id="cartBadge" class="cart-badge">0</span>
+        </a>
+        <label class="switch"
+          ><input type="checkbox" id="themeSwitch" /><span class="icon"
+            ><i data-lucide="sun"></i></span
+        ></label>
       </div>
-      <aside id="drawer" class="drawer">
-        <a href="/"><i data-lucide="home"></i> Trang chủ</a>
-        <a href="/menu.html"><i data-lucide="utensils-crossed"></i> Menu</a>
-        <a href="/checkout.html"
-          ><i data-lucide="shopping-cart"></i> Giỏ hàng</a
-        >
-        <a href="/track.html"><i data-lucide="search"></i> Theo dõi đơn</a>
-      </aside>
     </header>
 
     <main class="container">
       <div class="card">
-        <form id="lookupForm" class="grid-2">
-          <label
-            >Mã đơn (Order ID)
-            <input id="orderId" required placeholder="VD: 12 ký tự" />
+        <form id="lookupForm" class="grid-2" autocomplete="off">
+          <!-- Mã đơn -->
+          <label class="field">
+            <div class="row justify-between">
+              <span>Mã đơn (Order ID)</span
+              ><span id="idCounter" class="counter">0/24</span>
+            </div>
+            <div class="input-wrap" id="idWrap">
+              <span class="leading" aria-hidden="true"
+                ><i data-lucide="hash"></i
+              ></span>
+              <input
+                id="orderId"
+                class="mono"
+                type="text"
+                inputmode="latin"
+                autocapitalize="characters"
+                placeholder="VD: 12–24 ký tự"
+                maxlength="24"
+                aria-describedby="idHelp"
+              />
+              <div class="trailing">
+                <button
+                  type="button"
+                  class="clear-btn"
+                  id="clearIdBtn"
+                  title="Xoá nhanh"
+                >
+                  Xoá
+                </button>
+              </div>
+            </div>
+            <div id="idHelp" class="helper">
+              Bạn có thể dán trực tiếp nếu copy từ hóa đơn/điện thoại. Hệ thống
+              tự bỏ ký tự lạ và viết HOA.
+            </div>
           </label>
-          <label
-            >4 số cuối SĐT
-            <input
-              id="phoneTail"
-              required
-              maxlength="4"
-              placeholder="VD: 1234"
-            />
+
+          <!-- 4 số cuối SĐT -->
+          <label class="field">
+            <span>4 số cuối SĐT</span>
+            <div class="otp-row">
+              <div class="otp-boxes" id="otpBoxes" aria-describedby="otpHelp">
+                <input
+                  class="otp"
+                  type="text"
+                  inputmode="numeric"
+                  maxlength="1"
+                  aria-label="Số thứ 1"
+                />
+                <input
+                  class="otp"
+                  type="text"
+                  inputmode="numeric"
+                  maxlength="1"
+                  aria-label="Số thứ 2"
+                />
+                <input
+                  class="otp"
+                  type="text"
+                  inputmode="numeric"
+                  maxlength="1"
+                  aria-label="Số thứ 3"
+                />
+                <input
+                  class="otp"
+                  type="text"
+                  inputmode="numeric"
+                  maxlength="1"
+                  aria-label="Số thứ 4"
+                />
+              </div>
+              <button
+                type="button"
+                class="paste-btn"
+                id="pasteOtpBtn"
+                title="Dán 4 số"
+              >
+                Dán
+              </button>
+            </div>
+            <div id="otpHelp" class="helper">
+              Chúng tôi dùng 4 số cuối SĐT để xác thực nhanh. Có thể dán 1 lần 4
+              số.
+            </div>
           </label>
-          <div style="grid-column: 1/-1">
-            <button class="btn" type="submit">
+
+          <div style="grid-column: 1/-1" class="row gap-12">
+            <button class="btn" type="submit" id="submitBtn">
               <i data-lucide="search"></i> Xem trạng thái
             </button>
+            <button class="btn outline" type="button" id="refreshBtn" disabled>
+              <i data-lucide="refresh-cw"></i> Làm mới (<span id="countdown"
+                >—</span
+              >s)
+            </button>
+            <span id="loading" class="inline hidden"
+              ><span class="spinner"></span> Đang tải…</span
+            >
           </div>
         </form>
       </div>
 
+      <!-- Kết quả -->
       <section id="resultBox" class="card hidden" style="margin-top: 12px">
-        <h2>Kết quả</h2>
-        <p><b>Mã đơn:</b> <span id="r_id"></span></p>
-        <p>
-          <b>Khách:</b> <span id="r_name"></span> — <span id="r_phone"></span>
-        </p>
-        <p><b>Hình thức:</b> <span id="r_type"></span></p>
-        <p><b>Thời gian đến/lấy:</b> <span id="r_sched"></span></p>
-        <p>
-          <b>Số bàn:</b> <span id="r_table"></span> · <b>Số khách:</b>
-          <span id="r_guests"></span>
-        </p>
-        <p><b>Thời gian tạo:</b> <span id="r_time"></span></p>
-        <p><b>Thanh toán:</b> <span id="r_pay"></span></p>
-        <p>
-          <b>Tổng tiền:</b> <span id="r_total"></span> (tạm tính
-          <span id="r_sub"></span>, giảm <span id="r_disc"></span>)
-        </p>
-
-        <div class="card" style="margin-top: 12px">
-          <h3>Trạng thái đơn</h3>
-          <ol id="steps">
-            <li id="st-new">Mới</li>
-            <li id="st-prog">Đang làm</li>
-            <li id="st-done">Hoàn tất</li>
-          </ol>
-          <p class="muted">Trang sẽ tự làm mới mỗi 10 giây.</p>
+        <div class="row justify-between">
+          <h2>Kết quả tra cứu</h2>
+          <span id="statusBadge" class="badge info"
+            ><i data-lucide="loader"></i> Đang cập nhật</span
+          >
         </div>
 
-        <div
-          id="guestActions"
-          class="row"
-          style="gap: 8px; margin-top: 8px"
-        ></div>
+        <div class="row gap-16">
+          <div class="inline">
+            <b>Mã đơn:</b> <span id="r_id" class="mini"></span>
+            <button class="copy-btn" id="copyIdBtn" title="Sao chép mã đơn">
+              <i data-lucide="copy"></i>
+            </button>
+          </div>
+          <div>
+            <b>Khách:</b> <span id="r_name"></span> — <span id="r_phone"></span>
+          </div>
+        </div>
+
+        <p class="row gap-12">
+          <span class="badge"
+            ><i data-lucide="concierge-bell"></i> <b>Hình thức:</b>
+            <span id="r_type"></span
+          ></span>
+          <span class="badge"
+            ><i data-lucide="calendar-clock"></i> <b>Thời gian đến/lấy:</b>
+            <span id="r_sched"></span
+          ></span>
+          <span class="badge" id="payBadge"
+            ><i data-lucide="credit-card"></i> <span id="r_pay"></span
+          ></span>
+        </p>
+
+        <p>
+          <b>Số bàn:</b> <span id="r_table"></span> · <b>Số khách:</b>
+          <span id="r_guests"></span> · <b>Thời gian tạo:</b>
+          <span id="r_time"></span>
+        </p>
+
+        <div class="row gap-16">
+          <div><b>Tổng tiền:</b> <span id="r_total"></span></div>
+          <div class="muted">
+            (tạm tính <span id="r_sub"></span>, giảm <span id="r_disc"></span>)
+          </div>
+        </div>
+
+        <div class="card" style="margin-top: 12px">
+          <div class="row justify-between">
+            <h3>Trạng thái đơn</h3>
+            <span class="muted mini">Trang tự làm mới mỗi 10 giây</span>
+          </div>
+
+          <div class="stepper">
+            <div id="st-new" class="step">
+              <i data-lucide="sparkles"></i> Mới
+            </div>
+            <div id="st-prog" class="step">
+              <i data-lucide="chef-hat"></i> Đang làm
+            </div>
+            <div id="st-done" class="step">
+              <i data-lucide="check-circle-2"></i> Hoàn tất
+            </div>
+          </div>
+
+          <div id="statusBar" class="progressbar" aria-hidden="true">
+            <span id="progressFill"></span>
+            <div id="progressRunner"><i data-lucide="shopping-cart"></i></div>
+          </div>
+        </div>
+
+        <!-- Danh sách lựa chọn theo SĐT / nút hủy khách -->
+        <div id="guestActions" class="row gap-8" style="margin-top: 8px"></div>
 
         <details style="margin-top: 8px">
           <summary>Chi tiết món</summary>
-          <pre id="r_items"></pre>
+          <div id="itemsWrap">
+            <table class="table" id="itemsTable">
+              <thead>
+                <tr>
+                  <th>Món</th>
+                  <th class="right">SL</th>
+                  <th class="right">Đơn giá</th>
+                  <th class="right">Thành tiền</th>
+                </tr>
+              </thead>
+              <tbody id="itemsTbody"></tbody>
+            </table>
+          </div>
         </details>
       </section>
     </main>
 
-    <!-- Footer đồng bộ -->
+    <!-- Confirm/Alert box -->
+    <div
+      id="confirmBox"
+      class="hidden confirm-overlay"
+      role="dialog"
+      aria-modal="true"
+    >
+      <div class="confirm-dialog">
+        <p id="confirmMessage" class="confirm-message">
+          Bạn có chắc muốn huỷ đơn?
+        </p>
+        <div class="confirm-actions">
+          <button id="confirmYes" class="btn primary">Đồng ý</button>
+          <button id="confirmNo" class="btn ghost">Hủy</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Page Loading Overlay -->
+    <div
+      id="pageLoading"
+      class="hidden page-loading-overlay"
+      aria-hidden="true"
+    >
+      <div class="plo-card">
+        <div class="plo-spin"></div>
+        <div class="plo-text">Đang tải…</div>
+      </div>
+    </div>
+
+    <!-- Footer -->
     <footer class="site-footer">
-      <div class="wrap">
-        <section>
+      <div class="footer-wrap container">
+        <section class="footer-brand">
           <div class="brandline">
-            <span class="dot"></span>
-            <h4 style="margin: 0">Nhi Nhi Quán</h4>
+            <img
+              class="footer-logo"
+              src="/img/logo.jpg"
+              alt="Hệ Thống Quay Nướng Gà Vịt Nhi Nhi"
+            />
+            <div>
+              <h4 class="footer-title">Hệ Thống Quay Nướng Gà Vịt Nhi Nhi</h4>
+              <p class="footer-tag">Gà nướng mắm nhĩ · Vịt quay ngũ vị</p>
+            </div>
           </div>
-          <div class="contact-list" style="margin-top: 10px">
-            <div class="contact-item">
+          <ul class="contact-list">
+            <li class="contact-item">
               <i data-lucide="phone"></i>
               <div>
                 <div>Liên hệ đặt món</div>
                 <a href="tel:0906919019"><b>0906.919.019</b></a>
               </div>
-            </div>
-            <div class="contact-item">
+            </li>
+            <li class="contact-item">
               <i data-lucide="map-pin"></i>
               <div>
                 <div>Địa chỉ</div>
@@ -134,33 +852,55 @@
                   target="_blank"
                   rel="noopener"
                 >
-                  63 Tôn Đức Thắng, Tam Kỳ, Quảng Nam
+                  <b
+                    >63 Tôn Đức Thắng, Phường An Sơn, Tam Kỳ, Quảng Nam, Việt
+                    Nam</b
+                  >
                 </a>
               </div>
-            </div>
-            <div class="contact-item">
+            </li>
+            <li class="contact-item">
               <i data-lucide="clock-3"></i>
-              <div>Mở cửa hàng ngày · Giao nhanh nội thành</div>
-            </div>
-          </div>
+              <div>Mở cửa hằng ngày · Giao nhanh nội thành</div>
+            </li>
+          </ul>
+        </section>
+
+        <section class="footer-hours">
+          <h5>Giờ mở cửa</h5>
+          <ul class="hours">
+            <li>Thứ 2 – Chủ nhật: <b>10:00 – 21:00</b></li>
+          </ul>
+          <h5 style="margin-top: 14px">Liên kết nhanh</h5>
+          <nav class="quick-links">
+            <a href="index.html"><i data-lucide="home"></i> Trang chủ</a>
+            <a href="menu.html"><i data-lucide="utensils-crossed"></i> Menu</a>
+            <a href="/checkout.html"
+              ><i data-lucide="shopping-cart"></i> Giỏ hàng</a
+            >
+            <a href="track.html"><i data-lucide="search"></i> Theo dõi đơn</a>
+          </nav>
         </section>
 
         <section class="map-card" aria-label="Bản đồ">
           <iframe
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3843.5859619646344!2d108.49100927828695!3d15.560311046494757!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3169dd004e338171%3A0xa99a1decfeb7cca0!2zSOG7hyBUaOG7kW5nIFF1YXkgTsaw4bubbmcgR8OgIFbhu4t0IE5oaSBOaGk!5e0!3m2!1svi!2sus!4v1757264543675!5m2!1svi!2sus"
+            width="600"
+            height="450"
+            style="border: 0"
+            allowfullscreen=""
             loading="lazy"
             referrerpolicy="no-referrer-when-downgrade"
-            src="https://www.google.com/maps?q=63+T%C3%B4n+%C4%90%E1%BB%A9c+Th%E1%BA%AFng,+Tam+K%E1%BB%B3,+Qu%E1%BA%A3ng+Nam&output=embed"
           >
           </iframe>
         </section>
       </div>
-
       <div class="footer-bar">
-        © <span id="y"></span> Nhi Nhi Quán · Made with ❤️
+        © <span id="y"></span> Nhi Nhi · Made with luuquancoder
       </div>
     </footer>
+
     <script>
-      // set năm hiện tại + render icon Lucide cho footer nếu cần
       (function () {
         try {
           const y = document.getElementById("y");
@@ -170,12 +910,16 @@
       })();
     </script>
 
-    <!-- Khởi tạo UI (drawer/theme/toast/spinner) -->
+    <!-- Khởi tạo UI + Toast -->
     <script type="module">
       import { initUI } from "/js/ui.js";
+      import { toast } from "/js/toast.js";
+      window.toast = toast; // cho phép gọi toast trong track.js
       initUI();
     </script>
-    <!-- Track logic (ESM) -->
+
+    <!-- Logic tra cứu -->
     <script type="module" src="/js/track.js"></script>
+    <script type="module" src="/js/loading.js"></script>
   </body>
 </html>

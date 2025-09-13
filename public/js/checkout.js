@@ -1,14 +1,7 @@
-// public/js/checkout.js (ESM)
+// public/js/checkout.js (ESM) — hiện toast rồi mới chuyển sang trang Theo dõi
 import { vnd, qs, create } from "./utils.js";
 import { apiGet, apiPost } from "./api.js";
-import {
-  getCart,
-  setQty,
-  removeItem,
-  clearCart,
-  saveCart,
-  loadCart,
-} from "./cart.js";
+import { getCart, setQty, removeItem, clearCart } from "./cart.js";
 
 let products = [];
 let config = null;
@@ -58,13 +51,10 @@ function updateQR(amount) {
   const dl = qs("#qrDownload");
   const cap = qs("#qrCaption");
 
-  if (!img) {
-    console.error("QR image element not found");
-    return;
-  }
+  if (!img) return;
 
   const fixed = config?.qrFixedImage || null;
-  const acc = encodeURIComponent(config?.bankAccountNumber || "Chưa có số TK");
+  const acc = encodeURIComponent(config?.bankAccountNumber || "");
   const bank = encodeURIComponent(config?.bankName || "Nhi Nhi Quán");
   const memo = encodeURIComponent("NhiNhi-Order");
   const data = `${bank}-${acc}-${amount}-${memo}`;
@@ -81,7 +71,6 @@ function updateQR(amount) {
       )} — Nội dung: Tên + SĐT`;
   };
   img.onerror = () => {
-    console.warn("Falling back to dynamic QR");
     img.src = fallbackUrl;
     if (dl) dl.href = fallbackUrl;
     if (cap)
@@ -90,11 +79,62 @@ function updateQR(amount) {
       )} — Nội dung: Tên + SĐT`;
   };
 
-  if (fixed) {
-    img.src = fixed;
-  } else {
-    img.src = fallbackUrl;
-  }
+  img.src = fixed || fallbackUrl;
+}
+
+/* ===== Custom Confirm (Promise-based) ===== */
+function confirmBox(message = "Bạn có chắc?") {
+  return new Promise((resolve) => {
+    // backdrop
+    const wrap = document.createElement("div");
+    wrap.style.cssText = `
+      position:fixed; inset:0; z-index:9999;
+      display:grid; place-items:center;
+      background:rgba(0,0,0,.45);
+      animation:fadeIn .15s ease;
+    `;
+
+    // dialog
+    const dlg = document.createElement("div");
+    dlg.style.cssText = `
+      width:min(92vw,380px); border-radius:14px;
+      background:var(--surface); color:var(--text);
+      border:1px solid var(--border); box-shadow:var(--shadow);
+      padding:16px; animation:scaleIn .15s ease;
+    `;
+    dlg.innerHTML = `
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <i data-lucide="help-circle"></i>
+        <b style="font-size:16px">Xác nhận</b>
+      </div>
+      <div style="color:var(--muted);margin-bottom:14px">${message}</div>
+      <div style="display:flex;gap:10px;justify-content:flex-end">
+        <button id="cfCancel" class="btn outline">Huỷ</button>
+        <button id="cfOk" class="btn danger">Xoá</button>
+      </div>
+    `;
+    wrap.appendChild(dlg);
+    document.body.appendChild(wrap);
+    if (window.lucide) window.lucide.createIcons();
+
+    const done = (val) => {
+      wrap.remove();
+      resolve(val);
+    };
+    dlg.querySelector("#cfCancel").addEventListener("click", () => done(false));
+    dlg.querySelector("#cfOk").addEventListener("click", () => done(true));
+    // close on backdrop click
+    wrap.addEventListener("click", (e) => {
+      if (e.target === wrap) done(false);
+    });
+    // ESC to close
+    document.addEventListener("keydown", function onKey(ev) {
+      if (ev.key === "Escape") {
+        done(false);
+        document.removeEventListener("keydown", onKey);
+      }
+    });
+  });
 }
 
 /* ============ Cart render ============ */
@@ -103,52 +143,72 @@ function renderCart() {
   const box = qs("#cartItems");
   if (box) box.innerHTML = "";
 
-  if (!items.length) {
+  if (!items.length && box) {
     box.innerHTML = '<div class="muted text-center">Giỏ hàng trống</div>';
-    return;
   }
 
   items.forEach((it) => {
     const p = products.find((x) => x.id === it.productId);
     if (!p || !box) return;
 
+    const qty = it.qty || 1;
+
+    // item row
     const row = create("div", { class: "row cart-item" });
+
+    // tên món (trái)
     row.appendChild(create("div", { text: p.name, class: "cart-item-name" }));
 
+    // cụm nút (phải)
     const controls = create("div", { class: "row cart-item-controls" });
-    const input = create("input", {
-      type: "number",
-      min: "1",
-      value: String(it.qty || 1),
-      class: "input-field qty-input",
-    });
-    input.addEventListener("change", () => {
-      const newQty = parseInt(input.value || "1", 10);
-      setQty(it.productId, newQty);
-      saveCart();
+
+    // - btn
+    const btnMinus = create("button", { class: "icon-btn", type: "button" });
+    btnMinus.appendChild(create("i", { "data-lucide": "minus" }));
+    btnMinus.addEventListener("click", () => {
+      setQty(it.productId, Math.max(1, qty - 1));
       renderCart();
     });
 
-    const price = create("span", {
-      text: vnd(p.priceSell * (it.qty || 1)),
-      class: "cart-item-price",
-    });
-    const rm = create("button", { class: "btn outline danger", text: "Xoá" });
-    rm.addEventListener("click", () => {
-      if (confirm("Bạn có chắc muốn xóa món này?")) {
-        removeItem(it.productId);
-        saveCart();
-        renderCart();
-      }
+    // qty pill
+    const qtyPill = create("span", { class: "qty-pill", text: String(qty) });
+
+    // + btn
+    const btnPlus = create("button", { class: "icon-btn", type: "button" });
+    btnPlus.appendChild(create("i", { "data-lucide": "plus" }));
+    btnPlus.addEventListener("click", () => {
+      setQty(it.productId, qty + 1);
+      renderCart();
     });
 
-    controls.appendChild(input);
-    controls.appendChild(price);
-    controls.appendChild(rm);
+    // giá
+    const price = create("span", {
+      text: vnd(p.priceSell * qty),
+      class: "cart-item-price",
+    });
+
+    // thùng rác (đỏ)
+    const btnRemove = create("button", {
+      class: "icon-btn danger",
+      type: "button",
+      title: "Xoá món",
+      "aria-label": "Xoá món",
+    });
+    btnRemove.appendChild(create("i", { "data-lucide": "trash-2" }));
+    btnRemove.addEventListener("click", async () => {
+      const ok = await confirmBox("Bạn có chắc muốn xoá món này?");
+      if (!ok) return;
+      removeItem(it.productId);
+      renderCart();
+      window.toast?.info?.("Đã xoá 1 món khỏi giỏ.");
+    });
+
+    controls.append(btnMinus, qtyPill, btnPlus, price, btnRemove);
     row.appendChild(controls);
     box.appendChild(row);
   });
 
+  // tổng tiền
   const { subtotal, discount, total } = computeTotals(items);
   const st = qs("#cartSubtotal");
   const dc = qs("#cartDiscount");
@@ -157,10 +217,94 @@ function renderCart() {
   if (dc) dc.textContent = (discount ? "-" : "") + vnd(discount);
   if (tt) tt.textContent = vnd(total);
 
+  // QR
   const pay = document.querySelector("input[name=payment]:checked")?.value;
   const tbox = qs("#transferBox");
   if (tbox) tbox.classList.toggle("hidden", pay !== "TRANSFER");
   if (pay === "TRANSFER") updateQR(total);
+
+  // render icon lucide sau khi DOM thay đổi
+  try {
+    window.lucide?.createIcons();
+  } catch {}
+}
+
+// Delegate sự kiện click trong cart desktop
+document.addEventListener("click", async (e) => {
+  const btn = e.target.closest("#cartItems .icon-btn[data-act]");
+  if (!btn) return;
+
+  const act = btn.getAttribute("data-act");
+  const root = btn.closest(".cart-item");
+  const id = root?.getAttribute("data-id");
+  if (!id) return;
+
+  switch (act) {
+    case "incr":
+      setQty(id, (getCart().find((x) => x.productId === id)?.qty || 1) + 1);
+      renderCart();
+      break;
+    case "decr":
+      setQty(
+        id,
+        Math.max(1, (getCart().find((x) => x.productId === id)?.qty || 1) - 1)
+      );
+      renderCart();
+      break;
+    case "remove": {
+      const ok = await confirmBox("Bạn có chắc muốn xoá món này?");
+      if (!ok) return;
+      removeItem(id);
+      renderCart();
+      window.toast?.info?.("Đã xoá 1 món khỏi giỏ.");
+      break;
+    }
+  }
+});
+
+/* ============ Success banner (trên form) ============ */
+function showSuccessBanner({ orderId, subtotal, discount, total }, phone) {
+  const section = document.querySelector(".checkout-section");
+  if (!section) return;
+
+  // Nếu đã có banner, gỡ bỏ để tạo mới
+  section.querySelector("#successBanner")?.remove();
+
+  const tail = String(phone || "")
+    .replace(/\D/g, "")
+    .slice(-4);
+  const phoneParam = "****" + tail;
+  const link = `/track.html?orderId=${encodeURIComponent(
+    orderId
+  )}&phone=${encodeURIComponent(phoneParam)}`;
+
+  const banner = document.createElement("div");
+  banner.id = "successBanner";
+  banner.className = "card";
+  banner.style.cssText =
+    "margin-bottom:12px;border-left:6px solid var(--accent);background:linear-gradient(0deg,rgba(56,161,105,.08),rgba(56,161,105,.08));";
+  banner.innerHTML = `
+    <div class="row" style="gap:8px;align-items:center">
+      <i data-lucide="check-circle-2"></i>
+      <h3 class="section-title" style="margin:0">Đặt hàng thành công!</h3>
+    </div>
+    <p style="margin:.5rem 0 0 0">Mã đơn: <b>${orderId}</b></p>
+    ${
+      typeof subtotal === "number" && typeof discount === "number"
+        ? `<p style="margin:.25rem 0 0 0">Tạm tính: <b>${vnd(
+            subtotal
+          )}</b> · Giảm: <b>-${vnd(discount)}</b></p>`
+        : ""
+    }
+    <p style="margin:.25rem 0 .25rem 0"><b>Tổng thanh toán: ${vnd(
+      total
+    )}</b></p>
+    <p style="margin:0">Theo dõi: <a href="${link}">${link}</a></p>
+  `;
+
+  section.prepend(banner);
+  if (window.lucide) window.lucide.createIcons();
+  banner.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 /* ============ Form bindings ============ */
@@ -186,9 +330,9 @@ function bindForm() {
     btnCopy.addEventListener("click", async () => {
       try {
         await navigator.clipboard.writeText(config?.bankAccountNumber || "");
-        window.__ui?.toast("Đã sao chép số tài khoản", "ok");
+        window.toast?.success("Đã sao chép số tài khoản.");
       } catch {
-        window.__ui?.toast("Không sao chép được", "warn");
+        window.toast?.error("Không thể sao chép. Vui lòng copy thủ công.");
       }
     });
   }
@@ -197,7 +341,10 @@ function bindForm() {
     e.preventDefault();
 
     const items = getCart();
-    if (!items.length) return alert("Giỏ hàng trống");
+    if (!items.length) {
+      window.toast?.warning("Giỏ hàng đang trống. Vui lòng thêm món trước.");
+      return;
+    }
 
     const orderType =
       form.querySelector("input[name=orderType]:checked")?.value || "TAKEAWAY";
@@ -211,7 +358,10 @@ function bindForm() {
       meta.guests = Number(qs("#guests_dinein")?.value || 0);
     } else if (orderType === "RESERVE") {
       const rAt = qs("#reserveAt")?.value;
-      if (!rAt) return alert("Vui lòng chọn thời gian đến cho Đặt trước");
+      if (!rAt) {
+        window.toast?.warning("Vui lòng chọn thời gian đến cho Đặt trước.");
+        return;
+      }
       meta.scheduleAt = new Date(rAt).toISOString();
       meta.guests = Number(qs("#guests_reserve")?.value || 0);
     }
@@ -229,55 +379,68 @@ function bindForm() {
     };
 
     if (!payload.customer.name || !payload.customer.phone) {
-      return alert("Vui lòng nhập họ tên và số điện thoại");
+      window.toast?.warning("Vui lòng nhập họ tên và số điện thoại.");
+      return;
     }
 
     try {
-      window.__ui?.showSpinner();
+      window.__ui?.showSpinner?.();
       const r = await apiPost("/api/orders", payload);
-      window.__ui?.hideSpinner();
+      window.__ui?.hideSpinner?.();
 
-      const tail = payload.customer.phone.slice(-4);
-      const link = `/track.html?orderId=${encodeURIComponent(
-        r.orderId
-      )}&phone=${encodeURIComponent(payload.customer.phone)}`;
-
+      // dọn giỏ + render lại
       clearCart();
-      saveCart(); // Lưu trạng thái rỗng
       renderCart();
 
-      const result = qs("#result");
-      if (result) {
-        result.classList.remove("hidden");
-        result.innerHTML = `
-          <div class="card">
-            Đặt hàng thành công!<br/>
-            Mã đơn: <b>${r.orderId}</b><br/>
-            ${
-              promoActive()
-                ? `Tạm tính: <b>${vnd(r.subtotal)}</b> · Giảm: <b>-${vnd(
-                    r.discount
-                  )}</b><br/>`
-                : ""
-            }
-            <b>Tổng thanh toán: ${vnd(r.total)}</b><br/>
-            Theo dõi: <a target="_blank" href="${link}">${link.replace(
-          payload.customer.phone,
-          "****" + tail
-        )}</a>
-          </div>
-        `;
-      }
-
-      form.reset();
+      // Ẩn khối QR (sẽ hiện lại nếu chọn Chuyển khoản)
       const tbox = qs("#transferBox");
       if (tbox) tbox.classList.add("hidden");
+
+      // Hiển thị banner thành công (tham khảo), nhưng sẽ redirect ngay sau khi hiển toast
+      showSuccessBanner(
+        {
+          orderId: r.orderId,
+          subtotal: r.subtotal,
+          discount: r.discount,
+          total: r.total,
+        },
+        payload.customer.phone
+      );
+
+      // Nếu chọn chuyển khoản thì bật QR lại với đúng tổng (để khách còn xem QR nếu quay lại)
+      if (payload.paymentMethod === "TRANSFER") {
+        const { total } = computeTotals(items);
+        if (tbox) tbox.classList.remove("hidden");
+        updateQR(total || r.total || 0);
+      }
+
+      // Reset form về mặc định
+      form.reset();
       switchTypeUI("TAKEAWAY");
-      window.__ui?.toast("Đơn đã tạo thành công!", "ok");
+
+      // === HIỂN TOAST TRƯỚC, RỒI CHUYỂN TRANG SAU ===
+      const tail = String(payload.customer.phone || "")
+        .replace(/\D/g, "")
+        .slice(-4);
+      const phoneParam = "****" + tail;
+      const url = `/track.html?orderId=${encodeURIComponent(
+        r.orderId
+      )}&phone=${encodeURIComponent(phoneParam)}`;
+
+      // Toast
+      window.toast?.success?.(
+        `Đơn đã tạo: ${r.orderId}. Sẽ chuyển đến trang theo dõi…`
+      );
+
+      // Delay: nếu là chuyển khoản, tăng delay để khách đọc hướng dẫn (1.5–2s)
+      const delay = payload.paymentMethod === "TRANSFER" ? 1500 : 900;
+
+      setTimeout(() => {
+        location.href = url;
+      }, delay);
     } catch (err) {
-      window.__ui?.hideSpinner();
-      alert("Lỗi đặt hàng: " + err.message);
-      window.__ui?.toast("Lỗi đặt hàng: " + err.message, "error", 3500);
+      window.__ui?.hideSpinner?.();
+      window.toast?.error("Lỗi đặt hàng: " + (err?.message || "Không rõ lỗi"));
     }
   });
 }
@@ -287,18 +450,11 @@ async function start() {
   try {
     products = await apiGet("/api/products");
     config = await apiGet("/api/config");
-    if (!config) {
-      console.warn("Config not loaded, using defaults");
-      config = {};
-    }
+    if (!config) config = {};
   } catch (e) {
-    console.error("Error loading config/products:", e);
     config = {};
   }
   setBankInfo();
-
-  // Load cart from localStorage
-  loadCart();
 
   const curType =
     document.querySelector("input[name=orderType]:checked")?.value ||
@@ -308,6 +464,7 @@ async function start() {
   renderCart();
   bindForm();
 
+  // Nếu mặc định đang chọn chuyển khoản → hiển thị QR ngay
   if (
     document.querySelector('input[name=payment][value="TRANSFER"]')?.checked
   ) {

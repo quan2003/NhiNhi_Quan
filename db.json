@@ -1,81 +1,670 @@
 {
   "products": [
     {
-      "id": "GA-NC",
-      "name": "Gà nướng mắm nhĩ (nguyên con)",
+      "id": "GA-NHO",
+      "name": "Gà nướng mắm nhĩ nhỏ (nguyên con)",
       "category": "Gà",
-      "priceSell": 199000,
-      "priceCost": 145000,
+      "priceSell": 159000,
+      "priceCost": 115000,
       "unit": "con",
       "active": true,
-      "createdAt": "2025-09-01T00:00:00.000Z",
-      "updatedAt": "2025-09-03T18:08:21.247Z",
-      "imageUrl": "/uploads/1756922897866-n0o8oo.jpg"
+      "imageUrl": "/img/menu/ga-nuong-nho.jpg",
+      "description": "Gà nướng mắm nhĩ nguyên con cỡ nhỏ + 1 vị xốt + rau kèm + đồ chua + 2 xốt chấm",
+      "createdAt": "2025-09-11T03:00:00.000Z",
+      "updatedAt": "2025-09-11T13:32:29.135Z"
     },
     {
-      "id": "VIT-NC",
+      "id": "GA-LON",
+      "name": "Gà nướng mắm nhĩ lớn (nguyên con)",
+      "category": "Gà",
+      "priceSell": 179000,
+      "priceCost": 125000,
+      "unit": "con",
+      "active": true,
+      "imageUrl": "/img/menu/ga-nuong-lon.jpg",
+      "description": "Gà nướng mắm nhĩ nguyên con cỡ lớn + 1 vị xốt + rau kèm + đồ chua + 2 xốt chấm",
+      "createdAt": "2025-09-11T03:00:00.000Z",
+      "updatedAt": "2025-09-11T13:32:32.567Z"
+    },
+    {
+      "id": "VIT-NGUVI",
       "name": "Vịt quay ngũ vị (nguyên con)",
       "category": "Vịt",
-      "priceSell": 299000,
-      "priceCost": 210000,
+      "priceSell": 219000,
+      "priceCost": 160000,
       "unit": "con",
       "active": true,
-      "createdAt": "2025-09-01T00:00:00.000Z",
-      "imageUrl": "/uploads/1756924367680-chy8vu.jpg",
-      "updatedAt": "2025-09-03T18:32:49.509Z"
+      "imageUrl": "/img/menu/vit-quay.jpg",
+      "description": "Vịt quay ngũ vị nguyên con + 1 vị xốt + rau kèm + đồ chua + 2 xốt chấm",
+      "createdAt": "2025-09-11T03:00:00.000Z"
     },
     {
-      "id": "COMBO-3P",
-      "name": "Combo gia đình 3-4 người",
+      "id": "XOI",
+      "name": "Xôi",
+      "category": "Món kèm",
+      "priceSell": 20000,
+      "priceCost": 9000,
+      "unit": "phần",
+      "active": true,
+      "imageUrl": "/img/menu/xoi.jpg",
+      "createdAt": "2025-09-11T03:00:00.000Z",
+      "description": "",
+      "updatedAt": "2025-09-11T13:51:04.801Z"
+    },
+    {
+      "id": "COM-LAM",
+      "name": "Cơm lam (cây)",
+      "category": "Món kèm",
+      "priceSell": 15000,
+      "priceCost": 7000,
+      "unit": "cây",
+      "active": true,
+      "imageUrl": "/img/menu/com-lam.png",
+      "createdAt": "2025-09-11T03:00:00.000Z"
+    },
+    {
+      "id": "BANH-BAO-CHIEN",
+      "name": "Bánh bao chiên",
+      "category": "Món kèm",
+      "priceSell": 20000,
+      "priceCost": 9000,
+      "unit": "cái",
+      "active": true,
+      "imageUrl": "/img/menu/banh-bao-chien.jpg",
+      "createdAt": "2025-09-11T03:00:00.000Z"
+    },
+    {
+      "id": "CB-GNHO-6BB",
+      "name": "Combo tiết kiệm 1",
       "category": "Combo",
-      "priceSell": 329000,
-      "priceCost": 250000,
+      "priceSell": 179000,
+      "priceCost": 135000,
       "unit": "combo",
       "active": true,
-      "createdAt": "2025-09-01T00:00:00.000Z",
-      "imageUrl": "",
-      "updatedAt": "2025-09-03T19:00:40.668Z"
+      "imageUrl": "/img/menu/combo-gnho-6bb.png",
+      "description": "1 gà nhỏ + 6 bánh bao chiên (hoặc xôi)",
+      "createdAt": "2025-09-11T03:00:00.000Z"
     },
     {
-      "id": "COCA",
-      "name": "Coca-Cola (lon)",
+      "id": "CB-VIT-6BB",
+      "name": "Combo tiết kiệm 2",
+      "category": "Combo",
+      "priceSell": 239000,
+      "priceCost": 185000,
+      "unit": "combo",
+      "active": true,
+      "imageUrl": "/img/menu/combo-vit-6bb.png",
+      "description": "1 vịt quay + 6 bánh bao chiên (hoặc xôi)",
+      "createdAt": "2025-09-11T03:00:00.000Z"
+    },
+    {
+      "id": "CB-GNHO-2CL",
+      "name": "Combo tiết kiệm 3",
+      "category": "Combo",
+      "priceSell": 189000,
+      "priceCost": 145000,
+      "unit": "combo",
+      "active": true,
+      "imageUrl": "/img/menu/combo-gnho-2cl.png",
+      "description": "1 gà lớn + 2 cơm lam",
+      "createdAt": "2025-09-11T03:00:00.000Z",
+      "updatedAt": "2025-09-11T14:40:34.134Z"
+    },
+    {
+      "id": "CB-GLON-2CL-3BB",
+      "name": "Combo gia đình 1",
+      "category": "Combo",
+      "priceSell": 219000,
+      "priceCost": 165000,
+      "unit": "combo",
+      "active": true,
+      "imageUrl": "/img/menu/combo-glon-2cl-3bb.png",
+      "description": "1 gà lớn + 2 cơm lam + 3 bánh bao chiên",
+      "createdAt": "2025-09-11T03:00:00.000Z"
+    },
+    {
+      "id": "CB-VIT-2CL-3BB",
+      "name": "Combo gia đình 2",
+      "category": "Combo",
+      "priceSell": 259000,
+      "priceCost": 200000,
+      "unit": "combo",
+      "active": true,
+      "imageUrl": "/img/menu/combo-vit-2cl-3bb.png",
+      "description": "1 vịt + 2 cơm lam + 3 bánh bao chiên",
+      "createdAt": "2025-09-11T03:00:00.000Z",
+      "updatedAt": "2025-09-11T14:12:24.602Z"
+    },
+    {
+      "id": "PEPSI",
+      "name": "Pepsi",
       "category": "Giải khát",
-      "priceSell": 12000,
-      "priceCost": 7000,
+      "priceSell": 15000,
+      "priceCost": 9000,
       "unit": "lon",
       "active": true,
-      "createdAt": "2025-09-01T00:00:00.000Z",
-      "imageUrl": "/uploads/1756924434685-evkoys.png",
-      "updatedAt": "2025-09-03T18:33:56.865Z"
+      "imageUrl": "/img/menu/pepsi.jpg",
+      "createdAt": "2025-09-11T03:00:00.000Z"
+    },
+    {
+      "id": "SEVENUP",
+      "name": "7Up",
+      "category": "Giải khát",
+      "priceSell": 15000,
+      "priceCost": 9000,
+      "unit": "lon",
+      "active": true,
+      "imageUrl": "/img/menu/7up.jpg",
+      "createdAt": "2025-09-11T03:00:00.000Z"
+    },
+    {
+      "id": "NUOC-SUOI",
+      "name": "Nước suối",
+      "category": "Giải khát",
+      "priceSell": 10000,
+      "priceCost": 5000,
+      "unit": "chai",
+      "active": true,
+      "imageUrl": "/img/menu/nuoc-suoi.jpg",
+      "createdAt": "2025-09-11T03:00:00.000Z"
     },
     {
       "id": "BIA",
-      "name": "Bia (chai/lon)",
+      "name": "Bia (Tiger, Larue, ...)",
       "category": "Giải khát",
       "priceSell": 18000,
-      "priceCost": 11000,
+      "priceCost": 12000,
       "unit": "chai",
       "active": true,
-      "createdAt": "2025-09-01T00:00:00.000Z"
-    },
-    {
-      "id": "TRATAK",
-      "name": "Trà tắc",
-      "category": "Giải khát",
-      "priceSell": 15000,
-      "priceCost": 6000,
-      "unit": "ly",
-      "active": true,
-      "createdAt": "2025-09-01T00:00:00.000Z"
+      "imageUrl": "/img/menu/bia.jpg",
+      "createdAt": "2025-09-11T03:00:00.000Z"
     }
   ],
-  "orders": [],
+  "orders": [
+    {
+      "id": "V9CBN1OPAQCR",
+      "status": "NEW",
+      "customer": {
+        "name": "Bàn 1",
+        "phone": "",
+        "address": ""
+      },
+      "paymentMethod": "COD",
+      "items": [
+        {
+          "productId": "CB-GNHO-6BB",
+          "name": "Combo tiết kiệm 1",
+          "priceSell": 179000,
+          "priceCost": 135000,
+          "qty": 1
+        }
+      ],
+      "subtotal": 179000,
+      "discount": 0,
+      "total": 179000,
+      "costTotal": 135000,
+      "profit": 44000,
+      "promoSnapshot": {
+        "active": false,
+        "percent": 100
+      },
+      "meta": {
+        "orderType": "DINE_IN",
+        "tableNumber": "1",
+        "guests": 0,
+        "scheduleAt": null,
+        "note": ""
+      },
+      "createdAt": "2025-09-13T14:41:06.276Z"
+    },
+    {
+      "id": "GG6N2CXKIBRT",
+      "status": "NEW",
+      "customer": {
+        "name": "Russel Tromp",
+        "phone": "+84336440523",
+        "address": "Thon A Dong, Thon A Dong"
+      },
+      "paymentMethod": "COD",
+      "items": [
+        {
+          "productId": "GA-NHO",
+          "name": "Gà nướng mắm nhĩ nhỏ (nguyên con)",
+          "priceSell": 159000,
+          "priceCost": 115000,
+          "qty": 1
+        }
+      ],
+      "subtotal": 159000,
+      "discount": 0,
+      "total": 159000,
+      "costTotal": 115000,
+      "profit": 44000,
+      "promoSnapshot": {
+        "active": false,
+        "percent": 100
+      },
+      "meta": {
+        "orderType": "TAKEAWAY",
+        "tableNumber": "",
+        "guests": 0,
+        "scheduleAt": "2025-09-13T11:37:00.000Z",
+        "note": ""
+      },
+      "createdAt": "2025-09-13T11:37:34.616Z",
+      "updatedAt": "2025-09-13T13:01:44.319Z"
+    },
+    {
+      "id": "PHZTNFNDMD_Q",
+      "status": "NEW",
+      "customer": {
+        "name": "luu quan",
+        "phone": "0336440523",
+        "address": "Thon A Dong, Thon A Dong"
+      },
+      "paymentMethod": "COD",
+      "items": [
+        {
+          "productId": "GA-NHO",
+          "name": "Gà nướng mắm nhĩ nhỏ (nguyên con)",
+          "priceSell": 159000,
+          "priceCost": 115000,
+          "qty": 1
+        },
+        {
+          "productId": "GA-LON",
+          "name": "Gà nướng mắm nhĩ lớn (nguyên con)",
+          "priceSell": 179000,
+          "priceCost": 125000,
+          "qty": 1
+        }
+      ],
+      "subtotal": 338000,
+      "discount": 0,
+      "total": 338000,
+      "costTotal": 240000,
+      "profit": 98000,
+      "promoSnapshot": {
+        "active": false,
+        "percent": 100
+      },
+      "meta": {
+        "orderType": "TAKEAWAY",
+        "tableNumber": "",
+        "guests": 0,
+        "scheduleAt": null,
+        "note": ""
+      },
+      "createdAt": "2025-09-12T12:43:42.233Z",
+      "updatedAt": "2025-09-12T13:00:53.466Z"
+    },
+    {
+      "id": "70WMNHSKM0AU",
+      "status": "COMPLETED",
+      "customer": {
+        "name": "Lưu Quang",
+        "phone": "+84336440523",
+        "address": "Thon A Dong, Thon A Dong"
+      },
+      "paymentMethod": "COD",
+      "items": [
+        {
+          "productId": "BIA",
+          "name": "Bia (Tiger, Larue, ...)",
+          "priceSell": 18000,
+          "priceCost": 12000,
+          "qty": 1
+        },
+        {
+          "productId": "SEVENUP",
+          "name": "7Up",
+          "priceSell": 15000,
+          "priceCost": 9000,
+          "qty": 1
+        },
+        {
+          "productId": "NUOC-SUOI",
+          "name": "Nước suối",
+          "priceSell": 10000,
+          "priceCost": 5000,
+          "qty": 1
+        },
+        {
+          "productId": "PEPSI",
+          "name": "Pepsi",
+          "priceSell": 15000,
+          "priceCost": 9000,
+          "qty": 1
+        }
+      ],
+      "subtotal": 58000,
+      "discount": 0,
+      "total": 58000,
+      "costTotal": 35000,
+      "profit": 23000,
+      "promoSnapshot": {
+        "active": false,
+        "percent": 10
+      },
+      "meta": {
+        "orderType": "RESERVE",
+        "tableNumber": "",
+        "guests": 0,
+        "scheduleAt": "2025-09-11T11:00:00.000Z",
+        "note": ""
+      },
+      "createdAt": "2025-09-11T08:51:07.440Z",
+      "updatedAt": "2025-09-11T11:05:54.976Z"
+    },
+    {
+      "id": "M-93C_DTRMHJ",
+      "status": "COMPLETED",
+      "customer": {
+        "name": "kuwu quan",
+        "phone": "+84336440523",
+        "address": "Thon A Dong, Thon A Dong"
+      },
+      "paymentMethod": "TRANSFER",
+      "items": [
+        {
+          "productId": "CB-GLON-2CL-3BB",
+          "name": "Combo gia đình 1",
+          "priceSell": 219000,
+          "priceCost": 165000,
+          "qty": 1
+        }
+      ],
+      "subtotal": 219000,
+      "discount": 0,
+      "total": 219000,
+      "costTotal": 165000,
+      "profit": 54000,
+      "promoSnapshot": {
+        "active": false,
+        "percent": 10
+      },
+      "meta": {
+        "orderType": "RESERVE",
+        "tableNumber": "",
+        "guests": 0,
+        "scheduleAt": "2025-09-11T11:00:00.000Z",
+        "note": ""
+      },
+      "createdAt": "2025-09-11T08:45:41.662Z",
+      "updatedAt": "2025-09-12T10:03:55.477Z"
+    },
+    {
+      "id": "F_JK9IOWENMF",
+      "status": "IN_PROGRESS",
+      "customer": {
+        "name": "lưu quân",
+        "phone": "+84336440523",
+        "address": "Thon A Dong, Thon A Dong"
+      },
+      "paymentMethod": "COD",
+      "items": [
+        {
+          "productId": "GA-NHO",
+          "name": "Gà nướng mắm nhĩ nhỏ (nguyên con)",
+          "priceSell": 159000,
+          "priceCost": 115000,
+          "qty": 1
+        },
+        {
+          "productId": "GA-LON",
+          "name": "Gà nướng mắm nhĩ lớn (nguyên con)",
+          "priceSell": 179000,
+          "priceCost": 125000,
+          "qty": 1
+        },
+        {
+          "productId": "COM-LAM",
+          "name": "Cơm lam (cây)",
+          "priceSell": 15000,
+          "priceCost": 7000,
+          "qty": 1
+        },
+        {
+          "productId": "PEPSI",
+          "name": "Pepsi",
+          "priceSell": 15000,
+          "priceCost": 9000,
+          "qty": 1
+        }
+      ],
+      "subtotal": 368000,
+      "discount": 0,
+      "total": 368000,
+      "costTotal": 256000,
+      "profit": 112000,
+      "promoSnapshot": {
+        "active": false,
+        "percent": 10
+      },
+      "meta": {
+        "orderType": "TAKEAWAY",
+        "tableNumber": "",
+        "guests": 0,
+        "scheduleAt": null,
+        "note": ""
+      },
+      "createdAt": "2025-09-11T08:45:09.986Z",
+      "updatedAt": "2025-09-11T17:54:53.049Z"
+    },
+    {
+      "id": "QQ0MXYLTMZNQ",
+      "status": "IN_PROGRESS",
+      "customer": {
+        "name": "Russel Tromp",
+        "phone": "+84336440523",
+        "address": "Thon A Dong, Thon A Dong"
+      },
+      "paymentMethod": "COD",
+      "items": [
+        {
+          "productId": "CB-GNHO-6BB",
+          "name": "Combo tiết kiệm 1",
+          "priceSell": 179000,
+          "priceCost": 135000,
+          "qty": 1
+        }
+      ],
+      "subtotal": 179000,
+      "discount": 0,
+      "total": 179000,
+      "costTotal": 135000,
+      "profit": 44000,
+      "promoSnapshot": {
+        "active": false,
+        "percent": 10
+      },
+      "meta": {
+        "orderType": "TAKEAWAY",
+        "tableNumber": "",
+        "guests": 0,
+        "scheduleAt": "2025-09-11T07:45:00.000Z",
+        "note": ""
+      },
+      "createdAt": "2025-09-11T07:34:43.908Z",
+      "updatedAt": "2025-09-11T17:54:54.606Z"
+    },
+    {
+      "id": "RH-JKFX8E5IU",
+      "status": "IN_PROGRESS",
+      "customer": {
+        "name": "Russel Tromp",
+        "phone": "+84336440523",
+        "address": "Thon A Dong, Thon A Dong"
+      },
+      "paymentMethod": "COD",
+      "items": [
+        {
+          "productId": "VIT-NGUVI",
+          "name": "Vịt quay ngũ vị (nguyên con)",
+          "priceSell": 219000,
+          "priceCost": 160000,
+          "qty": 1
+        }
+      ],
+      "subtotal": 219000,
+      "discount": 0,
+      "total": 219000,
+      "costTotal": 160000,
+      "profit": 59000,
+      "promoSnapshot": {
+        "active": false,
+        "percent": 10
+      },
+      "meta": {
+        "orderType": "RESERVE",
+        "tableNumber": "",
+        "guests": 0,
+        "scheduleAt": "2025-09-11T11:00:00.000Z",
+        "note": ""
+      },
+      "createdAt": "2025-09-11T07:30:43.749Z",
+      "updatedAt": "2025-09-11T13:18:57.318Z"
+    },
+    {
+      "id": "7XA25GCWCVVV",
+      "status": "NEW",
+      "customer": {
+        "name": "Russel Tromp",
+        "phone": "+84336440523",
+        "address": "Thon A Dong, Thon A Dong"
+      },
+      "paymentMethod": "COD",
+      "items": [
+        {
+          "productId": "GA-LON",
+          "name": "Gà nướng mắm nhĩ lớn (nguyên con)",
+          "priceSell": 159000,
+          "priceCost": 115000,
+          "qty": 2
+        }
+      ],
+      "subtotal": 318000,
+      "discount": 0,
+      "total": 318000,
+      "costTotal": 230000,
+      "profit": 88000,
+      "promoSnapshot": {
+        "active": false,
+        "percent": 10
+      },
+      "meta": {
+        "orderType": "TAKEAWAY",
+        "tableNumber": "",
+        "guests": 0,
+        "scheduleAt": "2025-09-11T07:30:00.000Z",
+        "note": ""
+      },
+      "createdAt": "2025-09-11T07:30:18.219Z"
+    },
+    {
+      "id": "MUTCYVEX-TJP",
+      "status": "NEW",
+      "customer": {
+        "name": "Russel Tromp",
+        "phone": "0336440523",
+        "address": "Thon A Dong, Thon A Dong"
+      },
+      "paymentMethod": "COD",
+      "items": [
+        {
+          "productId": "XOI",
+          "name": "Xôi",
+          "priceSell": 20000,
+          "priceCost": 9000,
+          "qty": 2
+        }
+      ],
+      "subtotal": 40000,
+      "discount": 4000,
+      "total": 36000,
+      "costTotal": 18000,
+      "profit": 18000,
+      "promoSnapshot": {
+        "active": true,
+        "percent": 10
+      },
+      "meta": {
+        "orderType": "RESERVE",
+        "tableNumber": "",
+        "guests": 0,
+        "scheduleAt": "2025-09-11T12:00:00.000Z",
+        "note": ""
+      },
+      "createdAt": "2025-09-11T07:16:42.303Z"
+    },
+    {
+      "id": "AZWBT7MNRCTE",
+      "status": "NEW",
+      "customer": {
+        "name": "Russel Tromp",
+        "phone": "0336440523",
+        "address": "Thon A Dong, Thon A Dong"
+      },
+      "paymentMethod": "COD",
+      "items": [
+        {
+          "productId": "GA-LON",
+          "name": "Gà nướng mắm nhĩ lớn (nguyên con)",
+          "priceSell": 159000,
+          "priceCost": 115000,
+          "qty": 1
+        }
+      ],
+      "subtotal": 159000,
+      "discount": 15900,
+      "total": 143100,
+      "costTotal": 115000,
+      "profit": 28100,
+      "promoSnapshot": {
+        "active": true,
+        "percent": 10
+      },
+      "meta": {
+        "orderType": "TAKEAWAY",
+        "tableNumber": "",
+        "guests": 0,
+        "scheduleAt": null,
+        "note": ""
+      },
+      "createdAt": "2025-09-11T07:10:22.309Z"
+    }
+  ],
+  "config": {
+    "promoActive": true,
+    "promo": {
+      "percent": 10
+    },
+    "categories": [
+      "Gà",
+      "Vịt",
+      "Combo",
+      "Món kèm",
+      "Giải khát"
+    ]
+  },
   "settings": {
     "promo": {
-      "enabled": true,
-      "percent": 50,
+      "enabled": false,
+      "percent": 100,
       "start": null,
       "end": null
+    },
+    "push": {
+      "subscriptions": [
+        {
+          "endpoint": "https://fcm.googleapis.com/fcm/send/dK-B_o3Kpnk:APA91bEqiTO8pJad8Dnpr1uMo7fr0eAsmU-MhPNEZtExdDHRATeQtKGeOl6PQkQmumkF_c69lxzBM9s2DrMPQVTWhZKtvbMoSIhD047olz-6oPEhVkZKu23AIykvHNlzeiqYngFMoCr-",
+          "expirationTime": null,
+          "keys": {
+            "p256dh": "BLExLO7_QZMSL1S3QFnD6bjMIm5GffDbWDZVIYU1hVwA_UO1Rn2EY2DmGuDR70LSprdGZd8nU2RpkK9KWAwtCKg",
+            "auth": "bj7soYlrwt_NO1pT8uMsRA"
+          }
+        }
+      ]
     }
   }
 }
